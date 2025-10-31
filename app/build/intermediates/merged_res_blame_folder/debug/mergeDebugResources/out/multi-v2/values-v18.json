@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.example.lottery.app-mergeDebugResources-42:/values-v18/values-v18.xml",
+            "map": [
+                {
+                    "source": "/Users/winsonzhang/.gradle/caches/8.13/transforms/0b988f50483fcab504197b138a45ea0c/transformed/appcompat-1.7.0/res/values-v18/values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "48",
+                        "endOffsets": "99"
+                    }
+                }
+            ]
+        }
+    ]
+}
