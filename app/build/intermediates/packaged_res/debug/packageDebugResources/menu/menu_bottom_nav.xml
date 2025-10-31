@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/homeFragment" android:title="Home" android:icon="@mipmap/ic_launcher"/>
-    <item android:id="@+id/myEventsFragment" android:title="My Events" android:icon="@mipmap/ic_launcher"/>
-    <item android:id="@+id/profileFragment" android:title="Profile" android:icon="@mipmap/ic_launcher"/>
-    <item android:id="@+id/organizerMyEventsFragment" android:title="Organizer" android:icon="@mipmap/ic_launcher"/>
-    <item android:id="@+id/adminDashboardFragment" android:title="Admin" android:icon="@mipmap/ic_launcher"/>
-</menu>
