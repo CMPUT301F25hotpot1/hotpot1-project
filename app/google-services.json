@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "677146894371",
+    "project_id": "lottery-hotpot1",
+    "storage_bucket": "lottery-hotpot1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677146894371:android:bd35de9668922812621196",
+        "android_client_info": {
+          "package_name": "com.example.lottary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEVH74yLMOUmcr9zHM9teSUmXct3AsPzc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

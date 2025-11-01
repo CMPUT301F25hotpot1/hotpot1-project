@@ -1,3 +1,22 @@
 <resources>
     <string name="app_name">lottary</string>
+
+    <!-- Bottom nav labels -->
+    <string name="browse">Browse</string>
+    <string name="my_events">My Events</string>
+    <string name="notifications">Notifications</string>
+    <string name="profile">Profile</string>
+    <string name="create_event">Create Event</string>
+    <string name="hint_title">Title</string>
+    <string name="hint_desc">Description</string>
+    <string name="hint_city">City</string>
+    <string name="hint_venue">Venue</string>
+    <string name="hint_start">Start Time (yyyy-MM-dd HH:mm)</string>
+    <string name="hint_end">End Time (yyyy-MM-dd HH:mm)</string>
+    <string name="hint_reg_start">Register Start (yyyy-MM-dd HH:mm)</string>
+    <string name="hint_reg_end">Register End (yyyy-MM-dd HH:mm)</string>
+    <string name="hint_capacity_opt">Capacity (optional)</string>
+    <string name="hint_price_opt">Price (optional)</string>
+    <string name="enable_geo">Enable Geolocation</string>
+
 </resources>
