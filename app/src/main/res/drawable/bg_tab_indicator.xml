@@ -1,4 +1,4 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <size android:height="3dp"/>
-    <solid android:color="@color/brand_purple"/>
+    <solid android:color="@color/organizer_purple"/>
 </shape>

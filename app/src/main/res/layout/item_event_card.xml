@@ -86,6 +86,7 @@
                 android:text="Edit Info"
                 android:textAllCaps="false"
                 android:layout_marginStart="8dp" />
+
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brand_purple">#6200EE</color>
-    <color name="brand_purple_dark">#3700B3</color>
-    <color name="brand_green">#4CAF50</color>
-    <color name="brand_red">#E53935</color>
+    <color name="organizer_purple">#532FA7</color>
+    <color name="organizer_purple_dark">#3700B3</color>
+    <color name="entrant_teal">#27A18E</color>
+    <color name="entrant_teal_dark">#018786</color>
+    <color name="admin_black">#2C2C2C</color>
+    <color name="admin_black_dark">#1E1E1E</color>
+    <color name="brand_green">#36C867</color>
+    <color name="brand_red">#FD4221</color>
 
     <color name="surface_bg">#F8F5FF</color>
     <color name="text_primary">#000000</color>
     <color name="text_secondary">#666666</color>
 
-    <color name="purple_500">#6200EE</color>
+    <color name="purple_500">#532FA7</color>
     <color name="purple_700">#3700B3</color>
-    <color name="teal_200">#03DAC5</color>
+    <color name="teal_200">#27A18E</color>
     <color name="teal_700">#018786</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
