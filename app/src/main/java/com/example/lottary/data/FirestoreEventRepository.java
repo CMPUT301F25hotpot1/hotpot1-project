@@ -4,14 +4,27 @@ import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.*;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.text.DateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class FirestoreEventRepository {
 
     private static FirestoreEventRepository INSTANCE;
+
     public static FirestoreEventRepository get() {
         if (INSTANCE == null) INSTANCE = new FirestoreEventRepository();
         return INSTANCE;
@@ -24,7 +37,6 @@ public class FirestoreEventRepository {
     public interface EventsListener { void onChanged(@NonNull List<Event> items); }
     public interface DocListener { void onChanged(DocumentSnapshot doc); }
 
-
     public ListenerRegistration listenCreatedByDevice(
             @NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereEqualTo("creatorDeviceId", deviceId)
@@ -34,7 +46,6 @@ public class FirestoreEventRepository {
                 });
     }
 
-
     public ListenerRegistration listenRecentCreated(@NonNull EventsListener l) {
         return events.orderBy("createdAt").limit(50)
                 .addSnapshotListener((snap, err) -> {
@@ -42,7 +53,6 @@ public class FirestoreEventRepository {
                     l.onChanged(mapList(snap));
                 });
     }
-
 
     public ListenerRegistration listenJoined(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("waitingList", deviceId)
@@ -64,7 +74,6 @@ public class FirestoreEventRepository {
         return events.add(fields);
     }
 
-
     public Task<Void> updateEvent(@NonNull String eventId, Map<String, Object> fields) {
         return events.document(eventId).set(fields, SetOptions.merge());
     }
@@ -75,10 +84,11 @@ public class FirestoreEventRepository {
             DocumentSnapshot d = tr.get(ref);
             if (!d.exists()) return null;
 
-            List<String> waiting = (List<String>) d.get("waitingList"); if (waiting == null) waiting = new ArrayList<>();
-            List<String> chosen  = (List<String>) d.get("chosen");      if (chosen == null)  chosen  = new ArrayList<>();
-            List<String> signed  = (List<String>) d.get("signedUp");    if (signed == null)  signed  = new ArrayList<>();
-            List<String> cancel  = (List<String>) d.get("cancelled");   if (cancel == null)  cancel  = new ArrayList<>();
+            List<String> waiting = strList(d.get("waitingList"));
+            List<String> chosen  = strList(d.get("chosen"));
+            List<String> signed  = strList(d.get("signedUp"));
+            List<String> cancel  = strList(d.get("cancelled"));
+
             Number capNum = (Number) d.get("capacity");
             int capacity = capNum == null ? 0 : capNum.intValue();
 
@@ -88,11 +98,133 @@ public class FirestoreEventRepository {
             Set<String> taken = new HashSet<>();
             taken.addAll(chosen); taken.addAll(signed); taken.addAll(cancel);
 
-            List<String> winners = LotterySampler.sampleWinners(waiting, taken, toDraw, System.currentTimeMillis());
+            List<String> winners = LotterySampler.sampleWinners(
+                    waiting, taken, toDraw, System.currentTimeMillis());
+
             if (!winners.isEmpty()) {
                 List<String> newChosen = new ArrayList<>(chosen);
                 newChosen.addAll(winners);
                 tr.update(ref, "chosen", newChosen);
+            }
+            return null;
+        });
+    }
+
+    // ---------- helpers ----------
+    @SuppressWarnings("unchecked")
+    private static List<String> strList(Object o) {
+        if (o instanceof List<?>) {
+            List<String> out = new ArrayList<>();
+            for (Object e : (List<?>) o) if (e != null) out.add(e.toString());
+            return out;
+        }
+        return new ArrayList<>();
+    }
+
+    // user accepts invitation (moves into signedUp, removes from others)
+    public Task<Void> signUp(@NonNull String eventId, @NonNull String deviceId) {
+        DocumentReference ref = events.document(eventId);
+        return db.runTransaction(tr -> {
+            DocumentSnapshot d = tr.get(ref);
+            if (!d.exists()) return null;
+
+            List<String> waiting = strList(d.get("waitingList"));
+            List<String> chosen  = strList(d.get("chosen"));
+            List<String> signed  = strList(d.get("signedUp"));
+            List<String> cancel  = strList(d.get("cancelled"));
+
+            boolean changed = false;
+            if (!signed.contains(deviceId)) { signed.add(deviceId); changed = true; }
+            if (chosen.remove(deviceId))     changed = true;
+            if (waiting.remove(deviceId))    changed = true;
+            if (cancel.remove(deviceId))     changed = true;
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("signedUp", signed);
+            updates.put("chosen", chosen);
+            updates.put("waitingList", waiting);
+            updates.put("cancelled", cancel);
+
+            Number capN = (Number) d.get("capacity");
+            int cap = capN == null ? 0 : capN.intValue();
+            boolean full = cap > 0 && signed.size() >= cap;
+            updates.put("full", full);
+
+            if (changed) tr.update(ref, updates);
+            return null;
+        });
+    }
+
+    // user declines invitation (moves into cancelled)
+    public Task<Void> decline(@NonNull String eventId, @NonNull String deviceId) {
+        DocumentReference ref = events.document(eventId);
+        return db.runTransaction(tr -> {
+            DocumentSnapshot d = tr.get(ref);
+            if (!d.exists()) return null;
+
+            List<String> chosen = strList(d.get("chosen"));
+            List<String> signed = strList(d.get("signedUp"));
+            List<String> cancel = strList(d.get("cancelled"));
+
+            boolean changed = false;
+            if (chosen.remove(deviceId)) changed = true;
+            if (signed.remove(deviceId)) changed = true;
+            if (!cancel.contains(deviceId)) { cancel.add(deviceId); changed = true; }
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("chosen", chosen);
+            updates.put("signedUp", signed);
+            updates.put("cancelled", cancel);
+
+            Number capN = (Number) d.get("capacity");
+            int cap = capN == null ? 0 : capN.intValue();
+            boolean full = cap > 0 && signed.size() >= cap;
+            updates.put("full", full);
+
+            if (changed) tr.update(ref, updates);
+            return null;
+        });
+    }
+
+    // waiting list ops
+    public Task<Void> joinWaitingList(@NonNull String eventId, @NonNull String deviceId) {
+        DocumentReference ref = events.document(eventId);
+        return db.runTransaction(tr -> {
+            DocumentSnapshot d = tr.get(ref);
+            if (!d.exists()) return null;
+
+            List<String> waiting = strList(d.get("waitingList"));
+            List<String> chosen  = strList(d.get("chosen"));
+            List<String> signed  = strList(d.get("signedUp"));
+            List<String> cancel  = strList(d.get("cancelled"));
+
+            boolean changed = false;
+            if (!waiting.contains(deviceId)) { waiting.add(deviceId); changed = true; }
+            if (chosen.remove(deviceId)) changed = true;
+            if (signed.remove(deviceId)) changed = true;
+            if (cancel.remove(deviceId)) changed = true;
+
+            if (changed) {
+                Map<String, Object> updates = new HashMap<>();
+                updates.put("waitingList", waiting);
+                updates.put("chosen", chosen);
+                updates.put("signedUp", signed);
+                updates.put("cancelled", cancel);
+                tr.update(ref, updates);
+            }
+            return null;
+        });
+    }
+
+    public Task<Void> leaveWaitingList(@NonNull String eventId, @NonNull String deviceId) {
+        DocumentReference ref = events.document(eventId);
+        return db.runTransaction(tr -> {
+            DocumentSnapshot d = tr.get(ref);
+            if (!d.exists()) return null;
+
+            List<String> waiting = strList(d.get("waitingList"));
+            if (waiting.remove(deviceId)) {
+                tr.update(ref, "waitingList", waiting);
             }
             return null;
         });

@@ -11,8 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.CameraController;
+import androidx.camera.view.LifecycleCameraController;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 
@@ -26,7 +26,9 @@ import com.google.mlkit.vision.common.InputImage;
 import java.util.concurrent.Executor;
 
 public class QrScanActivity extends AppCompatActivity {
+
     private PreviewView preview;
+    private LifecycleCameraController controller;
     private boolean handled = false;
 
     private final ActivityResultLauncher<String> perm =
@@ -39,6 +41,7 @@ public class QrScanActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_scan);
         preview = findViewById(R.id.preview);
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             startCamera();
@@ -48,27 +51,29 @@ public class QrScanActivity extends AppCompatActivity {
     }
 
     private void startCamera() {
+        // 1) 创建 controller（代替 ProcessCameraProvider + ListenableFuture）
+        controller = new LifecycleCameraController(this);
+        controller.setCameraSelector(
+                new CameraSelector.Builder()
+                        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                        .build()
+        );
+        controller.setImageAnalysisBackpressureStrategy(
+                ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
+        );
+        // 只需预览+分析
+        controller.setEnabledUseCases(CameraController.IMAGE_ANALYSIS);
+
+        // 2) 绑定到 PreviewView
+        preview.setController(controller);
+        controller.bindToLifecycle(this);
+
+        // 3) 设置条码分析器（ML Kit）
+        BarcodeScannerOptions opts = new BarcodeScannerOptions.Builder().build();
+        BarcodeScanner scanner = BarcodeScanning.getClient(opts);
         Executor main = ContextCompat.getMainExecutor(this);
-        ProcessCameraProvider.getInstance(this).addListener(() -> {
-            try {
-                ProcessCameraProvider provider = ProcessCameraProvider.getInstance(this).get();
 
-                Preview p = new Preview.Builder().build();
-                p.setSurfaceProvider(preview.getSurfaceProvider());
-
-                ImageAnalysis analysis = new ImageAnalysis.Builder().build();
-                BarcodeScannerOptions opts = new BarcodeScannerOptions.Builder().build();
-                BarcodeScanner scanner = BarcodeScanning.getClient(opts);
-                analysis.setAnalyzer(main, image -> analyze(scanner, image));
-
-                provider.unbindAll();
-                provider.bindToLifecycle(
-                        this,
-                        new CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build(),
-                        p, analysis
-                );
-            } catch (Exception ignored) {}
-        }, main);
+        controller.setImageAnalysisAnalyzer(main, image -> analyze(scanner, image));
     }
 
     private void analyze(BarcodeScanner scanner, ImageProxy proxy) {
@@ -77,6 +82,7 @@ public class QrScanActivity extends AppCompatActivity {
             if (proxy.getImage() == null) { proxy.close(); return; }
             InputImage img = InputImage.fromMediaImage(
                     proxy.getImage(), proxy.getImageInfo().getRotationDegrees());
+
             scanner.process(img)
                     .addOnSuccessListener(barcodes -> {
                         if (handled) return;
@@ -92,12 +98,18 @@ public class QrScanActivity extends AppCompatActivity {
                             }
                         }
                     })
-                    .addOnCompleteListener(r -> proxy.close());
+                    .addOnCompleteListener(t -> proxy.close());
         } catch (Exception e) {
             proxy.close();
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (controller != null) {
+            controller.clearImageAnalysisAnalyzer();
+            // controller.unbind(); // 可选，通常随生命周期自动处理
+        }
+    }
 }
-
-
-

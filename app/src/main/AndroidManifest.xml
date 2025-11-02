@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -16,21 +21,23 @@
         android:theme="@style/Theme.Lottary"
         tools:targetApi="31">
 
-        <activity android:name="com.example.lottary.ui.browse.EventDetailsActivity"/>
-        <activity android:name="com.example.lottary.ui.browse.QrScanActivity"/>
-        <activity android:name="com.example.lottary.ui.notifications.NotificationsActivity"/>
-        <activity android:name="com.example.lottary.ui.browse.BrowseActivity"/>
+        <activity android:name="com.example.lottary.ui.browse.EventDetailsActivity" />
+        <activity android:name="com.example.lottary.ui.browse.QrScanActivity" />
+        <activity android:name="com.example.lottary.ui.notifications.NotificationsActivity" />
+        <activity android:name="com.example.lottary.ui.browse.BrowseActivity" />
+
         <activity
             android:name=".ui.events.MyEventsActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"/>
-        <activity android:name=".ui.events.create.CreateEventActivity"/>
-        <activity android:name=".ui.events.edit.EditEventActivity"/>
-        <activity android:name=".ui.events.manage.ManageEventActivity"/>
+
+        <activity android:name=".MainActivity" />
+        <activity android:name=".ui.events.create.CreateEventActivity" />
+        <activity android:name=".ui.events.edit.EditEventActivity" />
+        <activity android:name=".ui.events.manage.ManageEventActivity" />
     </application>
 </manifest>

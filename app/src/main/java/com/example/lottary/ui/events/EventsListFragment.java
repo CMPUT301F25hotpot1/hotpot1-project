@@ -1,7 +1,8 @@
 package com.example.lottary.ui.events;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,112 +16,120 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
 import com.example.lottary.data.FirestoreEventRepository;
+import com.example.lottary.ui.events.edit.EditEventActivity;
+import com.example.lottary.ui.events.manage.ManageEventActivity;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class EventsListFragment extends Fragment {
-    public static final int MODE_JOINED  = 0;
-    public static final int MODE_CREATED = 1;
-    private static final String ARG_MODE = "mode";
+public class EventsListFragment extends Fragment implements EventsAdapter.Listener {
 
-    private int mode = MODE_CREATED;
+    private static final String ARG_SHOW_CREATED = "ARG_SHOW_CREATED";
 
-    private RecyclerView rv;
-    private EventsAdapter adapter;
-    private final List<Event> fullData = new ArrayList<>();
-    private String currentQuery = "";
-    private ListenerRegistration reg;
-
-    public static EventsListFragment newInstance(int mode) {
-        Bundle b = new Bundle(); b.putInt(ARG_MODE, mode);
+    public static EventsListFragment newInstance(boolean showCreated) {
+        Bundle b = new Bundle();
+        b.putBoolean(ARG_SHOW_CREATED, showCreated);
         EventsListFragment f = new EventsListFragment();
         f.setArguments(b);
         return f;
     }
 
-    @Override public void onCreate(@Nullable Bundle savedInstanceState) {
+    private boolean showCreated = false;
+    private RecyclerView recyclerView;
+    private EventsAdapter adapter;
+    private ListenerRegistration reg;
+
+    // local data + text query
+    private final List<Event> all = new ArrayList<>();
+    private String query = "";
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) mode = getArguments().getInt(ARG_MODE, MODE_CREATED);
-        setRetainInstance(true);
+        Bundle args = getArguments();
+        if (args != null) showCreated = args.getBoolean(ARG_SHOW_CREATED, false);
     }
 
-    @Nullable @Override
+    @Nullable
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_events_list, container, false);
-        rv = v.findViewById(R.id.recycler);
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new EventsAdapter();
-        rv.setAdapter(adapter);
+        recyclerView = v.findViewById(R.id.recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        adapter = new EventsAdapter(this);
+        recyclerView.setAdapter(adapter);
         return v;
     }
 
-    @Override public void onStart() {
+    @Override
+    public void onStart() {
         super.onStart();
         startListening();
     }
 
-    @Override public void onStop() {
+    @Override
+    public void onStop() {
         super.onStop();
-        if (reg != null) { reg.remove(); reg = null; }
+        if (reg != null) {
+            reg.remove();
+            reg = null;
+        }
     }
 
     private void startListening() {
         if (reg != null) { reg.remove(); reg = null; }
-        FirestoreEventRepository repo = FirestoreEventRepository.get();
 
-        if (mode == MODE_CREATED) {
-            String deviceId = android.provider.Settings.Secure.getString(
-                    requireContext().getContentResolver(),
-                    android.provider.Settings.Secure.ANDROID_ID
-            );
-            if (TextUtils.isEmpty(deviceId)) {
-                reg = repo.listenRecentCreated(items -> {
-                    fullData.clear(); fullData.addAll(items);
-                    applyFilter(currentQuery);
-                });
-            } else {
-                reg = repo.listenCreatedByDevice(deviceId, items -> {
-                    fullData.clear(); fullData.addAll(items);
-                    applyFilter(currentQuery);
-                });
-            }
+        String did = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        if (did == null || did.isEmpty()) did = "device_demo";
+
+        if (showCreated) {
+            reg = FirestoreEventRepository.get().listenCreatedByDevice(did, items -> {
+                all.clear(); all.addAll(items);
+                applyCurrentFilters();
+            });
         } else {
-            String deviceId = android.provider.Settings.Secure.getString(
-                    requireContext().getContentResolver(),
-                    android.provider.Settings.Secure.ANDROID_ID
-            );
-            if (TextUtils.isEmpty(deviceId)) deviceId = "device_demo";
-
-            reg = repo.listenJoined(deviceId, items -> {
-                fullData.clear(); fullData.addAll(items);
-                applyFilter(currentQuery);
+            reg = FirestoreEventRepository.get().listenJoined(did, items -> {
+                all.clear(); all.addAll(items);
+                applyCurrentFilters();
             });
         }
     }
 
-    public void applyFilter(String q) {
-        currentQuery = q == null ? "" : q.trim();
-        if (TextUtils.isEmpty(currentQuery)) {
-            adapter.setData(new ArrayList<>(fullData));
-            return;
-        }
-        String needle = currentQuery.toLowerCase(Locale.ROOT);
-
-        List<Event> filtered = new ArrayList<>();
-        for (Event e : fullData) {
-            if (contains(e.getTitle(), needle) ||
-                    contains(e.getCity(), needle)  ||
-                    contains(e.getVenue(), needle)) {
-                filtered.add(e);
-            }
-        }
-        adapter.setData(filtered);
+    /** filter API used by activity search */
+    public void applyFilter(@NonNull String q) {
+        query = q.trim();
+        applyCurrentFilters();
     }
 
-    private boolean contains(String src, String needle) {
-        return src != null && src.toLowerCase(Locale.ROOT).contains(needle);
+    private void applyCurrentFilters() {
+        if (adapter == null) return;
+        final String q = query.toLowerCase(Locale.ROOT);
+
+        List<Event> out = new ArrayList<>();
+        for (Event e : all) {
+            if (!q.isEmpty()) {
+                String blob = (e.getTitle() + " " + e.getCity() + " " + e.getVenue()).toLowerCase(Locale.ROOT);
+                if (!blob.contains(q)) continue;
+            }
+            out.add(e);
+        }
+        adapter.submit(out);
+    }
+
+    // EventsAdapter.Listener
+    @Override
+    public void onManage(@NonNull Event e) {
+        Intent i = new Intent(requireContext(), ManageEventActivity.class);
+        i.putExtra("EXTRA_EVENT_ID", e.getId());
+        startActivity(i);
+    }
+
+    @Override
+    public void onEdit(@NonNull Event e) {
+        Intent i = new Intent(requireContext(), EditEventActivity.class);
+        i.putExtra("EXTRA_EVENT_ID", e.getId());
+        startActivity(i);
     }
 }

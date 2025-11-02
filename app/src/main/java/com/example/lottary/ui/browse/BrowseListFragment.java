@@ -1,7 +1,7 @@
 package com.example.lottary.ui.browse;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,97 +14,89 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.lottary.data.FirestoreEventRepository;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.Query;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class BrowseListFragment extends Fragment {
-    private RecyclerView rv;
+public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.Listener {
+
+    private RecyclerView recyclerView;
     private BrowseEventsAdapter adapter;
-    private final List<Event> all = new ArrayList<>();
-    private String query = "";
-    private FilterOptions options = new FilterOptions();
     private ListenerRegistration reg;
 
-    @Nullable @Override
+    private final List<Event> all = new ArrayList<>();
+    private String query = "";
+    private FilterOptions options;
+
+    @Nullable
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_browse_list, container, false);
-        rv = v.findViewById(R.id.recycler);
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new BrowseEventsAdapter(e -> {
-            Intent i = new Intent(requireContext(), EventDetailsActivity.class);
-            i.putExtra(EventDetailsActivity.EXTRA_EVENT_ID, e.getId());
-            startActivity(i);
+        return inflater.inflate(R.layout.fragment_browse_list, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(v, savedInstanceState);
+        recyclerView = v.findViewById(R.id.recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        adapter = new BrowseEventsAdapter(this);
+        recyclerView.setAdapter(adapter);
+
+        reg = FirestoreEventRepository.get().listenRecentCreated(items -> {
+            all.clear();
+            all.addAll(items);
+            applyCurrentFilters();
         });
-        rv.setAdapter(adapter);
-        return v;
     }
 
-    @Override public void onStart() {
-        super.onStart();
-        startListen();
-    }
-
-    @Override public void onStop() {
-        super.onStop();
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
         if (reg != null) { reg.remove(); reg = null; }
+        recyclerView = null;
+        adapter = null;
     }
 
-    public void applyFilter(String q) {
-        query = q == null ? "" : q.trim().toLowerCase(Locale.ROOT);
-        render();
+
+    public void applyFilter(@NonNull String q) {
+        query = q.trim();
+        applyCurrentFilters();
     }
 
-    public void applyOptions(FilterOptions o) {
-        options = o == null ? new FilterOptions() : o;
-        render();
+    public void applyOptions(@NonNull FilterOptions opts) {
+        options = opts;
+        applyCurrentFilters();
     }
 
-    private void render() {
-        List<Event> flt = new ArrayList<>();
+    private void applyCurrentFilters() {
+        if (adapter == null) return;
+
+        final String q = query.toLowerCase(Locale.ROOT);
+        List<Event> out = new ArrayList<>();
         for (Event e : all) {
-            if (options.openOnly && e.isFull()) continue;
-            if (!query.isEmpty()) {
-                String bundle = (e.getTitle() == null ? "" : e.getTitle()) + " " +
-                        (e.getCity() == null ? "" : e.getCity()) + " " +
-                        (e.getVenue() == null ? "" : e.getVenue());
-                if (!bundle.toLowerCase(Locale.ROOT).contains(query)) continue;
+            if (!q.isEmpty()) {
+                String blob = (e.getTitle() + " " + e.getCity() + " " + e.getVenue()).toLowerCase(Locale.ROOT);
+                if (!blob.contains(q)) continue;
             }
-            flt.add(e);
+
+            out.add(e);
         }
-        adapter.submit(flt);
+        adapter.submit(out);
     }
 
-    private void startListen() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        reg = db.collection("events")
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(50)
-                .addSnapshotListener((snap, err) -> {
-                    all.clear();
-                    if (snap != null) {
-                        for (DocumentSnapshot d : snap.getDocuments()) {
-                            String id = d.getId();
-                            String title = d.getString("title");
-                            String city = d.getString("city");
-                            String venue = d.getString("venue");
-                            boolean full = Boolean.TRUE.equals(d.getBoolean("full"));
-                            Timestamp ts = d.getTimestamp("startTime");
-                            String pretty = ts == null ? "" : DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(ts.toDate());
-                            all.add(new Event(id, title, city, venue, pretty, full));
-                        }
-                    }
-                    render();
-                });
+
+    @Override
+    public void onEventClick(@NonNull Event e) {
+        EventDetailsActivity.open(requireContext(), e.getId());
+    }
+
+    @Override
+    public void onJoinClick(@NonNull Event e) {
+        String did = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        if (did == null || did.isEmpty()) did = "device_demo";
+        FirestoreEventRepository.get().joinWaitingList(e.getId(), did);
     }
 }
-
-
-

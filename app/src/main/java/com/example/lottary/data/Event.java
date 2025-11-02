@@ -23,4 +23,6 @@ public class Event {
     public String getVenue() { return venue; }
     public String getPrettyStartTime() { return prettyStartTime; }
     public boolean isFull() { return full; }
+
+    public String getPrettyTime() { return prettyStartTime; }
 }
