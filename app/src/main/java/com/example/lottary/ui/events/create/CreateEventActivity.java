@@ -15,7 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lottary.R;
-import com.example.lottary.data.FirestoreEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.Timestamp;
 
