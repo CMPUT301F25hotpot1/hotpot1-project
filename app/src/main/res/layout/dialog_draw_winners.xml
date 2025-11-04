@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RadioGroup
+        android:id="@+id/grp_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/rb_fill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fill capacity (draw to fill remaining)" />
+
+        <RadioButton
+            android:id="@+id/rb_specify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Specify amount" />
+    </RadioGroup>
+
+    <EditText
+        android:id="@+id/et_amount"
+        android:hint="Amount of winners"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>
