@@ -3,72 +3,86 @@ package com.example.lottary.ui.notifications;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.example.lottary.R;
-import com.google.android.material.button.MaterialButton;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.VH> {
+import com.example.lottary.R;
 
-    public interface Handler {
-        void onSignUp(NotificationItem n);
-        void onDecline(NotificationItem n);
-        void onOptOutOrganizer(NotificationItem n);
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.Holder> {
+
+    public interface Listener {
+        void onSignUp(@NonNull NotificationItem item);
+        void onDecline(@NonNull NotificationItem item);
+        void onOverflow(@NonNull NotificationItem item);
     }
 
-    private final Handler handler;
-    private final List<NotificationItem> data = new ArrayList<>();
+    private final List<NotificationItem> items = new ArrayList<>();
+    private final Listener listener;
+    private final DateFormat fmt = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
 
-    public NotificationsAdapter(Handler h) { this.handler = h; }
+    public NotificationsAdapter(Listener l) { this.listener = l; }
 
     public void submit(List<NotificationItem> list) {
-        data.clear();
-        if (list != null) data.addAll(list);
+        items.clear();
+        if (list != null) items.addAll(list);
         notifyDataSetChanged();
     }
 
-    @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int v) {
-        View view = LayoutInflater.from(p.getContext()).inflate(R.layout.item_notification, p, false);
-        return new VH(view);
+    @NonNull @Override
+    public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_notification, parent, false);
+        return new Holder(v);
     }
 
-    @Override public void onBindViewHolder(@NonNull VH h, int i) {
-        NotificationItem n = data.get(i);
-        h.title.setText(n.title);
-        h.msg.setText(n.message);
-        h.time.setText(n.createdAt <= 0 ? "" : android.text.format.DateFormat.format("MMM d, h:mm a", n.createdAt));
-        h.status.setText(n.status == null ? "" : n.status);
+    @Override
+    public void onBindViewHolder(@NonNull Holder h, int position) {
+        NotificationItem n = items.get(position);
+        h.txtTitle.setText(n.type.equals("selected") ? "Selected" :
+                n.type.equals("cancelled") ? "Cancelled" : "Notification");
+        h.txtMsg.setText(n.message);
+        h.txtTime.setText(fmt.format(new Date(n.sentAtMs)));
 
-        boolean actionable = "selected".equalsIgnoreCase(n.type);
-        h.btnSign.setVisibility(actionable ? View.VISIBLE : View.GONE);
-        h.btnDecline.setVisibility(actionable ? View.VISIBLE : View.GONE);
+        h.icon.setImageResource(
+                n.type.equals("selected") ? R.drawable.ic_check :
+                        n.type.equals("cancelled") ? R.drawable.ic_close : R.drawable.ic_info);
 
-        h.btnSign.setOnClickListener(v -> handler.onSignUp(n));
-        h.btnDecline.setOnClickListener(v -> handler.onDecline(n));
-        h.btnOptOut.setOnClickListener(v -> handler.onOptOutOrganizer(n));
+        boolean showActions = n.type.equals("selected");
+        h.btnSign.setVisibility(showActions ? View.VISIBLE : View.GONE);
+        h.btnDecline.setVisibility(showActions ? View.VISIBLE : View.GONE);
+
+        h.btnSign.setOnClickListener(v -> { if (listener != null) listener.onSignUp(n); });
+        h.btnDecline.setOnClickListener(v -> { if (listener != null) listener.onDecline(n); });
+        h.btnOverflow.setOnClickListener(v -> { if (listener != null) listener.onOverflow(n); });
     }
 
-    @Override public int getItemCount() { return data.size(); }
+    @Override
+    public int getItemCount() { return items.size(); }
 
-    static class VH extends RecyclerView.ViewHolder {
-        TextView title, msg, time, status;
-        MaterialButton btnSign, btnDecline, btnOptOut;
-        VH(@NonNull View v) {
+    static class Holder extends RecyclerView.ViewHolder {
+        ImageView icon;
+        TextView txtTitle, txtMsg, txtTime;
+        Button btnSign, btnDecline;
+        ImageButton btnOverflow;
+        Holder(@NonNull View v) {
             super(v);
-            title = v.findViewById(R.id.tvTitle);
-            msg = v.findViewById(R.id.tvMessage);
-            time = v.findViewById(R.id.tvTime);
-            status = v.findViewById(R.id.tvStatus);
-            btnSign = v.findViewById(R.id.btnSignUp);
-            btnDecline = v.findViewById(R.id.btnDecline);
-            btnOptOut = v.findViewById(R.id.btnOptOutThisOrganizer);
+            icon = v.findViewById(R.id.icon);
+            txtTitle = v.findViewById(R.id.txt_title);
+            txtMsg = v.findViewById(R.id.txt_msg);
+            txtTime = v.findViewById(R.id.txt_time);
+            btnSign = v.findViewById(R.id.btn_sign);
+            btnDecline = v.findViewById(R.id.btn_decline);
+            btnOverflow = v.findViewById(R.id.btn_overflow);
         }
     }
 }
-

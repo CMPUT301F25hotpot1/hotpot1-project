@@ -1,129 +1,108 @@
 package com.example.lottary.ui.notifications;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
-import com.example.lottary.data.FirestoreEventRepository;
-import com.example.lottary.ui.browse.BrowseActivity;
-import com.example.lottary.ui.events.MyEventsActivity;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NotificationsActivity extends AppCompatActivity implements NotificationsAdapter.Handler {
+public class NotificationsActivity extends AppCompatActivity implements NotificationsAdapter.Listener {
 
+    private RecyclerView recycler;
+    private ProgressBar loading;
     private NotificationsAdapter adapter;
+    private ListenerRegistration reg;
+    private String deviceId;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        RecyclerView rv = findViewById(R.id.recycler);
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        if (deviceId == null || deviceId.isEmpty()) deviceId = "device_demo";
+
+        MaterialToolbar top = findViewById(R.id.top_app_bar);
+        top.setTitle("Notifications");
+        top.setNavigationOnClickListener(v -> finish());
+
+        loading = findViewById(R.id.loading);
+        recycler = findViewById(R.id.recycler);
+        recycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotificationsAdapter(this);
-        rv.setAdapter(adapter);
-
-        MaterialToolbar tb = findViewById(R.id.toolbar);
-        tb.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_optout_all) {
-                NotifyPrefs.setAllOptedOut(this, true);
-                loadData();
-                return true;
-            } else if (item.getItemId() == R.id.action_optin_all) {
-                NotifyPrefs.setAllOptedOut(this, false);
-                loadData();
-                return true;
-            }
-            return false;
-        });
-
-        BottomNavigationView nav = findViewById(R.id.bottomNav);
-        nav.setSelectedItemId(R.id.nav_notifications);
-        nav.setOnItemSelectedListener(i -> {
-            int id = i.getItemId();
-            if (id == R.id.nav_my_events) {
-                startActivity(new Intent(this, MyEventsActivity.class));
-                return true;
-            } else if (id == R.id.nav_browse) {
-                startActivity(new Intent(this, BrowseActivity.class));
-                return true;
-            } else if (id == R.id.nav_notifications) {
-                return true;
-            } else if (id == R.id.nav_profile) {
-                return true;
-            }
-            return false;
-        });
-
-        loadData();
+        recycler.setAdapter(adapter);
     }
 
-    private void loadData() {
-        if (NotifyPrefs.isAllOptedOut(this)) {
-            adapter.submit(new ArrayList<>());
-            return;
-        }
-        String did = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        if (did == null || did.isEmpty()) did = "device_demo";
+    @Override protected void onStart() {
+        super.onStart();
+        startListening();
+    }
 
-        FirebaseFirestore.getInstance().collection("notifications")
-                .whereEqualTo("deviceId", did)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(100)
-                .get()
-                .addOnSuccessListener(snap -> {
-                    List<NotificationItem> list = new ArrayList<>();
-                    for (DocumentSnapshot d : snap.getDocuments()) {
-                        String orgId = d.getString("organizerId");
-                        if (orgId != null && NotifyPrefs.isOrganizerOptedOut(this, orgId)) continue;
+    @Override protected void onStop() {
+        super.onStop();
+        if (reg != null) { reg.remove(); reg = null; }
+    }
 
-                        NotificationItem n = new NotificationItem();
-                        n.id = d.getId();
-                        n.eventId = d.getString("eventId");
-                        n.organizerId = orgId == null ? "" : orgId;
-                        n.title = d.getString("title");
-                        n.message = d.getString("message");
-                        n.type = d.getString("type");
-                        Number ts = (Number) d.get("createdAtMs");
-                        n.createdAt = ts == null ? 0 : ts.longValue();
-                        n.status = d.getString("status");
-                        list.add(n);
+    private void startListening() {
+        loading.setVisibility(View.VISIBLE);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        reg = db.collection("notifications")
+                .whereEqualTo("recipientId", deviceId)
+                .orderBy("sentAt", Query.Direction.DESCENDING)
+                .limit(200)
+                .addSnapshotListener((snap, err) -> {
+                    loading.setVisibility(View.GONE);
+                    if (err != null || snap == null) {
+                        adapter.submit(new ArrayList<>());
+                        return;
                     }
-                    adapter.submit(list);
+                    adapter.submit(mapList(snap));
                 });
     }
 
-    @Override
-    public void onSignUp(NotificationItem n) {
-        String did = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        if (did == null || did.isEmpty()) did = "device_demo";
-        if (n.eventId != null) FirestoreEventRepository.get().signUp(n.eventId, did);
-    }
-
-    @Override
-    public void onDecline(NotificationItem n) {
-        String did = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        if (did == null || did.isEmpty()) did = "device_demo";
-        if (n.eventId != null) FirestoreEventRepository.get().decline(n.eventId, did);
-    }
-
-    @Override
-    public void onOptOutOrganizer(NotificationItem n) {
-        if (n.organizerId != null && !n.organizerId.isEmpty()) {
-            NotifyPrefs.setOrganizerOptedOut(this, n.organizerId, true);
-            loadData();
+    private List<NotificationItem> mapList(@NonNull QuerySnapshot snap) {
+        List<NotificationItem> out = new ArrayList<>();
+        for (DocumentSnapshot d : snap.getDocuments()) {
+            String id   = d.getId();
+            String evId = s(d.get("eventId"));
+            String evTi = s(d.get("eventTitle"));
+            String grp  = s(d.get("targetGroup"));
+            String type = s(d.get("type"));
+            String msg  = s(d.get("message"));
+            Timestamp ts = d.getTimestamp("sentAt");
+            long when = ts == null ? System.currentTimeMillis() : ts.toDate().getTime();
+            out.add(new NotificationItem(id, evId, grp, type, msg, when, evTi));
         }
+        return out;
+    }
+
+    private static String s(Object o){ return o == null ? "" : o.toString(); }
+
+    @Override public void onSignUp(@NonNull NotificationItem item) {
+        Toast.makeText(this, "Sign Up clicked (stub)", Toast.LENGTH_SHORT).show();
+    }
+    @Override public void onDecline(@NonNull NotificationItem item) {
+        Toast.makeText(this, "Decline clicked (stub)", Toast.LENGTH_SHORT).show();
+    }
+    @Override public void onOverflow(@NonNull NotificationItem item) {
+        Toast.makeText(this, "Overflow menu (stub)", Toast.LENGTH_SHORT).show();
     }
 }
