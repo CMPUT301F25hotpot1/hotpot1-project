@@ -1,53 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="16dp"
-    app:cardCornerRadius="16dp">
+    tools:context=".ui.browse.FilterBottomSheet">
 
+    <!-- Open only -->
+    <Switch
+        android:id="@+id/sw_open_only"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Open events only" />
+
+    <!-- Geolocation near me -->
+    <Switch
+        android:id="@+id/sw_geo_only"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Geolocation near me" />
+
+    <!-- Event Type -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Event Type"
+        android:textStyle="bold"
+        android:layout_marginTop="12dp"/>
+
+    <CheckBox
+        android:id="@+id/cb_sports"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sports" />
+    <CheckBox
+        android:id="@+id/cb_music"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Music" />
+    <CheckBox
+        android:id="@+id/cb_arts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Arts &amp; Crafts" />
+    <CheckBox
+        android:id="@+id/cb_market"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Market" />
+
+    <!-- Date range -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="From Date / To Date (yyyy-MM-dd)"
+        android:textStyle="bold"
+        android:layout_marginTop="12dp"/>
+
+    <EditText
+        android:id="@+id/et_from_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="From (yyyy-MM-dd)"
+        android:focusable="false"
+        android:inputType="none"
+        android:padding="8dp"/>
+
+    <EditText
+        android:id="@+id/et_to_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="To (yyyy-MM-dd)"
+        android:focusable="false"
+        android:inputType="none"
+        android:padding="8dp"/>
+
+    <!-- Actions -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
 
-        <TextView
+        <Button
+            android:id="@+id/btn_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Filter Preferences"
-            android:textStyle="bold"
-            android:textSize="18sp"/>
+            android:text="Cancel"/>
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/sw_open_only"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btn_apply"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Open only"
-            android:layout_marginTop="12dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="horizontal"
-            android:layout_marginTop="16dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cancel"
-                android:textAllCaps="false"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_apply"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Apply"
-                android:textAllCaps="false"
-                android:layout_marginStart="8dp"
-                app:backgroundTint="@color/brand_green"
-                android:textColor="@android:color/white"/>
-        </LinearLayout>
+            android:text="Confirm Filter"
+            android:layout_marginStart="12dp"/>
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>
+
+

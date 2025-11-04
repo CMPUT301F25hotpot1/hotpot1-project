@@ -15,7 +15,6 @@
         app:title="Map"
         app:titleTextColor="@android:color/white" />
 
-    <!-- 占位：本页只是跳外部地图；保留空白即可 -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

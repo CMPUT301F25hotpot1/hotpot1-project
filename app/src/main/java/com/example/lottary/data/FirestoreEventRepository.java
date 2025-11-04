@@ -35,7 +35,7 @@ public class FirestoreEventRepository {
 
     // ---------- listeners ----------
     public interface EventsListener { void onChanged(@NonNull List<Event> items); }
-    public interface DocListener { void onChanged(DocumentSnapshot doc); }
+    public interface DocListener    { void onChanged(DocumentSnapshot doc); }
 
     public ListenerRegistration listenCreatedByDevice(
             @NonNull String deviceId, @NonNull EventsListener l) {
@@ -254,16 +254,30 @@ public class FirestoreEventRepository {
     }
 
     private Event map(DocumentSnapshot d) {
-        String id = d.getId();
+        String id    = d.getId();
         String title = safe(d.getString("title"));
-        String city = safe(d.getString("city"));
+        String city  = safe(d.getString("city"));
         String venue = safe(d.getString("venue"));
         boolean full = Boolean.TRUE.equals(d.getBoolean("full"));
 
-        Timestamp ts = d.getTimestamp("startTime");
-        String pretty = ts == null ? "" :
-                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(ts.toDate());
-        return new Event(id, title, city, venue, pretty, full);
+        Timestamp tsStart = d.getTimestamp("startTime");
+        long startMs = tsStart == null ? 0L : tsStart.toDate().getTime();
+        String pretty = tsStart == null ? "" :
+                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+                        .format(tsStart.toDate());
+
+        Timestamp tsRegStart = d.getTimestamp("registerStart");
+        Timestamp tsRegEnd   = d.getTimestamp("registerEnd");
+        long regStartMs = tsRegStart == null ? 0L : tsRegStart.toDate().getTime();
+        long regEndMs   = tsRegEnd   == null ? 0L : tsRegEnd.toDate().getTime();
+
+        boolean geo = Boolean.TRUE.equals(d.getBoolean("geolocationEnabled"));
+        String type = safe(d.getString("type"));
+
+        return new Event(
+                id, title, city, venue, pretty, full,
+                startMs, regStartMs, regEndMs, geo, type
+        );
     }
 
     private static String safe(String s) { return s == null ? "" : s; }
@@ -272,3 +286,5 @@ public class FirestoreEventRepository {
         for (String k : keys) if (!(map.get(k) instanceof List)) map.put(k, new ArrayList<String>());
     }
 }
+
+

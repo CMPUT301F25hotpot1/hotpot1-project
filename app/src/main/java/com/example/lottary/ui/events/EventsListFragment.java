@@ -122,7 +122,6 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
     @Override
     public void onManage(@NonNull Event e) {
         Intent i = new Intent(requireContext(), ManageEventActivity.class);
-        // 使用正确键名（建议 ManageEventActivity 也用相同常量）
         i.putExtra(EditEventActivity.EXTRA_EVENT_ID, e.getId());
         startActivity(i);
     }
@@ -130,7 +129,6 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
     @Override
     public void onEdit(@NonNull Event e) {
         Intent i = new Intent(requireContext(), EditEventActivity.class);
-        // 关键修复：使用 EditEventActivity.EXTRA_EVENT_ID => "event_id"
         i.putExtra(EditEventActivity.EXTRA_EVENT_ID, e.getId());
         startActivity(i);
     }

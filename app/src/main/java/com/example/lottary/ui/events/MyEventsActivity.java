@@ -19,6 +19,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+/**
+ * Merged MyEventsActivity:
+ * - Same as your version and first person's one (they are effectively aligned).
+ * - Keeps bottom navigation to Browse / Notifications.
+ * - Keeps search to filter both tabs.
+ */
 public class MyEventsActivity extends AppCompatActivity {
 
     private Button btnSearch, btnCreate;
@@ -78,6 +84,7 @@ public class MyEventsActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_profile) {
+                // TODO: implement Profile later if needed
                 return true;
             }
             return false;
@@ -91,3 +98,4 @@ public class MyEventsActivity extends AppCompatActivity {
         nav.setSelectedItemId(R.id.nav_my_events);
     }
 }
+
