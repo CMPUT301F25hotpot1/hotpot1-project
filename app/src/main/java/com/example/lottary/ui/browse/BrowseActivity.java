@@ -8,6 +8,8 @@ import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lottary.R;
+import com.example.lottary.ui.events.MyEventsActivity;
+import com.example.lottary.ui.notifications.NotificationsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class BrowseActivity extends AppCompatActivity implements FilterBottomSheet.Listener {
@@ -28,12 +30,42 @@ public class BrowseActivity extends AppCompatActivity implements FilterBottomShe
             if (list != null) list.applyFilter(TextUtils.isEmpty(q) ? "" : q);
         });
 
-        findViewById(R.id.btn_filter).setOnClickListener(v -> FilterBottomSheet.newInstance(opts).show(getSupportFragmentManager(), "filter"));
-        findViewById(R.id.btn_scan_qr).setOnClickListener(v -> startActivity(new Intent(this, QrScanActivity.class)));
+        findViewById(R.id.btn_filter).setOnClickListener(v ->
+                FilterBottomSheet.newInstance(opts).show(getSupportFragmentManager(), "filter"));
+
+        findViewById(R.id.btn_scan_qr).setOnClickListener(v ->
+                startActivity(new Intent(this, QrScanActivity.class)));
 
         BottomNavigationView nav = findViewById(R.id.bottomNav);
         nav.setSelectedItemId(R.id.nav_browse);
-        nav.setOnItemSelectedListener(item -> true);
+        nav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_browse) {
+                return true; // already here
+            } else if (id == R.id.nav_my_events) {
+                Intent i = new Intent(this, MyEventsActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
+                overridePendingTransition(0, 0);
+                return true;
+            } else if (id == R.id.nav_notifications) {
+                Intent i = new Intent(this, NotificationsActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
+                overridePendingTransition(0, 0);
+                return true;
+            } else if (id == R.id.nav_profile) {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BottomNavigationView nav = findViewById(R.id.bottomNav);
+        nav.setSelectedItemId(R.id.nav_browse);
     }
 
     @Override
@@ -42,5 +74,3 @@ public class BrowseActivity extends AppCompatActivity implements FilterBottomShe
         if (list != null) list.applyOptions(o);
     }
 }
-
-

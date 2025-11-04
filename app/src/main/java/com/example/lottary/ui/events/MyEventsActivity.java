@@ -7,6 +7,7 @@ import android.widget.EditText;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -40,7 +41,7 @@ public class MyEventsActivity extends AppCompatActivity {
 
         viewPager.setAdapter(new FragmentStateAdapter(this) {
             @Override public int getItemCount() { return 2; }
-            @Override public androidx.fragment.app.Fragment createFragment(int position) {
+            @Override public Fragment createFragment(int position) {
                 return position == 0 ? joinedFragment : createdFragment;
             }
         });
@@ -58,24 +59,35 @@ public class MyEventsActivity extends AppCompatActivity {
         btnCreate.setOnClickListener(v ->
                 startActivity(new Intent(this, CreateEventActivity.class)));
 
-        // Bottom navigation wired to your menu ids
         BottomNavigationView nav = findViewById(R.id.bottomNav);
         nav.setSelectedItemId(R.id.nav_my_events);
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_browse) {
-                startActivity(new Intent(this, BrowseActivity.class));
+                Intent i = new Intent(this, BrowseActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
+                overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_my_events) {
                 return true; // already here
             } else if (id == R.id.nav_notifications) {
-                startActivity(new Intent(this, NotificationsActivity.class));
+                Intent i = new Intent(this, NotificationsActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
+                overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_profile) {
-                // TODO: open your profile activity if present
                 return true;
             }
             return false;
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BottomNavigationView nav = findViewById(R.id.bottomNav);
+        nav.setSelectedItemId(R.id.nav_my_events);
     }
 }
