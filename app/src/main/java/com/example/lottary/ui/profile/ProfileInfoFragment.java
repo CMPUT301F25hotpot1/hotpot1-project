@@ -1,7 +1,6 @@
 package com.example.lottary.ui.profile;
 
-import static android.content.ContentValues.TAG;
-
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -9,62 +8,39 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link ProfileInfoFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * .
  */
 public class ProfileInfoFragment extends Fragment {
 
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_DEVICEID = "device_demo";
-    private String userDeviceID;
-    private MaterialToolbar topBar;
-    private EditText etName, etEmail, etPhoneNum;
+    private String userDeviceID = "device_demo";
+    private TextView infoName, infoEmail, infoPhoneNum;
     private Button btnEditProfile, btnDeleteProfile;
 
     public ProfileInfoFragment() {
         // Required empty public constructor
     }
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @return A new instance of fragment ProfileInfoFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ProfileInfoFragment newInstance(String param1) {
-        ProfileInfoFragment fragment = new ProfileInfoFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_DEVICEID, param1);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            userDeviceID = getArguments().getString("deviceID");
-            Log.i("deviceID", userDeviceID);
-        }
+
+        Context context = requireContext();
+        // userDeviceID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        Log.i("deviceID2", userDeviceID);
     }
 
     @Override
@@ -79,28 +55,16 @@ public class ProfileInfoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // display user info
-        etName = view.findViewById(R.id.et_name);
-        etEmail = view.findViewById(R.id.et_email);
-        etPhoneNum = view.findViewById(R.id.et_phone_number);
-        topBar = view.findViewById(R.id.top_app_bar);
+        infoName = view.findViewById(R.id.et_name);
+        infoEmail = view.findViewById(R.id.et_email);
+        infoPhoneNum = view.findViewById(R.id.et_phone_number);
 
-        DocumentReference docRef = FirestoreUserRepository.get().hasUser(userDeviceID);
-        docRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                // if device id is in the database, user is new
-                if (document.exists()) {
-                    populate(document);
-                } else {
-                    Log.i("Empty document", "Failed with: ", task.getException());
-                }
-            } else {
-                Log.i("Task failed", "Failed with: ", task.getException());
-            }
-        });
-
+        fetchInfo(userDeviceID);
+        // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
 
         // set button listeners
+
+
         btnEditProfile = view.findViewById(R.id.btn_edit_profile);
         btnEditProfile.setOnClickListener(v ->
                 startActivity(new Intent(getActivity(), EditProfileActivity.class)));
@@ -110,18 +74,42 @@ public class ProfileInfoFragment extends Fragment {
                 startActivity(new Intent(getActivity(), EditProfileActivity.class)));
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
+        fetchInfo(userDeviceID);
+    }
+
     private void populate(DocumentSnapshot d) {
         if (d == null || !d.exists()) return;
 
-        etName.setText(n(d.getString("name")));
-        etEmail.setText(n(d.getString("email")));
-        String phoneNum = n(d.getString("phoneNum"));
+        infoName.setText(d.getString("name"));
+        infoEmail.setText(n(d.getString("email")));
+        String phoneNum = n(d.getString("phoneNumber"));
         if (phoneNum.isEmpty()) {
-            etPhoneNum.setText("Not provided");
+            infoPhoneNum.setText("Not provided");
         }
         else {
-            etPhoneNum.setText(phoneNum);
+            infoPhoneNum.setText(phoneNum);
         }
+    }
+
+    private void fetchInfo(String deviceID) {
+        DocumentReference docRef = FirestoreUserRepository.get().hasUser(deviceID);
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                // if device id is in the database, user is new
+                if (document.exists()) {
+                    populate(document);
+                } else {
+                    Log.i("EmptyDocument", "Failed with: ", task.getException());
+                }
+            } else {
+                Log.i("TaskFailed", "Failed with: ", task.getException());
+            }
+        });
     }
 
     private static String n(String v){ return v == null ? "" : v; }

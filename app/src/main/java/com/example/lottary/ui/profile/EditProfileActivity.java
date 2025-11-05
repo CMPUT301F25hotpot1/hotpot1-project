@@ -29,7 +29,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private String userDeviceID;
 
     private MaterialToolbar topBar;
-    private EditText etName, etEmail, etPhoneNum;
+    private EditText etName, etEmail, etphoneNumber;
     private Button btnEditProfile;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,7 +40,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
         etName = findViewById(R.id.et_name);
         etEmail = findViewById(R.id.et_email);
-        etPhoneNum = findViewById(R.id.et_phone_number);
+        etphoneNumber = findViewById(R.id.et_phone_number);
         topBar = findViewById(R.id.top_app_bar);
         btnEditProfile = findViewById((R.id.btn_edit_profile));
 
@@ -53,14 +53,14 @@ public class EditProfileActivity extends AppCompatActivity {
     private void populate(DocumentSnapshot d) {
         if (d == null || !d.exists()) return;
 
-        etName.setText(n(d.getString("title")));
-        etEmail.setText(n(d.getString("description")));
-        String phoneNum = n(d.getString("phoneNum"));
-        if (phoneNum.isEmpty()) {
-            etPhoneNum.setText("Not provided");
+        etName.setText(n(d.getString("name")));
+        etEmail.setText(n(d.getString("email")));
+        String phoneNumber = n(d.getString("phoneNumber"));
+        if (phoneNumber.isEmpty()) {
+            etphoneNumber.setText("Not provided");
         }
         else {
-            etPhoneNum.setText(phoneNum);
+            etphoneNumber.setText(phoneNumber);
         }
     }
 
@@ -69,9 +69,9 @@ public class EditProfileActivity extends AppCompatActivity {
         else if (!require(etEmail)) return;
 
         Map<String, Object> update = new HashMap<>();
-        update.put("title", etName.getText().toString().trim());
-        update.put("description", etEmail.getText().toString().trim());
-        update.put("phoneNum", etPhoneNum.getText().toString().trim());
+        update.put("name", etName.getText().toString().trim());
+        update.put("email", etEmail.getText().toString().trim());
+        update.put("phoneNumber", etphoneNumber.getText().toString().trim());
         update.put("updatedAt", Timestamp.now());
 
         ProgressDialog pd = new ProgressDialog(this);

@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
@@ -34,7 +33,6 @@ public class FirestoreUserRepository {
 
     // ---------- writes ----------
     public Task<Void> createUser(String deviceID, Map<String, Object> fields) {
-        ensureArrays(fields, "notifyPrefs");
         if (!fields.containsKey("createdAt")) fields.put("createdAt", Timestamp.now());
         return users.document(deviceID).set(fields);
     }
@@ -53,12 +51,24 @@ public class FirestoreUserRepository {
 
 
     // ---------- listeners --------
-    public interface UserListener { void onChanged(@NonNull List<User> items); }
+    public interface UsersListener { void onChanged(@NonNull List<User> items); }
     public interface DocListener    { void onChanged(DocumentSnapshot doc); }
 
-    public ListenerRegistration listenUser(@NonNull String userId, @NonNull DocListener l) {
-        return users.document(userId)
-                .addSnapshotListener((snap, err) -> { if (snap != null) l.onChanged(snap); });
+    public ListenerRegistration listenRecentCreated(@NonNull UsersListener l) {
+        return users.orderBy("createdAt").limit(50)
+                .addSnapshotListener((snap, err) -> {
+                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    l.onChanged(mapList(snap));
+                });
+    }
+
+    public ListenerRegistration listenUser(@NonNull String deviceID, @NonNull DocListener l) {
+        return users.document(deviceID).addSnapshotListener((snap, err) -> {
+            if (snap != null)
+                l.onChanged(snap);
+            else
+                Log.i("EmptyDocument", "Failed with: ", err);
+        });
     }
 
     // ---------- mapping ----------

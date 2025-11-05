@@ -29,6 +29,7 @@
         <activity android:name="com.example.lottary.ui.browse.BrowseActivity" />
         <activity android:name="com.example.lottary.ui.profile.ProfileActivity" />
         <activity android:name="com.example.lottary.ui.profile.CreateProfileActivity" />
+        <activity android:name="com.example.lottary.ui.profile.EditProfileActivity" />
 
         <!-- Launcher -->
         <activity

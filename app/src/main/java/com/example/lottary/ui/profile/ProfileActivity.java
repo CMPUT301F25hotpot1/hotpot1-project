@@ -36,9 +36,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        Bundle bundle = new Bundle();
-        bundle.putString("deviceID", deviceID);
-        Log.i("deviceID", deviceID);
+        Log.i("deviceID1", deviceID);
 
         if (savedInstanceState == null) {
             DocumentReference docSnap = FirestoreUserRepository.get().hasUser(deviceID);
@@ -49,7 +47,7 @@ public class ProfileActivity extends AppCompatActivity {
                     if (document.exists()) {
                         getSupportFragmentManager().beginTransaction()
                                 .setReorderingAllowed(true)
-                                .add(R.id.profile_fragment_container_view, ProfileInfoFragment.class, bundle)
+                                .add(R.id.profile_fragment_container_view, ProfileInfoFragment.class, null)
                                 .commit();
                     } else {
                         getSupportFragmentManager().beginTransaction()
