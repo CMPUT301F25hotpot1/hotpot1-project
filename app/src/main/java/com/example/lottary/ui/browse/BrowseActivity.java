@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.lottary.R;
 import com.example.lottary.ui.events.MyEventsActivity;
 import com.example.lottary.ui.notifications.NotificationsActivity;
+import com.example.lottary.ui.profile.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
@@ -80,7 +81,7 @@ public class BrowseActivity extends AppCompatActivity implements FilterBottomShe
                 overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_profile) {
-                // TODO: start your Profile activity if/when it exists
+                startActivity(new Intent(this, ProfileActivity.class));
                 return true;
             }
             return false;
