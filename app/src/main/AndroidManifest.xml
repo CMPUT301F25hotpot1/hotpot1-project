@@ -22,11 +22,14 @@
         android:theme="@style/Theme.Lottary"
         tools:targetApi="31">
 
-        <!-- Browse / Notifications -->
+        <!-- Browse / Notifications / Profile-->
         <activity android:name="com.example.lottary.ui.browse.EventDetailsActivity" />
         <activity android:name="com.example.lottary.ui.browse.QrScanActivity" />
         <activity android:name="com.example.lottary.ui.notifications.NotificationsActivity" />
         <activity android:name="com.example.lottary.ui.browse.BrowseActivity" />
+        <activity android:name="com.example.lottary.ui.profile.ProfileActivity" />
+        <activity android:name="com.example.lottary.ui.profile.CreateProfileActivity" />
+        <activity android:name="com.example.lottary.ui.profile.EditProfileActivity" />
 
         <!-- Launcher -->
         <activity

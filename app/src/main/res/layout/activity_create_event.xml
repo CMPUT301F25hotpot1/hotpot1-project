@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:title="Create Event"
+            app:title="@string/create_event"
             app:titleTextColor="@android:color/white"
             app:navigationIcon="@drawable/ic_arrow_back_24"/>
     </com.google.android.material.appbar.AppBarLayout>
@@ -40,7 +40,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Title"
+                android:text="@string/hint_title"
                 android:textStyle="bold"
                 android:textSize="16sp"
                 android:layout_marginTop="4dp"/>
@@ -59,7 +59,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Description"
+                android:text="@string/hint_desc"
                 android:textStyle="bold"
                 android:textSize="16sp"
                 android:layout_marginTop="12dp"/>
@@ -269,7 +269,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="16dp"
-                android:text="Create Event"
+                android:text="@string/create_event"
                 android:textAllCaps="false"
                 android:textStyle="bold"
                 android:backgroundTint="#5B3DF5"

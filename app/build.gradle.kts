@@ -41,6 +41,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation("androidx.activity:activity:1.9.3")
 
     val camerax = "1.3.4"
     implementation("androidx.camera:camera-core:$camerax")

@@ -1,12 +1,15 @@
 <resources>
     <string name="app_name">lottary</string>
 
-    <!-- Bottom nav labels -->
+    <!-- Bottom nav labels / Top screen title -->
     <string name="browse">Browse</string>
     <string name="my_events">My Events</string>
     <string name="notifications">Notifications</string>
     <string name="profile">Profile</string>
     <string name="create_event">Create Event</string>
+    <string name="edit_event">Edit Event</string>
+    <string name="create_profile">Create Profile</string>
+    <string name="edit_profile">Edit Profile</string>
 
     <!-- Hints -->
     <string name="hint_title">Title</string>
@@ -18,6 +21,9 @@
     <string name="hint_reg_start">Register Start (yyyy-MM-dd)</string>
     <string name="hint_reg_end">Register End (yyyy-MM-dd)</string>
     <string name="enable_geo">Enable Geolocation</string>
+
+    <string name="hint_email">Email</string>
+    <string name="hint_phone_num">Phone number (optional)</string>
 
     <!-- Filter -->
     <string name="filter_open_only">Open events only</string>
@@ -41,5 +47,11 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="apply">Apply</string>
+
+    <!-- Empty instructions -->
+    <string name="welcome_new_users">Welcome to EventLottery!</string>
+    <string name="instructions_new_user">It seems like no profile is linked to this device.\nCreate a profile to join event waitlists,\ncreate events, and more.</string>
+    <string name="name">Name</string>
+    <string name="delete_profile">Delete Profile</string>
 </resources>
 
