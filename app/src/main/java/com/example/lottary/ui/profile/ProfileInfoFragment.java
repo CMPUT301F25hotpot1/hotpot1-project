@@ -39,7 +39,7 @@ public class ProfileInfoFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         Context context = requireContext();
-        // userDeviceID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        userDeviceID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         Log.i("deviceID2", userDeviceID);
     }
 
@@ -55,9 +55,9 @@ public class ProfileInfoFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // display user info
-        infoName = view.findViewById(R.id.et_name);
-        infoEmail = view.findViewById(R.id.et_email);
-        infoPhoneNum = view.findViewById(R.id.et_phone_number);
+        infoName = view.findViewById(R.id.user_name);
+        infoEmail = view.findViewById(R.id.user_email);
+        infoPhoneNum = view.findViewById(R.id.user_phone_num);
 
         fetchInfo(userDeviceID);
         // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
