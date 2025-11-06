@@ -2,10 +2,13 @@ package com.example.lottary.ui.events.manage;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.Gravity;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.ComponentActivity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,48 +18,72 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreEventRepository;
+import com.example.lottary.ui.events.edit.EditEventActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
-/**
- * Manage Event screen: tabs for All/Chosen/Signed-Up/Cancelled and actions.
- * Requires Intent extra "event_id".
- */
+import java.text.DateFormat;
+
 public class ManageEventActivity extends AppCompatActivity {
 
     public static final String EXTRA_EVENT_ID = "event_id";
 
     private String eventId;
-    private TabLayout tabLayout;
-    private ViewPager2 pager;
-    private MaterialToolbar topBar;
+    private ListenerRegistration reg;
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    private MaterialToolbar topBar;
+    private TextView txtTitle;
+    private TabLayout tabLayout;
+    private ViewPager2 viewPager;
+    private Button btnDraw, btnNotify, btnExport, btnQr, btnMap;
+
+    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_event);
 
-        // 顶部返回
-        topBar = findViewById(R.id.top_app_bar);
-        topBar.setNavigationOnClickListener(v -> finish());
-
-        eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
-        if (eventId == null || eventId.isEmpty()) {
+        // 取 eventId（兼容两种 key）
+        eventId = getIntent().getStringExtra(EditEventActivity.EXTRA_EVENT_ID);
+        if (TextUtils.isEmpty(eventId)) {
+            eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
+        }
+        if (TextUtils.isEmpty(eventId)) {
             toast("Missing event_id");
             finish();
             return;
         }
 
-        TextView title = findViewById(R.id.txt_title);
+        // 绑定视图
+        topBar    = findViewById(R.id.top_app_bar);
+        txtTitle  = findViewById(R.id.txt_title);
         tabLayout = findViewById(R.id.tab_layout);
-        pager = findViewById(R.id.view_pager);
+        viewPager = findViewById(R.id.view_pager);
+        btnDraw   = findViewById(R.id.btn_draw);
+        btnNotify = findViewById(R.id.btn_notify);
+        btnExport = findViewById(R.id.btn_export);
+        btnQr     = findViewById(R.id.btn_qr);
+        btnMap    = findViewById(R.id.btn_map);
 
-        // Tabs + ViewPager
-        pager.setAdapter(new FragAdapter(this, eventId));
-        new TabLayoutMediator(tabLayout, pager, (tab, pos) -> {
+        if (topBar != null) topBar.setNavigationOnClickListener(v -> finish());
+
+        // Tabs + ViewPager2（占位 Fragment，确保可编译运行）
+        viewPager.setAdapter(new FragmentStateAdapter(this) {
+            @NonNull @Override public Fragment createFragment(int position) {
+                String title;
+                switch (position) {
+                    case 0: title = "All Entrants"; break;
+                    case 1: title = "Chosen Entrants"; break;
+                    case 2: title = "Signed-up Entrants"; break;
+                    default: title = "Cancelled Entrants";
+                }
+                return PlaceholderFragment.newInstance(title);
+            }
+            @Override public int getItemCount() { return 4; }
+        });
+        new TabLayoutMediator(tabLayout, viewPager, (tab, pos) -> {
             switch (pos) {
                 case 0: tab.setText("All Entrants"); break;
                 case 1: tab.setText("Chosen Entrants"); break;
@@ -65,58 +92,65 @@ public class ManageEventActivity extends AppCompatActivity {
             }
         }).attach();
 
-        // 标题跟随事件
-        FirestoreEventRepository.get().listenEvent(eventId, d -> {
-            String t = d != null ? d.getString("title") : null;
-            String displayTitle = (t == null || t.isEmpty()) ? "Manage Event" : t;
-            title.setText(displayTitle);
-            topBar.setTitle(displayTitle);
+        // 监听事件文档 → 更新标题
+        reg = FirestoreEventRepository.get().listenEvent(eventId, this::bindEventHeader);
+
+        // 1) 抽签并发送“已选中”通知
+        btnDraw.setOnClickListener(v -> {
+            btnDraw.setEnabled(false);
+            FirestoreEventRepository.get()
+                    .drawWinnersAndNotify(eventId,
+                            "Congratulations! You are chosen. Please sign up to secure your spot.")
+                    .addOnSuccessListener(x -> {
+                        toast("Winners drawn & notifications sent.");
+                        btnDraw.setEnabled(true);
+                    })
+                    .addOnFailureListener(e -> {
+                        toast("Failed: " + e.getMessage());
+                        btnDraw.setEnabled(true);
+                    });
         });
 
-        // 按钮
-        Button btnDraw   = findViewById(R.id.btn_draw);
-        Button btnNotify = findViewById(R.id.btn_notify);
-        Button btnExport = findViewById(R.id.btn_export);
-        Button btnQr     = findViewById(R.id.btn_qr);
-        Button btnMap    = findViewById(R.id.btn_map);
+        // 2) 进入“发送通知”页面（若未实现则提示）
+        btnNotify.setOnClickListener(v ->
+                startIfExists("com.example.lottary.ui.events.manage.SendNotificationsActivity"));
 
-        // 1) Draw Winners：弹出对话框（填满容量/自定义数量）
-        btnDraw.setOnClickListener(v ->
-                DrawWinnersDialog.newInstance(eventId)
-                        .show(getSupportFragmentManager(), "draw_winners"));
+        // 3) 导出 CSV（一次性读取 -> 构造 CSV -> 系统分享）
+        btnExport.setOnClickListener(v ->
+                com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                        .collection("events").document(eventId).get()
+                        .addOnSuccessListener(this::shareCsvFromDoc)
+                        .addOnFailureListener(e -> toast("Export failed: " + e.getMessage())));
 
-        // 2) Send Notification：跳转到发送页
-        btnNotify.setOnClickListener(v -> {
-            Intent i = new Intent(this, SendNotificationsActivity.class);
-            i.putExtra(EXTRA_EVENT_ID, eventId);
-            startActivity(i);
-        });
+        // 4) 查看二维码
+        btnQr.setOnClickListener(v ->
+                startIfExists("com.example.lottary.ui.events.manage.QrCodeActivity"));
 
-        // 3) Export CSV：一次性拉取文档→生成 CSV→分享
-        btnExport.setOnClickListener(v -> exportCsvOnce());
-
-        // 4) View QR Code：进入二维码页（展示 eventId & 标题的二维码/信息）
-        btnQr.setOnClickListener(v -> {
-            Intent i = new Intent(this, QrCodeActivity.class);
-            i.putExtra(EXTRA_EVENT_ID, eventId);
-            startActivity(i);
-        });
-
-        // 5) View Map：进入地图页（若未配置坐标，则给出提示）
-        btnMap.setOnClickListener(v -> {
-            Intent i = new Intent(this, MapActivity.class);
-            i.putExtra(EXTRA_EVENT_ID, eventId);
-            startActivity(i);
-        });
+        // 5) 查看地图
+        btnMap.setOnClickListener(v ->
+                startIfExists("com.example.lottary.ui.events.manage.MapActivity"));
     }
 
-    private void exportCsvOnce() {
-        FirebaseFirestore.getInstance()
-                .collection("events")
-                .document(eventId)
-                .get()
-                .addOnSuccessListener(this::shareCsvFromDoc)
-                .addOnFailureListener(e -> toast("Export failed: " + e.getMessage()));
+    @Override protected void onDestroy() {
+        super.onDestroy();
+        if (reg != null) { reg.remove(); reg = null; }
+    }
+
+    // —— UI 绑定 —— //
+    private void bindEventHeader(@Nullable DocumentSnapshot d) {
+        if (d == null || !d.exists()) return;
+
+        String title = val(d.get("title"));
+        if (txtTitle != null) txtTitle.setText(TextUtils.isEmpty(title) ? "Manage Event" : title);
+        if (topBar != null)  topBar.setTitle(TextUtils.isEmpty(title) ? "Manage Event" : title);
+
+        // 可选：把开始时间附加到标题后显示（如果你希望）
+        Timestamp ts = d.getTimestamp("startTime");
+        if (ts != null && txtTitle != null) {
+            String pretty = DateFormat.getDateTimeInstance(
+                    DateFormat.MEDIUM, DateFormat.SHORT).format(ts.toDate());
+            txtTitle.setText((TextUtils.isEmpty(title) ? "Manage Event" : title) + "  ·  " + pretty);
+        }
     }
 
     private void shareCsvFromDoc(@NonNull DocumentSnapshot d) {
@@ -128,17 +162,41 @@ public class ManageEventActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(send, "Export CSV"));
     }
 
-    private void toast(String s) { Toast.makeText(this, s, Toast.LENGTH_SHORT).show(); }
+    // 反射启动可选 Activity（不存在则 Toast）
+    private void startIfExists(@NonNull String fqcn) {
+        try {
+            Class<?> cls = Class.forName(fqcn);
+            Intent i = new Intent(this, cls);
+            i.putExtra(EXTRA_EVENT_ID, eventId);
+            startActivity(i);
+        } catch (ClassNotFoundException e) {
+            toast("Screen not implemented yet.");
+        }
+    }
 
-    // Adapter for tab fragments
-    static class FragAdapter extends FragmentStateAdapter {
-        private final String eventId;
-        FragAdapter(@NonNull AppCompatActivity a, @NonNull String eventId) {
-            super(a); this.eventId = eventId;
+    private static String val(Object o){ return o == null ? "" : o.toString(); }
+    private void toast(String s){
+        Toast t = Toast.makeText(this, s, Toast.LENGTH_SHORT);
+        t.setGravity(Gravity.CENTER, 0, 0);
+        t.show();
+    }
+
+    // 一个极简占位 Fragment，先让页面跑起来
+    public static class PlaceholderFragment extends Fragment {
+        private static final String ARG_TITLE = "t";
+        public static PlaceholderFragment newInstance(String title){
+            Bundle b = new Bundle(); b.putString(ARG_TITLE, title);
+            PlaceholderFragment f = new PlaceholderFragment(); f.setArguments(b); return f;
         }
-        @NonNull @Override public Fragment createFragment(int pos) {
-            return EntrantsListFragment.newInstance(eventId, pos); // 0 All,1 Chosen,2 Signed,3 Cancelled
+        @Nullable @Override
+        public android.view.View onCreateView(@NonNull android.view.LayoutInflater inflater,
+                                              @Nullable android.view.ViewGroup container,
+                                              @Nullable Bundle savedInstanceState) {
+            android.widget.TextView tv = new android.widget.TextView(requireContext());
+            tv.setText(getArguments() == null ? "" : getArguments().getString(ARG_TITLE, ""));
+            tv.setGravity(Gravity.CENTER);
+            tv.setTextSize(16);
+            return tv;
         }
-        @Override public int getItemCount() { return 4; }
     }
 }

@@ -23,7 +23,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     public interface Listener {
         void onSignUp(@NonNull NotificationItem item);
         void onDecline(@NonNull NotificationItem item);
-        void onOverflow(@NonNull NotificationItem item);
+        void onOverflow(@NonNull View anchor, @NonNull NotificationItem item);
     }
 
     private final List<NotificationItem> items = new ArrayList<>();
@@ -63,11 +63,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
         h.btnSign.setOnClickListener(v -> { if (listener != null) listener.onSignUp(n); });
         h.btnDecline.setOnClickListener(v -> { if (listener != null) listener.onDecline(n); });
-        h.btnOverflow.setOnClickListener(v -> { if (listener != null) listener.onOverflow(n); });
+        h.btnOverflow.setOnClickListener(v -> { if (listener != null) listener.onOverflow(h.btnOverflow, n); });
     }
 
-    @Override
-    public int getItemCount() { return items.size(); }
+    @Override public int getItemCount() { return items.size(); }
 
     static class Holder extends RecyclerView.ViewHolder {
         ImageView icon;
@@ -86,3 +85,4 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
     }
 }
+

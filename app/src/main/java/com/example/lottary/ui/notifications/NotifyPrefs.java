@@ -1,7 +1,6 @@
 package com.example.lottary.ui.notifications;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 public class NotifyPrefs {
     private static final String P = "notify_prefs";
@@ -22,5 +21,11 @@ public class NotifyPrefs {
     public static void setOrganizerOptedOut(Context c, String orgId, boolean v) {
         c.getSharedPreferences(P, Context.MODE_PRIVATE).edit().putBoolean("org_"+orgId, v).apply();
     }
+
+    /** 一键清空所有静音设置（调试/误触恢复用） */
+    public static void resetAll(Context c) {
+        c.getSharedPreferences(P, Context.MODE_PRIVATE).edit().clear().apply();
+    }
 }
+
 

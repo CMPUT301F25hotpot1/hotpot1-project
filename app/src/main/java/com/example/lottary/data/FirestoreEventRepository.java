@@ -3,6 +3,7 @@ package com.example.lottary.data;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -11,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -78,6 +80,9 @@ public class FirestoreEventRepository {
         return events.document(eventId).set(fields, SetOptions.merge());
     }
 
+    /**
+     * 仅抽签（原实现，保留兼容）
+     */
     public Task<Void> drawWinners(@NonNull String eventId, int maxToDraw) {
         DocumentReference ref = events.document(eventId);
         return db.runTransaction(tr -> {
@@ -110,6 +115,81 @@ public class FirestoreEventRepository {
         });
     }
 
+    /**
+     * 方案C：抽签 + 自动发送“已选中”通知到 notifications 集合（type="selected"）
+     * - message 可自定义；为 null/空时会给一个默认消息
+     * - organizerId 和 eventTitle 会从 event 文档里自动读取（字段：creatorDeviceId / title）
+     */
+    public Task<Void> drawWinnersAndNotify(@NonNull String eventId, String message) {
+        DocumentReference ref = events.document(eventId);
+
+        // 先事务：抽签并更新 chosen，返回需要发通知的 winners + 元信息
+        return db.runTransaction(tr -> {
+            DocumentSnapshot d = tr.get(ref);
+            if (!d.exists()) return new DrawResult(); // 空
+
+            List<String> waiting = strList(d.get("waitingList"));
+            List<String> chosen  = strList(d.get("chosen"));
+            List<String> signed  = strList(d.get("signedUp"));
+            List<String> cancel  = strList(d.get("cancelled"));
+
+            Number capNum = (Number) d.get("capacity");
+            int capacity = capNum == null ? 0 : capNum.intValue();
+
+            int remaining = LotterySampler.capacityRemaining(capacity, signed.size());
+            int toDraw = Math.max(0, remaining);
+
+            Set<String> taken = new HashSet<>();
+            taken.addAll(chosen); taken.addAll(signed); taken.addAll(cancel);
+
+            List<String> winners = LotterySampler.sampleWinners(
+                    waiting, taken, toDraw, System.currentTimeMillis());
+
+            if (!winners.isEmpty()) {
+                List<String> newChosen = new ArrayList<>(chosen);
+                newChosen.addAll(winners);
+                tr.update(ref, "chosen", newChosen);
+            }
+
+            DrawResult res = new DrawResult();
+            res.winners = winners;
+            res.organizerId = str(d.get("creatorDeviceId"));
+            res.eventTitle  = str(d.get("title"));
+            res.eventId     = eventId;
+            return res;
+        }).continueWithTask(t -> {
+            if (!t.isSuccessful()) {
+                Exception e = t.getException();
+                return Tasks.forException(e == null ? new RuntimeException("Transaction failed") : e);
+            }
+
+            DrawResult r = t.getResult();
+            if (r == null || r.winners == null || r.winners.isEmpty()) {
+                return Tasks.forResult(null);
+            }
+
+            String finalMsg = (message == null || message.trim().isEmpty())
+                    ? "Congratulations! You are selected. Please sign up to secure your spot."
+                    : message.trim();
+
+            WriteBatch batch = db.batch();
+            CollectionReference notifs = db.collection("notifications");
+
+            for (String rid : r.winners) {
+                Map<String, Object> doc = new HashMap<>();
+                doc.put("recipientId", rid);
+                doc.put("eventId", r.eventId);
+                doc.put("eventTitle", r.eventTitle);
+                doc.put("organizerId", r.organizerId);
+                doc.put("type", "selected");
+                doc.put("message", finalMsg);
+                doc.put("sentAt", Timestamp.now());
+                batch.set(notifs.document(), doc);
+            }
+            return batch.commit();
+        });
+    }
+
     // ---------- helpers ----------
     @SuppressWarnings("unchecked")
     private static List<String> strList(Object o) {
@@ -120,6 +200,8 @@ public class FirestoreEventRepository {
         }
         return new ArrayList<>();
     }
+
+    private static String str(Object o){ return o == null ? "" : o.toString(); }
 
     // user accepts invitation (moves into signedUp, removes from others)
     public Task<Void> signUp(@NonNull String eventId, @NonNull String deviceId) {
@@ -284,6 +366,14 @@ public class FirestoreEventRepository {
 
     private static void ensureArrays(Map<String, Object> map, String... keys) {
         for (String k : keys) if (!(map.get(k) instanceof List)) map.put(k, new ArrayList<String>());
+    }
+
+    // transaction result carrier for drawWinnersAndNotify
+    private static class DrawResult {
+        List<String> winners = new ArrayList<>();
+        String organizerId = "";
+        String eventTitle  = "";
+        String eventId     = "";
     }
 }
 
