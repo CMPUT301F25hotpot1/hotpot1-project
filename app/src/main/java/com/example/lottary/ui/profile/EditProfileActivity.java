@@ -44,8 +44,11 @@ public class EditProfileActivity extends AppCompatActivity {
         topBar = findViewById(R.id.top_app_bar);
         btnEditProfile = findViewById((R.id.btn_edit_profile));
 
+        FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
+
         // listener
         topBar.setNavigationOnClickListener(v -> finish());
+
 
         btnEditProfile.setOnClickListener(v -> saveChanges());
         }
@@ -55,13 +58,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
         etName.setText(n(d.getString("name")));
         etEmail.setText(n(d.getString("email")));
-        String phoneNumber = n(d.getString("phoneNumber"));
-        if (phoneNumber.isEmpty()) {
-            etphoneNumber.setText("Not provided");
-        }
-        else {
-            etphoneNumber.setText(phoneNumber);
-        }
+        etphoneNumber.setText(n(d.getString("phoneNumber")));
     }
 
     private void saveChanges() {

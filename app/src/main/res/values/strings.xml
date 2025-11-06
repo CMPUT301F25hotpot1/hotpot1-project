@@ -53,5 +53,6 @@
     <string name="instructions_new_user">It seems like no profile is linked to this device.\nCreate a profile to join event waitlists,\ncreate events, and more.</string>
     <string name="name">Name</string>
     <string name="delete_profile">Delete Profile</string>
+    <string name="delete">Delete</string>
 </resources>
 

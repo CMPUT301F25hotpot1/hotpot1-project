@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import android.provider.Settings;
@@ -15,9 +16,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -31,6 +35,8 @@ public class ProfileInfoFragment extends Fragment {
     private TextView infoName, infoEmail, infoPhoneNum;
     private Button btnEditProfile, btnDeleteProfile;
 
+    private Context context;
+
     public ProfileInfoFragment() {
         // Required empty public constructor
     }
@@ -38,7 +44,8 @@ public class ProfileInfoFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Context context = requireContext();
+        context = requireContext();
+
         userDeviceID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         Log.i("deviceID2", userDeviceID);
     }
@@ -63,15 +70,12 @@ public class ProfileInfoFragment extends Fragment {
         // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
 
         // set button listeners
-
-
         btnEditProfile = view.findViewById(R.id.btn_edit_profile);
         btnEditProfile.setOnClickListener(v ->
                 startActivity(new Intent(getActivity(), EditProfileActivity.class)));
 
         btnDeleteProfile = view.findViewById(R.id.btn_delete_profile);
-        btnDeleteProfile.setOnClickListener(v ->
-                startActivity(new Intent(getActivity(), EditProfileActivity.class)));
+        btnDeleteProfile.setOnClickListener(v -> warnBeforeDelete());
     }
 
     @Override
@@ -110,6 +114,36 @@ public class ProfileInfoFragment extends Fragment {
                 Log.i("TaskFailed", "Failed with: ", task.getException());
             }
         });
+    }
+
+    private void warnBeforeDelete() {
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_delete_profile, null, false);
+
+        final AlertDialog dialog = new MaterialAlertDialogBuilder(context)
+                .setView(view)
+                .create();
+
+        MaterialButton btnYes = view.findViewById(R.id.btn_yes);
+        MaterialButton btnNo  = view.findViewById(R.id.btn_no);
+
+        btnNo.setOnClickListener(v -> dialog.dismiss());
+        btnYes.setOnClickListener(v -> {
+            btnYes.setEnabled(false);
+            btnNo.setEnabled(false);
+            FirestoreUserRepository.get().deleteUser(userDeviceID)
+                    .addOnSuccessListener(ref -> {
+                        Toast.makeText(context, "Profile deleted", Toast.LENGTH_SHORT).show();
+                        Bundle mode = new Bundle();
+                        mode.putString("bundleKey", "New User");
+                        getParentFragmentManager().setFragmentResult("requestKey", mode);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(context, "Deletion failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+            dialog.dismiss();
+
+        });
+        dialog.show();
     }
 
     private static String n(String v){ return v == null ? "" : v; }
