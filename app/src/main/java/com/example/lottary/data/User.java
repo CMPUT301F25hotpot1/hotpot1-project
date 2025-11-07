@@ -3,11 +3,17 @@ package com.example.lottary.data;
 import com.example.lottary.ui.notifications.NotifyPrefs;
 
 public class User {
+
     private String name;
     private String email;
     private String phoneNum;
     private String deviceID;
     private NotifyPrefs notifyPrefs;
+
+    // ✅ REQUIRED by Firestore — otherwise fields stay NULL
+    public User() {
+        this.notifyPrefs = new NotifyPrefs();
+    }
 
     public User(String name, String email, String phoneNum, String deviceID) {
         this.name = name;
@@ -44,13 +50,8 @@ public class User {
     public String getDeviceID() {
         return deviceID;
     }
+
     public String getId() {
         return deviceID;
     }
-
-
-
-
-
 }
-

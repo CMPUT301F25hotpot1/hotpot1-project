@@ -31,9 +31,13 @@ public class FirestoreUserRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection("users");
 
-    // ---------- writes ----------
+    // ============================================================
+    // ✅ WRITES
+    // ============================================================
+
     public Task<Void> createUser(String deviceID, Map<String, Object> fields) {
-        if (!fields.containsKey("createdAt")) fields.put("createdAt", Timestamp.now());
+        if (!fields.containsKey("createdAt"))
+            fields.put("createdAt", Timestamp.now());
         return users.document(deviceID).set(fields);
     }
 
@@ -49,7 +53,10 @@ public class FirestoreUserRepository {
         return users.document(deviceID);
     }
 
-    // ---------- listeners ----------
+    // ============================================================
+    // ✅ LISTENERS
+    // ============================================================
+
     public interface UsersListener { void onChanged(@NonNull List<User> items); }
     public interface DocListener    { void onChanged(DocumentSnapshot doc); }
 
@@ -65,15 +72,19 @@ public class FirestoreUserRepository {
     }
 
     public ListenerRegistration listenUser(@NonNull String deviceID, @NonNull DocListener l) {
-        return users.document(deviceID).addSnapshotListener((snap, err) -> {
-            if (snap != null)
-                l.onChanged(snap);
-            else
-                Log.i("EmptyDocument", "Failed with: ", err);
-        });
+        return users.document(deviceID)
+                .addSnapshotListener((snap, err) -> {
+                    if (snap != null)
+                        l.onChanged(snap);
+                    else
+                        Log.i("EmptyDocument", "Failed with: ", err);
+                });
     }
 
-    // ---------- mapping ----------
+    // ============================================================
+    // ✅ MAPPING USERS
+    // ============================================================
+
     private List<User> mapList(QuerySnapshot snap) {
         if (snap == null || snap.isEmpty()) return Collections.emptyList();
         List<User> list = new ArrayList<>();
@@ -82,27 +93,28 @@ public class FirestoreUserRepository {
     }
 
     private User map(DocumentSnapshot d) {
-        String deviceID = safe(d.getString("userDeviceID"));
-        String name = safe(d.getString("name"));
-        String email = safe(d.getString("email"));
-        String phone_num = safe(d.getString("phoneNumber"));
+        // ✅ Must match Firestore field names EXACTLY
+        String deviceID = safe(d.getString("userDeviceId"));
+        String name     = safe(d.getString("name"));
+        String email    = safe(d.getString("email"));
+        String phone    = safe(d.getString("phoneNumber"));
 
+        // ✅ Correct parameter order for your User(name, email, phoneNum, deviceID)
         return new User(
-                deviceID, name, email, phone_num
+                name,
+                email,
+                phone,
+                deviceID
         );
     }
 
-    private static String safe(String s) { return s == null ? "" : s; }
-
-    private static void ensureArrays(Map<String, Object> map, String... keys) {
-        for (String k : keys)
-            if (!(map.get(k) instanceof List))
-                map.put(k, new ArrayList<String>());
+    private static String safe(String s) {
+        return s == null ? "" : s;
     }
 
-    // -----------------------------------------------------------
-    // ✅ ✅ ✅ ADDED METHODS FOR ADMIN USERS PAGE (NO CHANGES ABOVE)
-    // -----------------------------------------------------------
+    // ============================================================
+    // ✅ ADMIN USERS PAGE
+    // ============================================================
 
     // Load all users once
     public void getAllUsers(@NonNull UsersListener callback) {
@@ -115,7 +127,7 @@ public class FirestoreUserRepository {
         });
     }
 
-    // Search users by name prefix
+    // Search users by name
     public void searchUsers(@NonNull String keyword, @NonNull UsersListener callback) {
         users.whereGreaterThanOrEqualTo("name", keyword)
                 .whereLessThanOrEqualTo("name", keyword + "\uf8ff")

@@ -81,7 +81,6 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
         void bind(Event e) {
 
             title.setText(e.getTitle());
-            city.setText(e.getCity() + ", " + e.getProvince());
             time.setText(e.getPrettyTime());
             venue.setText(e.getVenue());
 

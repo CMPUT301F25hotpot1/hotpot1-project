@@ -57,8 +57,6 @@
         <activity android:name="com.example.lottary.ui.admin.AdminEventsActivity" />
         <activity android:name="com.example.lottary.ui.admin.AdminUsersActivity" />
         <activity android:name="com.example.lottary.ui.admin.AdminNotificationsActivity" />
-
-        <!-- ✅✅✅ 你缺的！！ -->
         <activity android:name="com.example.lottary.ui.admin.AdminProfileActivity" />
 
         <activity
@@ -71,13 +69,17 @@
             android:exported="false"
             android:label="Image" />
 
-        <!-- 🆕 仅新增：图2/图3用的详情页（与 ImageViewerActivity 并存，不修改原有） -->
         <activity
             android:name=".ui.admin.ImageDetailActivity"
             android:exported="false"
             android:label="Image"
             android:windowSoftInputMode="adjustPan" />
 
+        <!-- ✅✅✅ FIXED: Missing Notification Logs Activity -->
+        <activity
+            android:name="com.example.lottary.ui.admin.NotificationLogsActivity"
+            android:exported="false"
+            android:label="Logs" />
 
     </application>
 </manifest>

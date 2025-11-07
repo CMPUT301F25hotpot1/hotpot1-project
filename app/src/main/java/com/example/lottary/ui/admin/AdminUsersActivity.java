@@ -17,6 +17,7 @@ import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
 import com.example.lottary.data.User;
 import com.example.lottary.ui.admin.adapters.AdminUsersAdapter;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,16 +78,59 @@ public class AdminUsersActivity extends AppCompatActivity {
         // ✅ 搜索按钮
         searchBtn.setOnClickListener(v -> applySearch());
 
-        // ✅ 输入框实时搜索（可关闭）
+        // ✅ 输入框实时搜索
         searchBar.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                applySearch();
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { applySearch(); }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        // ✅ 设置底部导航
+        setupBottomNav();
+    }
+
+    // ----------------------------------------------------------------
+    // ✅ BottomNavigation 完整工作版本
+    // ----------------------------------------------------------------
+    private void setupBottomNav() {
+        BottomNavigationView nav = findViewById(R.id.bottom_nav);
+
+        // ✅ 高亮当前 tab（Users）
+        nav.setSelectedItemId(R.id.nav_admin_users);
+
+        nav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_admin_events) {
+                startActivity(new Intent(this, AdminEventsActivity.class));
+                overridePendingTransition(0,0);
+                return true;
             }
-            @Override public void afterTextChanged(Editable s) { }
+
+            if (id == R.id.nav_admin_users) {
+                // Already here
+                return true;
+            }
+
+            if (id == R.id.nav_admin_images) {
+                startActivity(new Intent(this, AdminImagesActivity.class));
+                overridePendingTransition(0,0);
+                return true;
+            }
+
+            if (id == R.id.nav_admin_dashboard) {
+                startActivity(new Intent(this, AdminDashboardActivity.class));
+                overridePendingTransition(0,0);
+                return true;
+            }
+
+            return false;
         });
     }
 
+    // ----------------------------------------------------------------
+    // ✅ 搜索过滤逻辑
+    // ----------------------------------------------------------------
     private void applySearch() {
         String keyword = searchBar.getText().toString().trim().toLowerCase();
 

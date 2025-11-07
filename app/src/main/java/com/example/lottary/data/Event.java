@@ -5,7 +5,6 @@ public class Event {
     private final String id;
     private final String title;
     private final String city;
-    private final String province;   // ✅ 新增
     private final String venue;
     private final String prettyStartTime;
     private final boolean full;
@@ -16,32 +15,78 @@ public class Event {
     private final boolean geolocationEnabled;
     private final String type;
 
-    private final String imageUrl;   // ✅ 新增
+    // 新增字段
     private final String status;
+    private final String imageUrl;
 
-    // ✅ 原来构造函数（兼容旧代码）
+    // ==========================================================
+    // ✅ ✅ ✅ 旧版兼容构造函数 (你的旧代码全部用这个)
+    // ==========================================================
     public Event(
             String id, String title, String city, String venue,
             String prettyStartTime, boolean full,
             long startTimeMs, long registerStartMs, long registerEndMs,
             boolean geolocationEnabled, String type
     ) {
-        this(id, title, city, "", venue, prettyStartTime, full,
+        this(id, title, city, venue, prettyStartTime, full,
                 startTimeMs, registerStartMs, registerEndMs,
-                geolocationEnabled, type, full ? "Full" : "Open", null);
+                geolocationEnabled, type,
+                full ? "Full" : "Open",
+                "");  // imageUrl 默认空
     }
 
-    // ✅ 完整构造函数（推荐使用）
+    // ✅ 旧版+status，仍保留兼容
     public Event(
-            String id, String title, String city, String province, String venue,
+            String id, String title, String city, String venue,
             String prettyStartTime, boolean full,
             long startTimeMs, long registerStartMs, long registerEndMs,
-            boolean geolocationEnabled, String type, String status, String imageUrl
+            boolean geolocationEnabled, String type,
+            String status
+    ) {
+        this(id, title, city, venue, prettyStartTime, full,
+                startTimeMs, registerStartMs, registerEndMs,
+                geolocationEnabled, type,
+                status, "");
+    }
+
+    // ==========================================================
+    // ✅ ✅ ✅ 新版（带 imageUrl，但你不一定用）
+    // ==========================================================
+    public Event(
+            String id,
+            String title,
+            String city,
+            String venue,
+            String prettyStartTime,
+            boolean full,
+            Long startTimeMs,
+            Long registerStartMs,
+            Long registerEndMs,
+            boolean geolocationEnabled,
+            String type,
+            String imageUrl
+    )
+    {
+        this(id, title, city, venue, prettyStartTime, full,
+                startTimeMs, registerStartMs, registerEndMs,
+                geolocationEnabled, type,
+                full ? "Full" : "Open",
+                imageUrl);
+    }
+
+    // ==========================================================
+    // ✅ ✅ ✅ 最终主构造（所有字段）
+    // ==========================================================
+    public Event(
+            String id, String title, String city, String venue,
+            String prettyStartTime, boolean full,
+            long startTimeMs, long registerStartMs, long registerEndMs,
+            boolean geolocationEnabled, String type,
+            String status, String imageUrl
     ) {
         this.id = id;
         this.title = title == null ? "" : title;
         this.city = city == null ? "" : city;
-        this.province = province == null ? "" : province;  // ✅
         this.venue = venue == null ? "" : venue;
         this.prettyStartTime = prettyStartTime == null ? "" : prettyStartTime;
         this.full = full;
@@ -51,25 +96,30 @@ public class Event {
         this.registerEndMs = registerEndMs;
         this.geolocationEnabled = geolocationEnabled;
         this.type = type == null ? "" : type;
+
         this.status = status == null ? "" : status;
-        this.imageUrl = imageUrl;    // ✅
+        this.imageUrl = imageUrl == null ? "" : imageUrl;
     }
 
-    // ✅ Getters
+    // ==========================================================
+    // ✅ Getters（保持你的旧代码完全兼容）
+    // ==========================================================
     public String getId() { return id; }
     public String getTitle() { return title; }
     public String getCity() { return city; }
-    public String getProvince() { return province; }
     public String getVenue() { return venue; }
     public String getPrettyStartTime() { return prettyStartTime; }
     public boolean isFull() { return full; }
-    public String getStatus() { return status; }
-    public String getImageUrl() { return imageUrl; }
-    public String getPrettyTime() { return prettyStartTime; }
 
     public long getStartTimeMs() { return startTimeMs; }
     public long getRegisterStartMs() { return registerStartMs; }
     public long getRegisterEndMs() { return registerEndMs; }
     public boolean isGeolocationEnabled() { return geolocationEnabled; }
     public String getType() { return type; }
+
+    public String getStatus() { return status; }
+    public String getImageUrl() { return imageUrl; }
+
+    // ✅ 你旧代码使用的别名
+    public String getPrettyTime() { return prettyStartTime; }
 }
