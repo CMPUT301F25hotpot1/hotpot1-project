@@ -1,100 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
+    android:padding="24dp">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Admin Profile"
-        android:textSize="28sp"
-        android:textColor="@android:color/black"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/labelName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_marginTop="30dp"
-        app:layout_constraintTop_toBottomOf="@id/title"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <TextView
+            android:id="@+id/profile_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="My Profile"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:paddingBottom="16dp" />
 
-    <TextView
-        android:id="@+id/valueName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Jane Doe"
-        android:layout_marginTop="6dp"
-        app:layout_constraintTop_toBottomOf="@id/labelName"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name" />
 
-    <TextView
-        android:id="@+id/labelEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_marginTop="26dp"
-        app:layout_constraintTop_toBottomOf="@id/valueName"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <TextView
+            android:id="@+id/profile_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"
+            android:text="Jane Doe" />
 
-    <TextView
-        android:id="@+id/valueEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="janedoe@gmail.com"
-        android:layout_marginTop="6dp"
-        app:layout_constraintTop_toBottomOf="@id/labelEmail"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email" />
 
-    <TextView
-        android:id="@+id/labelPhone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Phone Number"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_marginTop="26dp"
-        app:layout_constraintTop_toBottomOf="@id/valueEmail"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <TextView
+            android:id="@+id/profile_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"
+            android:text="janedoe@gmail.com" />
 
-    <TextView
-        android:id="@+id/valuePhone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="None"
-        android:layout_marginTop="6dp"
-        app:layout_constraintTop_toBottomOf="@id/labelPhone"
-        app:layout_constraintStart_toStartOf="parent"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Phone Number" />
 
-    <Button
-        android:id="@+id/btnSwapToUser"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Swap to User View"
-        android:layout_marginTop="40dp"
-        app:layout_constraintTop_toBottomOf="@id/valuePhone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <TextView
+            android:id="@+id/profile_phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="16dp"
+            android:text="None" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavAdmin"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:menu="@menu/menu_admin_bottom_nav"
-        app:itemIconTint="@null"
-        app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <!-- Edit -->
+        <Button
+            android:id="@+id/edit_profile_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Edit Profile" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Delete -->
+        <Button
+            android:id="@+id/delete_profile_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Delete Profile" />
+
+        <!-- ✅ Swap to Admin View -->
+        <Button
+            android:id="@+id/swap_to_admin_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Swap to Admin View"
+            android:backgroundTint="#4444AA"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+</ScrollView>

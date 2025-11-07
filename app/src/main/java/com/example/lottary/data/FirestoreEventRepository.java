@@ -376,4 +376,9 @@ public class FirestoreEventRepository {
         String eventTitle  = "";
         String eventId     = "";
     }
+    public Task<Void> deleteEventById(String eventId) {
+        return events.document(eventId).delete();
+    }
+
 }
+

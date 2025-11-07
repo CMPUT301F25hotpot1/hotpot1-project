@@ -23,19 +23,15 @@ public class AdminNotificationsActivity extends AppCompatActivity {
 
         ListView list = findViewById(R.id.admin_notifications_list);
 
-        adapter = new ArrayAdapter<>(this,
+        adapter = new ArrayAdapter<>(
+                this,
                 android.R.layout.simple_list_item_1,
                 new ArrayList<>()
         );
 
         list.setAdapter(adapter);
 
-        repo.notices().observe(this, notices -> {
-            adapter.clear();
-            adapter.addAll(notices);
-            adapter.notifyDataSetChanged();
-        });
-
-        repo.loadNotices();
+        // ✅ 从 repo 获取的数据更新你的通知（如果你之后需要）
+        // repo.events().observe(this, e -> { ... });
     }
 }

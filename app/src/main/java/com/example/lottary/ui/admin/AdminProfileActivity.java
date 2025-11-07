@@ -2,58 +2,34 @@ package com.example.lottary.ui.admin;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.View;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lottary.R;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class AdminProfileActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_profile);
 
-        // ✅ Swap to User View
-        Button btnSwap = findViewById(R.id.btnSwapToUser);
-        btnSwap.setOnClickListener(v -> {
-            // ✅ 回到用户浏览首页（保持你自己的逻辑）
-            startActivity(new Intent(this, com.example.lottary.ui.browse.BrowseActivity.class));
-            finish();
-        });
+        // ✅ 直接找到你 XML 里的按钮：swap_to_admin_btn
+        View swapBtn = findViewById(R.id.swap_to_admin_btn);
 
-        // ✅ Bottom Nav
-        BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
-        nav.setSelectedItemId(R.id.nav_admin_dashboard);   // 当前页面
+        if (swapBtn != null) {
+            swapBtn.setOnClickListener(v -> {
 
-        nav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
+                // ✅ 一点击就直接跳到 AdminEventsActivity
+                Intent intent = new Intent(this, AdminEventsActivity.class);
 
-            if (id == R.id.nav_admin_dashboard) {
-                return true; // 当前页面
-            }
+                // ✅ 告诉 AdminEventsActivity：这是从 profile 跳过去的
+                intent.putExtra("open_from_profile", true);
 
-            if (id == R.id.nav_admin_events) {
-                startActivity(new Intent(this, AdminEventsActivity.class));
-                finish();
-                return true;
-            }
-
-            if (id == R.id.nav_admin_users) {
-                startActivity(new Intent(this, AdminUsersActivity.class));
-                finish();
-                return true;
-            }
-
-            if (id == R.id.nav_admin_images) {
-                startActivity(new Intent(this, AdminImagesActivity.class));
-                finish();
-                return true;
-            }
-
-            return false;
-        });
+                startActivity(intent);
+            });
+        }
     }
 }
