@@ -8,84 +8,94 @@
     card_view:cardElevation="3dp">
 
     <LinearLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Title + Status -->
+        <!-- LEFT CONTENT -->
         <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical">
+            android:layout_weight="1">
 
-            <TextView
-                android:id="@+id/txt_event_title"
-                android:text="Event Name"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"/>
+            <!-- Title + Status -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
 
+                <TextView
+                    android:id="@+id/txt_event_title"
+                    android:text="Event Name"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/txt_event_status"
+                    android:text="Open"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="#4CAF50"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+
+            <!-- Location -->
             <TextView
-                android:id="@+id/txt_event_status"
-                android:text="Open"
-                android:textStyle="bold"
+                android:id="@+id/txt_event_location"
+                android:text="Edmonton, AB"
                 android:textSize="14sp"
-                android:textColor="#4CAF50"
+                android:layout_marginTop="4dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
+
+            <!-- Time -->
+            <TextView
+                android:id="@+id/txt_event_time"
+                android:text="Nov 6, 2025 5:59 PM"
+                android:textSize="14sp"
+                android:layout_marginTop="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <!-- Buttons -->
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp">
+
+                <Button
+                    android:id="@+id/btn_view_image"
+                    android:layout_width="108dp"
+                    android:layout_height="40dp"
+                    android:layout_marginRight="12dp"
+                    android:text="View Image" />
+
+                <Button
+                    android:id="@+id/btn_remove"
+                    android:layout_width="119dp"
+                    android:layout_height="40dp"
+                    android:text="Remove" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
-        <!-- Location -->
-        <TextView
-            android:id="@+id/txt_event_location"
-            android:text="Edmonton, AB"
-            android:textSize="14sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
-
-        <!-- Time -->
-        <TextView
-            android:id="@+id/txt_event_time"
-            android:text="Nov 6, 2025 5:59 PM"
-            android:textSize="14sp"
-            android:layout_marginTop="2dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <!-- Image Placeholder -->
+        <!-- RIGHT IMAGE -->
         <ImageView
             android:id="@+id/event_image"
-            android:layout_marginTop="10dp"
-            android:layout_width="100dp"
-            android:layout_height="80dp"
-            android:background="#E0E0E0"/>
-
-        <!-- Buttons -->
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp">
-
-            <Button
-                android:id="@+id/btn_view_image"
-                android:text="View Image"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:layout_marginRight="12dp"/>
-
-            <Button
-                android:id="@+id/btn_remove"
-                android:text="Remove"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp" />
-
-        </LinearLayout>
+            android:layout_width="120dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="12dp"
+            android:background="#E0E0E0"
+            android:scaleType="centerCrop" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

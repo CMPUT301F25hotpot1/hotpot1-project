@@ -97,15 +97,25 @@ public class AdminImagesActivity extends AppCompatActivity {
         rv.addItemDecoration(new SpacesItemDecoration(
                 getResources().getDimensionPixelSize(R.dimen.grid_gap)));
 
-        // 单击：仍旧打开你原来的 ImageViewerActivity（不改动）
+        // 单击：打开查看页（✅ 关键改动：把文档 id 一并传给 ImageViewerActivity）
         adapter = new ImageGridAdapter(img -> {
             if (img.getUrl() != null && !img.getUrl().isEmpty()) {
-                ImageViewerActivity.launch(this, img.getUrl(), img.getTitle());
+                ImageViewerActivity.launch(
+                        this,
+                        img.getUrl(),
+                        img.getTitle(),
+                        img.getId()   // ← 必传，以便查看页执行 db.collection("images").document(id).delete()
+                );
             }
         });
+        // 🆕 开启稳定 ID，让动画/局部刷新更顺滑（不影响既有逻辑）
+        adapter.enableStableIds(true);
+        // 🆕 如果以后采用适配器自带的长按回调，也能直接进入详情（与下方触摸监听并存）
+        adapter.setOnItemLongClick(this::launchDetail);
+
         rv.setAdapter(adapter);
 
-        // 长按：进入可删除的详情页
+        // 长按：进入可删除的详情页（保留你当前实现）
         rv.addOnItemTouchListener(new LongPressOpener(rv, position -> {
             if (position >= 0 && position < current.size()) {
                 launchDetail(current.get(position));

@@ -41,7 +41,7 @@ public class FirestoreUserRepository {
         return users.document(deviceID).set(fields, SetOptions.merge());
     }
 
-    public Task<Void> deleteUser(@NonNull String deviceID) {;
+    public Task<Void> deleteUser(@NonNull String deviceID) {
         return users.document(deviceID).delete();
     }
 
@@ -49,15 +49,17 @@ public class FirestoreUserRepository {
         return users.document(deviceID);
     }
 
-
-    // ---------- listeners --------
+    // ---------- listeners ----------
     public interface UsersListener { void onChanged(@NonNull List<User> items); }
     public interface DocListener    { void onChanged(DocumentSnapshot doc); }
 
     public ListenerRegistration listenRecentCreated(@NonNull UsersListener l) {
         return users.orderBy("createdAt").limit(50)
                 .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    if (err != null || snap == null) {
+                        l.onChanged(Collections.emptyList());
+                        return;
+                    }
                     l.onChanged(mapList(snap));
                 });
     }
@@ -93,8 +95,42 @@ public class FirestoreUserRepository {
     private static String safe(String s) { return s == null ? "" : s; }
 
     private static void ensureArrays(Map<String, Object> map, String... keys) {
-        for (String k : keys) if (!(map.get(k) instanceof List)) map.put(k, new ArrayList<String>());
+        for (String k : keys)
+            if (!(map.get(k) instanceof List))
+                map.put(k, new ArrayList<String>());
+    }
+
+    // -----------------------------------------------------------
+    // ✅ ✅ ✅ ADDED METHODS FOR ADMIN USERS PAGE (NO CHANGES ABOVE)
+    // -----------------------------------------------------------
+
+    // Load all users once
+    public void getAllUsers(@NonNull UsersListener callback) {
+        users.get().addOnSuccessListener(snap -> {
+            if (snap == null) {
+                callback.onChanged(Collections.emptyList());
+                return;
+            }
+            callback.onChanged(mapList(snap));
+        });
+    }
+
+    // Search users by name prefix
+    public void searchUsers(@NonNull String keyword, @NonNull UsersListener callback) {
+        users.whereGreaterThanOrEqualTo("name", keyword)
+                .whereLessThanOrEqualTo("name", keyword + "\uf8ff")
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (snap == null) {
+                        callback.onChanged(Collections.emptyList());
+                        return;
+                    }
+                    callback.onChanged(mapList(snap));
+                });
+    }
+
+    // Wrapper for deleteUser
+    public void removeUser(@NonNull String userID) {
+        deleteUser(userID);
     }
 }
-
-

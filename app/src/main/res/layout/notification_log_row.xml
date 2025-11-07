@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:orientation="horizontal"
+    android:gravity="top">
+
+    <!-- Left Icon -->
+    <ImageView
+        android:id="@+id/log_icon"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:src="@drawable/ic_notifications_24"
+        android:tint="#444" />
+
+    <!-- Text Block -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="14dp">
+
+        <TextView
+            android:id="@+id/log_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Coding Workshop"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#222" />
+
+        <TextView
+            android:id="@+id/log_receiver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recipient: CMPUT Corp."
+            android:textColor="#555"
+            android:textSize="14sp"
+            android:layout_marginTop="3dp" />
+
+        <TextView
+            android:id="@+id/log_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sent at: Nov 2, 2023, 11:00 PM"
+            android:textColor="#777"
+            android:textSize="13sp"
+            android:layout_marginTop="3dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

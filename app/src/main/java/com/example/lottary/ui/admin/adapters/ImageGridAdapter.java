@@ -21,7 +21,7 @@ public class ImageGridAdapter extends ListAdapter<Image, ImageGridAdapter.VH> {
     /** 单击回调（保持原有 API 不变） */
     public interface OnItemClick { void onClick(@NonNull Image image); }
 
-    /** 🆕 可选：长按回调 */
+    /** 🆕 可选：长按回调（仅新增，不影响原有用法） */
     public interface OnItemLongClick { void onLongClick(@NonNull Image image); }
 
     private final OnItemClick click;
@@ -30,12 +30,18 @@ public class ImageGridAdapter extends ListAdapter<Image, ImageGridAdapter.VH> {
     public ImageGridAdapter(OnItemClick click) {
         super(DIFF);
         this.click = click;
+        // 默认保持和你原来一致，不启用 stableIds。
         setHasStableIds(false);
     }
 
     /** 🆕 供外部设置长按回调；不设置则无长按行为 */
     public void setOnItemLongClick(@Nullable OnItemLongClick l) {
         this.longClick = l;
+    }
+
+    /** 🆕 如需更平滑的动画/局部刷新，可在外部主动开启 stableIds */
+    public void enableStableIds(boolean on) {
+        setHasStableIds(on);
     }
 
     private static final DiffUtil.ItemCallback<Image> DIFF = new DiffUtil.ItemCallback<Image>() {
@@ -94,6 +100,24 @@ public class ImageGridAdapter extends ListAdapter<Image, ImageGridAdapter.VH> {
             }
             return false;
         });
+    }
+
+    /** 🆕 可选：当外部开启 stableIds 时，提供稳定 ID；默认关闭不影响现状 */
+    @Override
+    public long getItemId(int position) {
+        Image img = getItem(position);
+        // 优先使用 Firestore 文档 id，其次使用 url；都没有则退回 position 的稳定 hash
+        String key = (img.getId()!=null && !img.getId().isEmpty())
+                ? img.getId()
+                : (img.getUrl()!=null ? img.getUrl() : ("pos_"+position));
+        return key.hashCode();
+    }
+
+    /** 🆕 便捷方法：需要拿到当前位置的数据（比如配合滑动删除） */
+    @Nullable
+    public Image getImageAt(int position) {
+        if (position < 0 || position >= getItemCount()) return null;
+        return getItem(position);
     }
 
     public static class VH extends RecyclerView.ViewHolder {

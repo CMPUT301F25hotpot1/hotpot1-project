@@ -44,6 +44,12 @@ public class User {
     public String getDeviceID() {
         return deviceID;
     }
+    public String getId() {
+        return deviceID;
+    }
+
+
+
 
 
 }

@@ -111,4 +111,52 @@ public class FirestoreImageRepository {
         public ListenerHandle(@NonNull ListenerRegistration r) { this.reg = r; }
         public void remove() { if (reg != null) reg.remove(); }
     }
+
+    // ----------------------------------------------------------------------
+    // ------------------------- ✨ 新增：删除相关 API -------------------------
+    // ----------------------------------------------------------------------
+
+    /** 删除回调 */
+    public interface DeleteCallback { void onComplete(@Nullable Exception error); }
+
+    /**
+     * 删除 Firestore 中的一条图片文档。
+     * 适用于“方案A：仅 Firestore 记录外链 URL”的情况。
+     */
+    public void deleteByFirestoreId(@NonNull String imageDocId, @NonNull DeleteCallback cb) {
+        db.collection("images").document(imageDocId)
+                .delete()
+                .addOnSuccessListener(unused -> cb.onComplete(null))
+                .addOnFailureListener(cb::onComplete);
+    }
+
+    /**
+     * 删除 Storage 中的文件（images/{fileName}）。
+     * 适用于“方案B：使用 Firebase Storage 存文件”的情况，
+     * 例如回退列表里我们把 item.getName() 当成 id 展示时，可以用它来删除。
+     */
+    public void deleteByStorageName(@NonNull String fileName, @NonNull DeleteCallback cb) {
+        FirebaseStorage.getInstance()
+                .getReference()
+                .child("images")
+                .child(fileName)
+                .delete()
+                .addOnSuccessListener(unused -> cb.onComplete(null))
+                .addOnFailureListener(cb::onComplete);
+    }
+
+    /**
+     * 通过下载 URL 删除 Storage 文件（如果你只拿得到 URL）。
+     * 注意：要求这个 URL 指向的就是你项目下的可删除资源。
+     */
+    public void deleteByStorageUrl(@NonNull String downloadUrl, @NonNull DeleteCallback cb) {
+        try {
+            StorageReference ref = FirebaseStorage.getInstance().getReferenceFromUrl(downloadUrl);
+            ref.delete()
+                    .addOnSuccessListener(unused -> cb.onComplete(null))
+                    .addOnFailureListener(cb::onComplete);
+        } catch (Exception e) {
+            cb.onComplete(e);
+        }
+    }
 }

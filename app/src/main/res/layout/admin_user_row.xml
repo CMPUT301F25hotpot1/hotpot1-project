@@ -2,43 +2,47 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp"
-    android:orientation="vertical">
+    android:orientation="horizontal"
+    android:padding="12dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- Avatar -->
+    <ImageView
+        android:id="@+id/admin_user_avatar"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:src="@drawable/ic_person_24"
+        android:background="@drawable/bg_circle_soft"
+        android:tint="#6A6ACC"
+        android:padding="8dp" />
+
+    <!-- Name -->
+    <TextView
+        android:id="@+id/admin_user_name"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:text="User Name"
+        android:textSize="16sp"
+        android:layout_marginStart="14dp" />
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+    <!-- Left Button: View Logs -->
+    <ImageView
+        android:id="@+id/btn_view_logs"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_timeline_24"
+        android:background="@drawable/bg_circle_button"
+        android:padding="8dp"
+        android:layout_marginEnd="10dp" />
 
-            <TextView
-                android:id="@+id/admin_user_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="User Name"
-                android:textSize="16sp"
-                android:textColor="#000"/>
+    <!-- Right Button: Remove User -->
+    <ImageView
+        android:id="@+id/btn_remove_user"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_person_remove_24"
+        android:background="@drawable/bg_circle_button"
+        android:padding="8dp" />
 
-            <TextView
-                android:id="@+id/admin_user_role"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Entrant"
-                android:textSize="13sp"
-                android:textColor="#666"/>
-        </LinearLayout>
-
-        <ImageButton
-            android:id="@+id/admin_user_remove"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@android:drawable/ic_menu_delete"
-            android:background="@android:color/transparent"
-            android:contentDescription="Remove User" />
-    </LinearLayout>
 </LinearLayout>

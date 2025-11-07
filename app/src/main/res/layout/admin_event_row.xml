@@ -9,58 +9,98 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <!-- Title + Status -->
+        <!-- LEFT SIDE -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/admin_event_title"
-                android:layout_width="0dp"
+            <!-- Title + Status -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Event Title"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
 
+                <TextView
+                    android:id="@+id/admin_event_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Event Title"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/admin_event_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Open"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#008A00" />
+            </LinearLayout>
+
+            <!-- City + Province -->
             <TextView
-                android:id="@+id/admin_event_status"
+                android:id="@+id/admin_event_city"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Full"
-                android:textSize="16sp"
-                android:textColor="#CC0000"
-                android:textStyle="bold" />
+                android:text="Edmonton, AB"
+                android:layout_marginTop="6dp"
+                android:textSize="14sp" />
+
+            <!-- Time -->
+            <TextView
+                android:id="@+id/admin_event_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mar 5, 2023 1:30PM"
+                android:layout_marginTop="4dp"
+                android:textSize="14sp" />
+
+            <!-- Venue -->
+            <TextView
+                android:id="@+id/admin_event_venue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Van Vliet Complex"
+                android:layout_marginTop="4dp"
+                android:textSize="14sp" />
+
+            <!-- Buttons -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <Button
+                    android:id="@+id/btn_view_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View Image"
+                    android:layout_marginRight="12dp" />
+
+                <Button
+                    android:id="@+id/admin_event_remove"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Remove" />
+            </LinearLayout>
+
         </LinearLayout>
 
-        <!-- City -->
-        <TextView
-            android:id="@+id/admin_event_city"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Edmonton, AB"
-            android:layout_marginTop="6dp"
-            android:textSize="14sp" />
-
-        <!-- Time -->
-        <TextView
-            android:id="@+id/admin_event_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mar 5, 2023 1:30PM"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp" />
-
-        <!-- Remove button -->
-        <Button
-            android:id="@+id/admin_event_remove"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Remove"
-            android:layout_marginTop="12dp" />
+        <!-- RIGHT IMAGE -->
+        <ImageView
+            android:id="@+id/event_image"
+            android:layout_width="110dp"
+            android:layout_height="90dp"
+            android:layout_marginStart="10dp"
+            android:scaleType="centerCrop"
+            android:background="#E0E0E0" />
 
     </LinearLayout>
 
