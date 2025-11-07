@@ -20,11 +20,24 @@ import com.example.lottary.ui.admin.adapters.AdminEventsAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class AdminEventsActivity extends AppCompatActivity {
 
     private AdminRepository repo;
     private AdminEventsAdapter adapter;
+
+    private EditText etSearch;
+    private Button btnSearch, btnFilter;
+    private BottomNavigationView bottomNav;
+
+    private final TextWatcher searchWatcher = new TextWatcher() {
+        @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+        @Override public void afterTextChanged(Editable s) {}
+        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+            if (repo != null) repo.search(s.toString());
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,103 +46,74 @@ public class AdminEventsActivity extends AppCompatActivity {
 
         repo = AdminRepository.get();
 
-        // =====================
-        // ✅ RecyclerView setup
-        // =====================
+        // RecyclerView
         RecyclerView rv = findViewById(R.id.admin_events_list);
         rv.setLayoutManager(new LinearLayoutManager(this));
-
         adapter = new AdminEventsAdapter((Event e) -> repo.removeEvent(e));
         rv.setAdapter(adapter);
 
-        // ✅ Firestore 实时订阅
-        repo.startAdminEventsRealtime();
+        // 搜索 & 过滤
+        etSearch  = findViewById(R.id.search_events);
+        btnSearch = findViewById(R.id.btn_search);
+        btnFilter = findViewById(R.id.btn_filter);
 
-        // ✅ LiveData → UI
-        repo.events().observe(this, list ->
-                adapter.submitList(list == null ? new ArrayList<>() : new ArrayList<>(list))
-        );
+        btnSearch.setOnClickListener(v -> repo.search(etSearch.getText().toString()));
+        etSearch.addTextChangedListener(searchWatcher);
 
-        setupSearchBar();
-        setupFilterButton();
-        setupBottomNav();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        repo.stopAdminEventsRealtime();
-    }
-
-    // =====================
-    // ✅ Search 功能
-    // =====================
-    private void setupSearchBar() {
-        EditText search = findViewById(R.id.search_events);
-        Button btnSearch = findViewById(R.id.btn_search);
-
-        // 点击 SEARCH 按钮
-        btnSearch.setOnClickListener(v ->
-                repo.search(search.getText().toString())
-        );
-
-        // 实时搜索（用户输入时自动过滤）
-        search.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void afterTextChanged(Editable s) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                repo.search(s.toString());
-            }
-        });
-    }
-
-    // =====================
-    // ✅ Filter 按钮功能
-    // =====================
-    private void setupFilterButton() {
-        Button filterBtn = findViewById(R.id.btn_filter);
-
-        filterBtn.setOnClickListener(v -> {
-            String[] options = { "All", "Open", "Closed", "Full" };
-
+        btnFilter.setOnClickListener(v -> {
+            String[] options = {"All", "Open", "Closed", "Full"};
             new AlertDialog.Builder(this)
                     .setTitle("Filter by status")
                     .setItems(options, (dialog, which) -> {
                         String choice = options[which].toUpperCase();
-                        if (choice.equals("ALL"))
-                            repo.setFilter("ALL");
-                        else
-                            repo.setFilter(choice);
+                        repo.setFilter(choice.equals("ALL") ? "ALL" : choice);
                     })
                     .show();
         });
-    }
 
-    // =====================
-    // ✅ Bottom Navigation
-    // =====================
-    private void setupBottomNav() {
-        BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
-        nav.setSelectedItemId(R.id.nav_admin_events);
-
-        nav.setOnItemSelectedListener(item -> {
+        // 底部导航
+        bottomNav = findViewById(R.id.bottomNavAdmin);
+        // 确保与 menu_admin_bottom_nav.xml 中的 id 对应
+        bottomNav.setSelectedItemId(R.id.nav_admin_events);
+        bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
-            if (id == R.id.nav_admin_users) {
+            if (id == R.id.nav_admin_events) {
+                // 当前页，不跳转
+                return true;
+            } else if (id == R.id.nav_admin_users) {
                 startActivity(new Intent(this, AdminUsersActivity.class));
-                return true;
-            }
-            if (id == R.id.nav_admin_images) {
+            } else if (id == R.id.nav_admin_images) {
                 startActivity(new Intent(this, AdminImagesActivity.class));
-                return true;
-            }
-            if (id == R.id.nav_admin_dashboard) {
+            } else if (id == R.id.nav_admin_dashboard) {
                 startActivity(new Intent(this, AdminDashboardActivity.class));
-                return true;
+            } else {
+                return false;
             }
-
+            // 切换页面无过渡 & 结束当前，避免堆栈增长
+            overridePendingTransition(0, 0);
+            finish();
             return true;
         });
+
+        // 观察数据
+        repo.events().observe(this, list -> {
+            List<Event> data = (list == null) ? new ArrayList<>() : new ArrayList<>(list);
+            adapter.submitList(data);
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // 进入页面开始订阅
+        if (repo != null) repo.startAdminEventsRealtime();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // 离开页面停止订阅 & 移除监听，避免泄漏
+        if (repo != null) repo.stopAdminEventsRealtime();
+        if (etSearch != null) etSearch.removeTextChangedListener(searchWatcher);
     }
 }

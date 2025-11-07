@@ -2,18 +2,13 @@ package com.example.lottary.data;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.DocumentSnapshot;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Admin-only Firestore operations.
- * DOES NOT modify FirestoreEventRepository — safe for user side.
- */
 public class FirestoreAdminRepository {
 
     private static FirestoreAdminRepository INSTANCE;
@@ -25,21 +20,52 @@ public class FirestoreAdminRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    // ✅ admin notices log collection
-    private final CollectionReference notices = db.collection("admin_notices");
+    public interface EventsCallback {
+        void onLoaded(List<Event> events);
+    }
 
-    // ✅ DELETE event document (Admin ONLY)
-    public Task<Void> deleteEventById(@NonNull String eventId) {
-        return db.collection("events")
-                .document(eventId)
+    // ✅ 从 Firestore 获取所有 events
+    public void loadAllEvents(@NonNull EventsCallback callback) {
+        db.collection("events")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        callback.onLoaded(new ArrayList<>());
+                        return;
+                    }
+
+                    QuerySnapshot snap = task.getResult();
+                    List<Event> list = new ArrayList<>();
+
+                    if (snap != null && !snap.isEmpty()) {
+                        for (DocumentSnapshot d : snap.getDocuments()) {
+                            list.add(new Event(
+                                    d.getId(),
+                                    d.getString("title"),
+                                    d.getString("city"),
+                                    d.getString("venue"),
+                                    "", // formatted time (not needed)
+                                    Boolean.TRUE.equals(d.getBoolean("full")),
+                                    0, 0, 0,
+                                    Boolean.TRUE.equals(d.getBoolean("geolocationEnabled")),
+                                    d.getString("type")
+                            ));
+                        }
+                    }
+
+                    callback.onLoaded(list);
+                });
+    }
+
+    // ✅ 删除 Firestore 的 event
+    public void deleteEventById(String id) {
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(id)
                 .delete();
     }
 
-    // ✅ Push admin log
-    public Task<Void> pushNotice(@NonNull String msg) {
-        Map<String, Object> doc = new HashMap<>();
-        doc.put("message", msg);
-        doc.put("timestamp", Timestamp.now());
-        return notices.document().set(doc);
+    public void deleteEvent(String eventId) {
+        db.collection("events").document(eventId).delete();
     }
 }
