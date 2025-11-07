@@ -30,14 +30,19 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    // ✅ 推荐：让 Espresso 测试更稳定
+    testOptions {
+        animationsDisabled = true
+    }
 }
 
 dependencies {
 
-    // ✅ ✅ Unified Firebase (ONLY ONE BOM)
+    // ✅ ✅ Firebase BOM (ONLY ONE)
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
 
-    // ✅ Required Firebase modules
+    // ✅ Firebase modules
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
@@ -60,13 +65,27 @@ dependencies {
     // ✅ ML Kit
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
-    // ✅ Images (Glide + Picasso)
+    // ✅ Images
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.squareup.picasso:picasso:2.71828")
 
-    // ✅ Testing
+    // ✅ Unit Test
     testImplementation("junit:junit:4.13.2")
+
+    // ✅ ✅ ✅ Android Instrumented Test Dependencies
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // ✅ Required for ActivityTestRule
+    androidTestImplementation("androidx.test:rules:1.5.0")
+
+    // ✅ Required for Espresso test runner
+    androidTestImplementation("androidx.test:runner:1.5.2")
+
+    // ✅ For testing intents between activities
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+
+    // ✅ For RecyclerViewActions (swipe, scrollToPosition, click button inside item)
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
 }

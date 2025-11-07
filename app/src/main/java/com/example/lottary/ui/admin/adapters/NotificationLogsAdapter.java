@@ -14,12 +14,23 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lottary.R;
 import com.example.lottary.data.NotificationLog;
 
+/**
+ * RecyclerView adapter for displaying a list of NotificationLog entries.
+ * Each row shows the title, recipient, timestamp, and an associated icon.
+ */
 public class NotificationLogsAdapter extends ListAdapter<NotificationLog, NotificationLogsAdapter.ViewHolder> {
 
+    /**
+     * Creates a new NotificationLogsAdapter using the shared DiffUtil rules.
+     */
     public NotificationLogsAdapter() {
         super(DIFF);
     }
 
+    /**
+     * DiffUtil callback for efficiently updating NotificationLog items.
+     * Items are considered identical if they share the same ID.
+     */
     private static final DiffUtil.ItemCallback<NotificationLog> DIFF =
             new DiffUtil.ItemCallback<NotificationLog>() {
                 @Override
@@ -33,20 +44,33 @@ public class NotificationLogsAdapter extends ListAdapter<NotificationLog, Notifi
                 }
             };
 
+    /**
+     * ViewHolder representing a single notification log row.
+     * Holds references to UI components for title, recipient, time, and icon.
+     */
     class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView title, receiver, time;
         ImageView icon;
 
+        /**
+         * Creates a ViewHolder and binds view references.
+         *
+         * @param itemView the root view for the row layout
+         */
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-
             title = itemView.findViewById(R.id.log_title);
             receiver = itemView.findViewById(R.id.log_receiver);
             time = itemView.findViewById(R.id.log_time);
             icon = itemView.findViewById(R.id.log_icon);
         }
 
+        /**
+         * Binds a NotificationLog to the UI elements within the row.
+         *
+         * @param log the notification log to display
+         */
         void bind(NotificationLog log) {
             title.setText(log.getTitle());
             receiver.setText("Recipient: " + log.getRecipientName());
@@ -54,16 +78,28 @@ public class NotificationLogsAdapter extends ListAdapter<NotificationLog, Notifi
         }
     }
 
+    /**
+     * Inflates a new row layout and creates a corresponding ViewHolder.
+     *
+     * @param parent the RecyclerView container
+     * @param viewType currently unused, always a single view type
+     */
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int v) {
-        View view = LayoutInflater.from(p.getContext())
-                .inflate(R.layout.notification_log_row, p, false);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.notification_log_row, parent, false);
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a NotificationLog to an existing ViewHolder.
+     *
+     * @param holder the ViewHolder to bind data into
+     * @param position list index of the item
+     */
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder h, int pos) {
-        h.bind(getItem(pos));
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        holder.bind(getItem(position));
     }
 }

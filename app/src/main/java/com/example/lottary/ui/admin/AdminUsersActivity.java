@@ -1,3 +1,8 @@
+/**
+ * Admin screen for browsing, searching, and managing all registered users.
+ * Supports realtime Firestore updates, search filtering, viewing logs,
+ * deleting accounts, and switching between admin sections via bottom navigation.
+ */
 package com.example.lottary.ui.admin;
 
 import android.app.AlertDialog;
@@ -38,14 +43,17 @@ public class AdminUsersActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_users);
 
+        // Firestore repo
         repo = FirestoreUserRepository.get();
 
+        // RecyclerView setup
         rv = findViewById(R.id.recycler_users);
         rv.setLayoutManager(new LinearLayoutManager(this));
 
         searchBar = findViewById(R.id.search_bar);
         searchBtn = findViewById(R.id.btn_search);
 
+        // Adapter with click actions (view logs / remove)
         adapter = new AdminUsersAdapter(new AdminUsersAdapter.UserClickListener() {
             @Override
             public void onViewLogs(User u) {
@@ -68,13 +76,16 @@ public class AdminUsersActivity extends AppCompatActivity {
 
         rv.setAdapter(adapter);
 
+        // Realtime newest users list
         repo.listenRecentCreated(users -> {
             fullList = users;
             adapter.submitList(new ArrayList<>(fullList));
         });
 
+        // Manual search button
         searchBtn.setOnClickListener(v -> applySearch());
 
+        // Live search while typing
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) { applySearch(); }
@@ -84,6 +95,7 @@ public class AdminUsersActivity extends AppCompatActivity {
         setupBottomNav();
     }
 
+    // Bottom navigation for switching admin sections
     private void setupBottomNav() {
         BottomNavigationView nav = findViewById(R.id.bottom_nav);
         nav.setSelectedItemId(R.id.nav_admin_users);
@@ -121,6 +133,7 @@ public class AdminUsersActivity extends AppCompatActivity {
         });
     }
 
+    // Apply simple name-based search filter
     private void applySearch() {
         String keyword = searchBar.getText().toString().trim().toLowerCase();
 

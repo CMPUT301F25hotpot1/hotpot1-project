@@ -1,3 +1,7 @@
+/**
+ * Firestore admin utilities for loading and deleting event documents.
+ * Provides simple one-shot fetch for all events and delete helpers.
+ */
 package com.example.lottary.data;
 
 import androidx.annotation.NonNull;
@@ -24,7 +28,7 @@ public class FirestoreAdminRepository {
         void onLoaded(List<Event> events);
     }
 
-    // ✅ 从 Firestore 获取所有 events
+    // Load all events from Firestore (one-time fetch)
     public void loadAllEvents(@NonNull EventsCallback callback) {
         db.collection("events")
                 .get()
@@ -37,6 +41,7 @@ public class FirestoreAdminRepository {
                     QuerySnapshot snap = task.getResult();
                     List<Event> list = new ArrayList<>();
 
+                    // Convert Firestore docs into Event models
                     if (snap != null && !snap.isEmpty()) {
                         for (DocumentSnapshot d : snap.getDocuments()) {
                             list.add(new Event(
@@ -44,7 +49,7 @@ public class FirestoreAdminRepository {
                                     d.getString("title"),
                                     d.getString("city"),
                                     d.getString("venue"),
-                                    "", // formatted time (not needed)
+                                    "", // time formatting not used here
                                     Boolean.TRUE.equals(d.getBoolean("full")),
                                     0, 0, 0,
                                     Boolean.TRUE.equals(d.getBoolean("geolocationEnabled")),
@@ -57,7 +62,7 @@ public class FirestoreAdminRepository {
                 });
     }
 
-    // ✅ 删除 Firestore 的 event
+    // Delete event by id using direct Firestore call
     public void deleteEventById(String id) {
         FirebaseFirestore.getInstance()
                 .collection("events")
@@ -65,6 +70,7 @@ public class FirestoreAdminRepository {
                 .delete();
     }
 
+    // Same as above: delete event from Firestore
     public void deleteEvent(String eventId) {
         db.collection("events").document(eventId).delete();
     }

@@ -1,3 +1,8 @@
+/**
+ * Admin screen for managing all uploaded images.
+ * Supports real-time Firestore updates, image grid display,
+ * searching, sorting, long-press details, and bottom-nav switching.
+ */
 package com.example.lottary.ui.admin;
 
 import android.content.Intent;
@@ -44,10 +49,11 @@ public class AdminImagesActivity extends AppCompatActivity {
     private FirestoreImageRepository repo;
     private FirestoreImageRepository.ListenerHandle handle;
 
+    // Handle result from detail screen
     private final ActivityResultLauncher<Intent> detailLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == ImageDetailActivity.RESULT_DELETED) {
-                    render();
+                    render(); // Refresh list after delete
                 }
             });
 
@@ -56,6 +62,7 @@ public class AdminImagesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_images);
 
+        // UI refs
         rv = findViewById(R.id.admin_images_list);
         etSearch = findViewById(R.id.etSearchAdminImages);
         btnSearch = findViewById(R.id.btnSearchAdminImages);
@@ -64,10 +71,12 @@ public class AdminImagesActivity extends AppCompatActivity {
 
         setupBottomNav();
 
+        // Grid layout setup
         rv.setLayoutManager(new GridLayoutManager(this, 3));
         rv.addItemDecoration(new SpacesItemDecoration(
                 getResources().getDimensionPixelSize(R.dimen.grid_gap)));
 
+        // Adapter setup
         adapter = new ImageGridAdapter(img -> {
             ImageViewerActivity.launch(
                     this,
@@ -80,18 +89,23 @@ public class AdminImagesActivity extends AppCompatActivity {
         adapter.setOnItemLongClick(this::launchDetail);
         rv.setAdapter(adapter);
 
+        // Long-press detection
         rv.addOnItemTouchListener(new LongPressOpener(rv, position -> {
             if (position >= 0 && position < current.size()) {
                 launchDetail(current.get(position));
             }
         }));
 
+        // Show placeholder skeleton
         showSkeleton(18);
 
+        // Search click
         btnSearch.setOnClickListener(v -> {
             query = etSearch.getText().toString().trim();
             render();
         });
+
+        // Sort button
         btnSort.setOnClickListener(v -> {
             sortByLatest(current);
             adapter.submitList(new ArrayList<>(current));
@@ -104,13 +118,16 @@ public class AdminImagesActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         progress.setVisibility(View.VISIBLE);
+
+        // Start Firestore realtime listener
         handle = repo.listenLatest((images, error) -> {
             progress.setVisibility(View.GONE);
             all.clear();
+
             if (error == null && images != null && !images.isEmpty()) {
                 all.addAll(images);
                 query = etSearch.getText().toString().trim();
-                render();
+                render(); // Apply filter + sort
             } else {
                 showSkeleton(18);
             }
@@ -120,11 +137,13 @@ public class AdminImagesActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (handle != null) handle.remove();
+        if (handle != null) handle.remove(); // Stop Firestore listener
     }
 
     private void render() {
         current.clear();
+
+        // Search filter
         if (TextUtils.isEmpty(query)) {
             current.addAll(all);
         } else {
@@ -134,7 +153,11 @@ public class AdminImagesActivity extends AppCompatActivity {
                 if (t.toLowerCase().contains(q)) current.add(img);
             }
         }
+
+        // Sort newest first
         sortByLatest(current);
+
+        // Update list
         adapter.submitList(new ArrayList<>(current));
     }
 
@@ -159,7 +182,7 @@ public class AdminImagesActivity extends AppCompatActivity {
         adapter.submitList(skeleton);
     }
 
-    // ✅ BottomNavigation 已全部修复
+    // Bottom navigation setup
     private void setupBottomNav() {
         BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
         nav.setSelectedItemId(R.id.nav_admin_images);
@@ -197,6 +220,7 @@ public class AdminImagesActivity extends AppCompatActivity {
         });
     }
 
+    // Grid spacing decoration
     static class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         private final int space;
         SpacesItemDecoration(int s) { space = s; }
@@ -223,6 +247,7 @@ public class AdminImagesActivity extends AppCompatActivity {
 
     interface OnLongPressPositionListener { void onLongPress(int position); }
 
+    // Detects long-press gestures on grid items
     static class LongPressOpener extends RecyclerView.SimpleOnItemTouchListener {
         private final GestureDetector detector;
         private final RecyclerView recyclerView;
@@ -244,7 +269,7 @@ public class AdminImagesActivity extends AppCompatActivity {
 
                         @Override
                         public boolean onDown(MotionEvent e) {
-                            return true;
+                            return true; // Must return true to receive long-press
                         }
                     });
         }

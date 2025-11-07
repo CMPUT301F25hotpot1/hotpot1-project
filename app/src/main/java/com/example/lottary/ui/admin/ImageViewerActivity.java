@@ -1,3 +1,8 @@
+/**
+ * Full-screen image viewer for admin.
+ * Shows a large preview, supports long-press to open detail,
+ * and allows deleting both Firestore doc and optional Storage file.
+ */
 package com.example.lottary.ui.admin;
 
 import android.content.Context;
@@ -30,7 +35,7 @@ public class ImageViewerActivity extends AppCompatActivity {
 
     private static final String IMAGES_COLLECTION = "images";
 
-    /** 保持原 API */
+    // Original API
     public static void launch(Context ctx, String url, @Nullable String title) {
         Intent i = new Intent(ctx, ImageViewerActivity.class);
         i.putExtra(EXTRA_URL, url);
@@ -38,7 +43,7 @@ public class ImageViewerActivity extends AppCompatActivity {
         ctx.startActivity(i);
     }
 
-    /** 推荐使用：带上 Firestore 文档 id */
+    // Preferred API: includes Firestore doc id
     public static void launch(Context ctx, String url, @Nullable String title, @Nullable String imageId) {
         Intent i = new Intent(ctx, ImageViewerActivity.class);
         i.putExtra(EXTRA_URL, url);
@@ -62,6 +67,7 @@ public class ImageViewerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_viewer);
 
+        // Get extras
         imageUrl = getIntent().getStringExtra(EXTRA_URL);
         imageTitle = getIntent().getStringExtra(EXTRA_TITLE);
         imageId = getIntent().getStringExtra(EXTRA_IMAGE_ID);
@@ -71,14 +77,18 @@ public class ImageViewerActivity extends AppCompatActivity {
         btnDeleteImage = findViewById(R.id.btnDeleteImage);
         progressViewer = findViewById(R.id.progressViewer);
 
+        // Title text
         tv.setText(imageTitle == null ? "" : imageTitle);
+
+        // Load full-size preview
         Glide.with(this).load(imageUrl)
                 .placeholder(android.R.drawable.ic_menu_report_image)
                 .into(iv);
 
+        // Tap to exit
         iv.setOnClickListener(v -> finish());
 
-        // 保留你之前的长按跳详情（如果有该 Activity）
+        // Long press → open detail view
         iv.setOnLongClickListener(v -> {
             if (imageId != null && !imageId.isEmpty()) {
                 Intent detail = new Intent(this, ImageDetailActivity.class);
@@ -91,6 +101,7 @@ public class ImageViewerActivity extends AppCompatActivity {
             return false;
         });
 
+        // Delete button
         if (btnDeleteImage != null) {
             btnDeleteImage.setOnClickListener(v -> showDeleteConfirmDialog());
         }
@@ -99,6 +110,7 @@ public class ImageViewerActivity extends AppCompatActivity {
         storage = FirebaseStorage.getInstance();
     }
 
+    // Delete confirmation dialog
     private void showDeleteConfirmDialog() {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.remove_image_title)
@@ -112,12 +124,11 @@ public class ImageViewerActivity extends AppCompatActivity {
                 .show();
     }
 
+    // Start Firestore delete
     private void performDelete() {
         setBusy(true);
 
-        // 先删 Firestore 文档 —— 这是你真正想要的“删掉这条图片数据”
         if (imageId == null || imageId.isEmpty()) {
-            // 没有传 id 就无法删文档；给出提示并返回
             Toast.makeText(this, "Missing document id; cannot delete.", Toast.LENGTH_LONG).show();
             setBusy(false);
             return;
@@ -127,7 +138,7 @@ public class ImageViewerActivity extends AppCompatActivity {
                 .document(imageId)
                 .delete()
                 .addOnSuccessListener(v -> {
-                    // 文档删掉了，再尝试删存储（仅当它确实是 Firebase Storage 链接）
+                    // Then try Storage delete if URL points to Firebase Storage
                     maybeDeleteStorageThenFinish();
                 })
                 .addOnFailureListener(e -> {
@@ -138,37 +149,40 @@ public class ImageViewerActivity extends AppCompatActivity {
                 });
     }
 
-    /** 只有当 URL 指向 Firebase Storage（gs:// 或 firebasestorage.googleapis.com）时才尝试删除；否则直接结束 */
+    // Delete from Storage only if URL is a Firebase Storage link
     private void maybeDeleteStorageThenFinish() {
         if (imageUrl != null &&
                 (imageUrl.startsWith("gs://")
                         || imageUrl.startsWith("https://firebasestorage.googleapis.com/"))) {
+
             try {
                 StorageReference ref = storage.getReferenceFromUrl(imageUrl);
                 ref.delete()
                         .addOnSuccessListener(v -> finishOk())
                         .addOnFailureListener(e -> {
-                            // 存储删不掉不影响文档，给个提示即可
                             Toast.makeText(this,
                                     getString(R.string.delete_failed_fmt, e.getMessage() == null ? "" : e.getMessage()),
                                     Toast.LENGTH_LONG).show();
-                            finishOk(); // 文档已删，页面还是结束
+                            finishOk(); // Still complete since Firestore doc is deleted
                         });
                 return;
             } catch (IllegalArgumentException ignored) {
-                // 不是合法的 storage URL，直接结束
+                // Not a Storage link → skip
             }
         }
-        // 非 Storage 链接（比如 picsum 外链），直接结束
+
+        // Not a Firebase Storage URL → no need to delete file
         finishOk();
     }
 
+    // Finish activity after successful deletion
     private void finishOk() {
         Toast.makeText(this, R.string.image_deleted, Toast.LENGTH_SHORT).show();
         setResult(RESULT_OK);
         finish();
     }
 
+    // Toggle loading UI
     private void setBusy(boolean busy) {
         if (btnDeleteImage != null) btnDeleteImage.setEnabled(!busy);
         if (progressViewer != null) progressViewer.setVisibility(busy ? View.VISIBLE : View.GONE);

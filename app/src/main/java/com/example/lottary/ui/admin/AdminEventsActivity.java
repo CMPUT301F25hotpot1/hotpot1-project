@@ -22,6 +22,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Admin screen for managing all events.
+ * Supports searching, filtering, real-time Firestore updates,
+ * and bottom-navigation between admin modules.
+ */
 public class AdminEventsActivity extends AppCompatActivity {
 
     private AdminRepository repo;
@@ -46,13 +51,11 @@ public class AdminEventsActivity extends AppCompatActivity {
 
         repo = AdminRepository.get();
 
-        // ---------------- RecyclerView ----------------
         RecyclerView rv = findViewById(R.id.admin_events_list);
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AdminEventsAdapter((Event e) -> repo.removeEvent(e));
         rv.setAdapter(adapter);
 
-        // ---------------- 搜索 & 过滤 ----------------
         etSearch  = findViewById(R.id.search_events);
         btnSearch = findViewById(R.id.btn_search);
         btnFilter = findViewById(R.id.btn_filter);
@@ -71,16 +74,13 @@ public class AdminEventsActivity extends AppCompatActivity {
                     .show();
         });
 
-        // ---------------- ✅ 修好的底部导航 ----------------
         bottomNav = findViewById(R.id.bottomNavAdmin);
         bottomNav.setSelectedItemId(R.id.nav_admin_events);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.nav_admin_events) {
-                return true; // ✅ 当前页
-            }
+            if (id == R.id.nav_admin_events) return true;
 
             if (id == R.id.nav_admin_users) {
                 startActivity(new Intent(this, AdminUsersActivity.class)
@@ -109,7 +109,6 @@ public class AdminEventsActivity extends AppCompatActivity {
             return false;
         });
 
-        // ---------------- Firestore Observe ----------------
         repo.events().observe(this, list -> {
             List<Event> data = (list == null) ? new ArrayList<>() : new ArrayList<>(list);
             adapter.submitList(data);

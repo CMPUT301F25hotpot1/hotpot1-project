@@ -1,3 +1,7 @@
+/**
+ * Admin screen showing all notification logs for a specific user.
+ * Loads logs from Firestore and supports navigation to other admin sections.
+ */
 package com.example.lottary.ui.admin;
 
 import android.content.Intent;
@@ -22,26 +26,28 @@ public class NotificationLogsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification_logs);
 
+        // Retrieve user device ID
         String deviceID = getIntent().getStringExtra("deviceID");
 
         repo = FirestoreNotificationRepository.get();
         adapter = new NotificationLogsAdapter();
 
+        // Recycler setup
         RecyclerView rv = findViewById(R.id.recycler_logs);
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(adapter);
 
-        // ✅ Load logs
+        // Load logs from Firestore
         repo.getLogsForUser(deviceID, logs -> adapter.submitList(logs));
 
-        // ✅ Setup bottom navigation
         setupBottomNav();
     }
 
+    // Bottom navigation for admin sections
     private void setupBottomNav() {
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
 
-        // ✅ Highlight "Users" tab (same category)
+        // Highlight Users tab since logs belong to a user
         bottomNav.setSelectedItemId(R.id.nav_admin_users);
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -51,18 +57,21 @@ public class NotificationLogsActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AdminEventsActivity.class));
                 overridePendingTransition(0,0);
                 return true;
+            }
 
-            } else if (id == R.id.nav_admin_users) {
+            if (id == R.id.nav_admin_users) {
                 startActivity(new Intent(this, AdminUsersActivity.class));
                 overridePendingTransition(0,0);
                 return true;
+            }
 
-            } else if (id == R.id.nav_admin_images) {
+            if (id == R.id.nav_admin_images) {
                 startActivity(new Intent(this, AdminImagesActivity.class));
                 overridePendingTransition(0,0);
                 return true;
+            }
 
-            } else if (id == R.id.nav_admin_dashboard) {
+            if (id == R.id.nav_admin_dashboard) {
                 startActivity(new Intent(this, AdminDashboardActivity.class));
                 overridePendingTransition(0,0);
                 return true;

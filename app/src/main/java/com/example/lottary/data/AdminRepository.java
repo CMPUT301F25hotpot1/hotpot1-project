@@ -1,3 +1,8 @@
+/**
+ * Repository for managing admin-side event data.
+ * Provides realtime Firestore updates, search filtering,
+ * status filtering, and exposes results through LiveData.
+ */
 package com.example.lottary.data;
 
 import androidx.annotation.MainThread;
@@ -13,6 +18,7 @@ import java.util.List;
 public class AdminRepository {
 
     private static AdminRepository INSTANCE;
+
     public static synchronized AdminRepository get() {
         if (INSTANCE == null) INSTANCE = new AdminRepository();
         return INSTANCE;
@@ -20,34 +26,31 @@ public class AdminRepository {
 
     private AdminRepository() {}
 
-    // ✅ 所有事件（Firestore 原始数据）
+    // Raw Firestore event list
     private List<Event> allEvents = new ArrayList<>();
 
-    // ✅ LiveData 提供给 UI（过滤后的结果）
+    // Filtered list exposed to UI
     private final MutableLiveData<List<Event>> eventsLive =
             new MutableLiveData<>(new ArrayList<>());
     public LiveData<List<Event>> events() { return eventsLive; }
 
-    // ✅ 搜索 / 筛选变量
+    // Search / filter state
     private String searchQuery = "";
-    private String filterStatus = "ALL"; // ALL / OPEN / CLOSED / FULL
+    private String filterStatus = "ALL";
 
     @Nullable
     private ListenerRegistration eventsReg;
 
-    // ============================
-    // ✅ Firestore realtime listen
-    // ============================
-
+    // Start realtime listener
     @MainThread
     public void startAdminEventsRealtime() {
         stopAdminEventsRealtime();
         eventsReg = FirestoreEventRepository.get().listenRecentCreated(items -> {
-            // Firestore 回调新数据
             setEventsFromFirestore(items);
         });
     }
 
+    // Stop realtime listener
     @MainThread
     public void stopAdminEventsRealtime() {
         if (eventsReg != null) {
@@ -56,27 +59,25 @@ public class AdminRepository {
         }
     }
 
-    // ✅ Firestore 返回最新列表后保存
+    // Receive new Firestore data
     public void setEventsFromFirestore(List<Event> items) {
         allEvents = new ArrayList<>(items);
         applyFilters();
     }
 
-    // ============================
-    // ✅ 搜索 / 筛选逻辑
-    // ============================
-
+    // Update search query
     public void search(String query) {
         searchQuery = (query == null ? "" : query.trim());
         applyFilters();
     }
 
+    // Update status filter
     public void setFilter(String status) {
-        filterStatus = status; // "ALL", "OPEN", "CLOSED", "FULL"
+        filterStatus = status;
         applyFilters();
     }
 
-    // ✅ 根据搜索词 + 状态动态生成列表
+    // Apply search + status filters
     private void applyFilters() {
         List<Event> result = new ArrayList<>();
 
@@ -98,14 +99,10 @@ public class AdminRepository {
         eventsLive.postValue(result);
     }
 
-    // ============================
-    // ✅ UI 移除某事件（仅本地，不删 Firestore）
-    // ============================
-
+    // Remove event locally (UI only; does not modify Firestore)
     public void removeEvent(Event event) {
         if (event == null) return;
-
         allEvents.remove(event);
-        applyFilters(); // 保持当前筛选
+        applyFilters();
     }
 }

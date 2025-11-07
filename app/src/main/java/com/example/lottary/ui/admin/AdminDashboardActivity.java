@@ -10,9 +10,9 @@ import com.example.lottary.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
- * Admin "Latest Events" screen (your activity_admin_dashboard.xml).
- * Bottom bar: Events / Users / Images / Admin (profile).
- * NOTE: This class does NOT touch repositories or adapters to keep it compile-clean.
+ * Activity for the Admin "Latest Events" section.
+ * Handles bottom-navigation switching between Events, Users, Images, and Admin tabs.
+ * This screen simply displays the dashboard layout and routes navigation actions.
  */
 public class AdminDashboardActivity extends AppCompatActivity {
 
@@ -21,17 +21,13 @@ public class AdminDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_dashboard);
 
-        // Bottom nav
         BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
-
-        // This page shows “Latest Events”, so highlight the Events tab.
         nav.setSelectedItemId(R.id.nav_admin_events);
 
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
             if (id == R.id.nav_admin_events) {
-                // already here (events area)
                 return true;
             }
             if (id == R.id.nav_admin_users) {
@@ -47,7 +43,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 return true;
             }
             if (id == R.id.nav_admin_dashboard) {
-                // “Admin” tab goes to the Admin Profile page
                 startActivity(new Intent(this, AdminProfileActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);

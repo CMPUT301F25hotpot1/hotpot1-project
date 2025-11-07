@@ -1,3 +1,8 @@
+/**
+ * Admin profile screen showing the organizer's account info.
+ * Loads user data from Firestore and supports switching
+ * to the normal (Browse) user view via a button.
+ */
 package com.example.lottary.ui.admin;
 
 import android.content.Intent;
@@ -28,34 +33,34 @@ public class AdminProfileActivity extends AppCompatActivity {
 
         repo = FirestoreUserRepository.get();
 
+        // UI references
         tvName = findViewById(R.id.tvName);
         tvEmail = findViewById(R.id.tvEmail);
         tvPhone = findViewById(R.id.tvPhone);
 
-        // ✅ 获取当前手机的 deviceID（就是 Firestore 里 userDeviceId）
+        // Load device ID used as Firestore user key
         String deviceId = Settings.Secure.getString(
                 getContentResolver(),
                 Settings.Secure.ANDROID_ID
         );
-
         if (deviceId == null || deviceId.trim().isEmpty()) {
-            deviceId = "device_demo";
+            deviceId = "device_demo"; // fallback
         }
 
-        // ✅ Firestore 实时加载用户资料（这次一定能成功）
+        // Realtime Firestore user listener
         repo.listenUser(deviceId, snap -> {
             User u = snap.toObject(User.class);
             if (u != null) {
                 tvName.setText(u.getName());
                 tvEmail.setText(u.getEmail());
                 tvPhone.setText(
-                        (u.getPhoneNum() == null || u.getPhoneNum().isEmpty()) ?
-                                "None" : u.getPhoneNum()
+                        (u.getPhoneNum() == null || u.getPhoneNum().isEmpty())
+                                ? "None" : u.getPhoneNum()
                 );
             }
         });
 
-        // ✅ Swap to user (Organizer) view
+        // Switch to normal Browse UI
         Button btnSwap = findViewById(R.id.btnSwapToUser);
         btnSwap.setOnClickListener((View v) -> {
             startActivity(new Intent(this, BrowseActivity.class)
@@ -64,7 +69,7 @@ public class AdminProfileActivity extends AppCompatActivity {
             finish();
         });
 
-        // ✅ Bottom nav
+        // Bottom navigation
         BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
         nav.setSelectedItemId(R.id.nav_admin_dashboard);
 
@@ -93,7 +98,7 @@ public class AdminProfileActivity extends AppCompatActivity {
             }
 
             if (id == R.id.nav_admin_dashboard) {
-                return true;
+                return true; // already here
             }
 
             return false;

@@ -1,3 +1,7 @@
+/**
+ * Admin screen for viewing system notification messages.
+ * Displays a simple list backed by an ArrayAdapter.
+ */
 package com.example.lottary.ui.admin;
 
 import android.os.Bundle;
@@ -23,6 +27,7 @@ public class AdminNotificationsActivity extends AppCompatActivity {
 
         ListView list = findViewById(R.id.admin_notifications_list);
 
+        // Basic string adapter for notifications
         adapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
@@ -31,7 +36,7 @@ public class AdminNotificationsActivity extends AppCompatActivity {
 
         list.setAdapter(adapter);
 
-        // ✅ 从 repo 获取的数据更新你的通知（如果你之后需要）
-        // repo.events().observe(this, e -> { ... });
+        // If needed later: observe Firestore notification logs here
+        // repo.notifications().observe(this, logs -> { ... });
     }
 }

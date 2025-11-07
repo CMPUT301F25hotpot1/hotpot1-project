@@ -18,14 +18,27 @@ import com.bumptech.glide.Glide;
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
 
+/**
+ * Adapter used by the Admin Events screen to render a list of Event objects.
+ * Each row contains title, city, time, venue, status color, thumbnail image,
+ * and actions such as "remove" or viewing the event image.
+ */
 public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.ViewHolder> {
 
+    /**
+     * Callback interface invoked when an event's "Remove" button is clicked.
+     */
     public interface OnRemoveClick {
         void onRemove(Event e);
     }
 
     private final OnRemoveClick removeClick;
 
+    /**
+     * Creates a new AdminEventsAdapter.
+     *
+     * @param removeClick callback executed when the user requests to remove an event
+     */
     public AdminEventsAdapter(OnRemoveClick removeClick) {
         super(DIFF_CALLBACK);
         this.removeClick = removeClick;
@@ -58,12 +71,20 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
         holder.bind(e);
     }
 
+    /**
+     * ViewHolder responsible for binding and managing a single event row.
+     */
     class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView title, city, time, venue, status;
         Button removeBtn, viewImageBtn;
         ImageView eventImage;
 
+        /**
+         * Constructs a ViewHolder and initializes all view references.
+         *
+         * @param itemView the root view of the row layout
+         */
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
@@ -78,13 +99,17 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
             eventImage = itemView.findViewById(R.id.event_image);
         }
 
+        /**
+         * Binds data from an Event model into the row's views.
+         *
+         * @param e the Event to display
+         */
         void bind(Event e) {
 
             title.setText(e.getTitle());
             time.setText(e.getPrettyTime());
             venue.setText(e.getVenue());
 
-            // ✅ status color logic
             if (e.isFull()) {
                 status.setText("Full");
                 status.setTextColor(Color.parseColor("#CC0000"));
@@ -95,19 +120,20 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
 
             removeBtn.setOnClickListener(v -> removeClick.onRemove(e));
 
-            // ✅ Load thumbnail image
             Glide.with(itemView.getContext())
                     .load(e.getImageUrl())
                     .into(eventImage);
 
-            // ✅ Clicking thumbnail → open preview dialog
             eventImage.setOnClickListener(v -> showImagePreview(e.getImageUrl()));
-
-            // ✅ Clicking View Image button → open preview dialog
             viewImageBtn.setOnClickListener(v -> showImagePreview(e.getImageUrl()));
         }
 
-        // ✅ Beautiful small rounded image preview dialog
+        /**
+         * Displays a small dialog showing a larger preview of the event’s image.
+         * Clicking the preview dismisses the dialog.
+         *
+         * @param url image URL to display
+         */
         private void showImagePreview(String url) {
 
             Dialog dialog = new Dialog(itemView.getContext());
@@ -119,10 +145,8 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
                     .load(url)
                     .into(preview);
 
-            // ✅ make background transparent for rounded card
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
-            // ✅ tap image to dismiss
             preview.setOnClickListener(v -> dialog.dismiss());
 
             dialog.show();

@@ -1,3 +1,7 @@
+/**
+ * Detail screen for a single uploaded image.
+ * Shows a full preview and allows deleting the image from Firestore.
+ */
 package com.example.lottary.ui.admin;
 
 import android.content.DialogInterface;
@@ -27,17 +31,19 @@ public class ImageDetailActivity extends AppCompatActivity {
     private String imageUrl;
     private String imageTitle;
 
-    private static final String COLLECTION_IMAGES = "images"; // 如与你项目不同，请改为实际集合名
+    private static final String COLLECTION_IMAGES = "images";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_detail);
 
+        // Retrieve image info from Intent
         imageId = getIntent().getStringExtra(EXTRA_IMAGE_ID);
         imageUrl = getIntent().getStringExtra(EXTRA_IMAGE_URL);
         imageTitle = getIntent().getStringExtra(EXTRA_IMAGE_TITLE);
 
+        // Load preview
         ImageView iv = findViewById(R.id.ivPreview);
         Glide.with(this)
                 .load(imageUrl == null || imageUrl.isEmpty() ? null : imageUrl)
@@ -45,6 +51,7 @@ public class ImageDetailActivity extends AppCompatActivity {
                 .error(R.drawable.placeholder_square)
                 .into(iv);
 
+        // Delete button
         MaterialButton btnDelete = findViewById(R.id.btnDeleteImage);
         btnDelete.setOnClickListener(v ->
                 new MaterialAlertDialogBuilder(this)
@@ -56,11 +63,13 @@ public class ImageDetailActivity extends AppCompatActivity {
         );
     }
 
+    // Executes Firestore delete operation
     private void doDelete() {
         if (imageId == null || imageId.isEmpty()) {
             Toast.makeText(this, R.string.delete_failed, Toast.LENGTH_SHORT).show();
             return;
         }
+
         FirebaseFirestore.getInstance()
                 .collection(COLLECTION_IMAGES)
                 .document(imageId)

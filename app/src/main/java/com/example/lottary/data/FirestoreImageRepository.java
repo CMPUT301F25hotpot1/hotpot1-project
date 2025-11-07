@@ -1,3 +1,8 @@
+/**
+ * Repository for loading, listening, and deleting image data.
+ * Uses Firestore as the primary source and falls back to Firebase Storage when empty.
+ * Includes helper APIs for deleting images by Firestore id, Storage name, or download URL.
+ */
 package com.example.lottary.data;
 
 import android.net.Uri;
@@ -22,18 +27,16 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 优先监听 Firestore 的 "images"（url/title/createdAt）;
- * 若集合为空，自动回退到 Firebase Storage 的 "images/" 目录。
- */
 public class FirestoreImageRepository {
 
+    /** Callback for realtime image updates */
     public interface ImagesListener {
         void onChanged(@Nullable List<Image> images, @Nullable Exception error);
     }
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    /** Listen for latest images; fallback to Storage if Firestore empty */
     public ListenerHandle listenLatest(ImagesListener listener) {
         Query q = db.collection("images")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
@@ -47,19 +50,22 @@ public class FirestoreImageRepository {
                     listener.onChanged(null, error);
                     return;
                 }
+
+                // Firestore has data
                 if (value != null && !value.isEmpty()) {
                     List<Image> out = new ArrayList<>();
                     for (DocumentSnapshot d : value.getDocuments()) {
                         Image img = d.toObject(Image.class);
                         if (img != null) {
                             img.setId(d.getId());
+                            // Ensure createdAt exists
                             if (img.getCreatedAt() == null) img.setCreatedAt(Timestamp.now());
                             out.add(img);
                         }
                     }
                     listener.onChanged(out, null);
                 } else {
-                    // Firestore 没数据 → 回退到 Storage
+                    // No Firestore data → try Storage
                     fallbackStorage(listener);
                 }
             }
@@ -68,7 +74,7 @@ public class FirestoreImageRepository {
         return new ListenerHandle(reg);
     }
 
-    /** 回退：从 Firebase Storage 的 images/ 目录读取文件下载链接 */
+    /** Storage fallback: list files under images/ directory */
     private void fallbackStorage(ImagesListener listener) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference dir = storage.getReference().child("images");
@@ -80,9 +86,11 @@ public class FirestoreImageRepository {
                         listener.onChanged(new ArrayList<>(), null);
                         return;
                     }
+
                     List<Image> result = new ArrayList<>();
                     List<Task<Uri>> tasks = new ArrayList<>();
 
+                    // Fetch download URLs for each file
                     for (StorageReference item : items) {
                         Task<Uri> t = item.getDownloadUrl()
                                 .addOnSuccessListener(uri -> {
@@ -93,19 +101,19 @@ public class FirestoreImageRepository {
                                     img.setCreatedAt(Timestamp.now());
                                     synchronized (result) { result.add(img); }
                                 });
+
                         tasks.add(t);
                     }
 
-                    Tasks.whenAllComplete(tasks).addOnCompleteListener(done ->
-                            listener.onChanged(result, null)
-                    ).addOnFailureListener(e ->
-                            listener.onChanged(null, e)
-                    );
+                    // Wait for all download URL tasks to complete
+                    Tasks.whenAllComplete(tasks)
+                            .addOnCompleteListener(done -> listener.onChanged(result, null))
+                            .addOnFailureListener(e -> listener.onChanged(null, e));
                 })
                 .addOnFailureListener(e -> listener.onChanged(null, e));
     }
 
-    /** 监听句柄 */
+    /** Wrapper for unregistering Firestore listener */
     public static class ListenerHandle {
         private final ListenerRegistration reg;
         public ListenerHandle(@NonNull ListenerRegistration r) { this.reg = r; }
@@ -113,16 +121,13 @@ public class FirestoreImageRepository {
     }
 
     // ----------------------------------------------------------------------
-    // ------------------------- ✨ 新增：删除相关 API -------------------------
+    // Deletion APIs
     // ----------------------------------------------------------------------
 
-    /** 删除回调 */
+    /** Callback for delete operations */
     public interface DeleteCallback { void onComplete(@Nullable Exception error); }
 
-    /**
-     * 删除 Firestore 中的一条图片文档。
-     * 适用于“方案A：仅 Firestore 记录外链 URL”的情况。
-     */
+    /** Delete Firestore document by id */
     public void deleteByFirestoreId(@NonNull String imageDocId, @NonNull DeleteCallback cb) {
         db.collection("images").document(imageDocId)
                 .delete()
@@ -130,11 +135,7 @@ public class FirestoreImageRepository {
                 .addOnFailureListener(cb::onComplete);
     }
 
-    /**
-     * 删除 Storage 中的文件（images/{fileName}）。
-     * 适用于“方案B：使用 Firebase Storage 存文件”的情况，
-     * 例如回退列表里我们把 item.getName() 当成 id 展示时，可以用它来删除。
-     */
+    /** Delete Storage file using file name under images/ */
     public void deleteByStorageName(@NonNull String fileName, @NonNull DeleteCallback cb) {
         FirebaseStorage.getInstance()
                 .getReference()
@@ -145,16 +146,16 @@ public class FirestoreImageRepository {
                 .addOnFailureListener(cb::onComplete);
     }
 
-    /**
-     * 通过下载 URL 删除 Storage 文件（如果你只拿得到 URL）。
-     * 注意：要求这个 URL 指向的就是你项目下的可删除资源。
-     */
+    /** Delete Storage file using download URL */
     public void deleteByStorageUrl(@NonNull String downloadUrl, @NonNull DeleteCallback cb) {
         try {
-            StorageReference ref = FirebaseStorage.getInstance().getReferenceFromUrl(downloadUrl);
+            StorageReference ref =
+                    FirebaseStorage.getInstance().getReferenceFromUrl(downloadUrl);
+
             ref.delete()
                     .addOnSuccessListener(unused -> cb.onComplete(null))
                     .addOnFailureListener(cb::onComplete);
+
         } catch (Exception e) {
             cb.onComplete(e);
         }
