@@ -56,7 +56,6 @@ public class FirestoreEventRepository {
                 });
     }
 
-    /** 等候名单（waitingList）里包含该用户的事件 */
     public ListenerRegistration listenJoined(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("waitingList", deviceId)
                 .addSnapshotListener((snap, err) -> {
@@ -65,7 +64,6 @@ public class FirestoreEventRepository {
                 });
     }
 
-    /** ✅ 新增：chosen（收到邀请/被选中）里包含该用户的事件 */
     public ListenerRegistration listenChosen(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("chosen", deviceId)
                 .addSnapshotListener((snap, err) -> {
@@ -74,7 +72,6 @@ public class FirestoreEventRepository {
                 });
     }
 
-    /** ✅ 新增：signedUp（已报名确认）里包含该用户的事件 */
     public ListenerRegistration listenSigned(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("signedUp", deviceId)
                 .addSnapshotListener((snap, err) -> {
@@ -83,7 +80,6 @@ public class FirestoreEventRepository {
                 });
     }
 
-    /** ✅ 新增：cancelled（已拒绝/取消）里包含该用户的事件 */
     public ListenerRegistration listenCancelled(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("cancelled", deviceId)
                 .addSnapshotListener((snap, err) -> {
@@ -97,7 +93,6 @@ public class FirestoreEventRepository {
                 .addSnapshotListener((snap, err) -> { if (snap != null) l.onChanged(snap); });
     }
 
-    // ---------- writes ----------
     public Task<DocumentReference> createEvent(Map<String, Object> fields) {
         ensureArrays(fields, "waitingList", "chosen", "signedUp", "cancelled");
         if (!fields.containsKey("createdAt")) fields.put("createdAt", Timestamp.now());
@@ -108,9 +103,6 @@ public class FirestoreEventRepository {
         return events.document(eventId).set(fields, SetOptions.merge());
     }
 
-    /**
-     * 仅抽签（原实现，保留兼容）
-     */
     public Task<Void> drawWinners(@NonNull String eventId, int maxToDraw) {
         DocumentReference ref = events.document(eventId);
         return db.runTransaction(tr -> {
@@ -143,15 +135,9 @@ public class FirestoreEventRepository {
         });
     }
 
-    /**
-     * 方案C：抽签 + 自动发送“已选中”通知到 notifications 集合（type="selected"）
-     * - message 可自定义；为 null/空时会给一个默认消息
-     * - organizerId 和 eventTitle 会从 event 文档里自动读取（字段：creatorDeviceId / title）
-     */
     public Task<Void> drawWinnersAndNotify(@NonNull String eventId, String message) {
         DocumentReference ref = events.document(eventId);
 
-        // 先事务：抽签并更新 chosen，返回需要发通知的 winners + 元信息
         return db.runTransaction(tr -> {
             DocumentSnapshot d = tr.get(ref);
             if (!d.exists()) return new DrawResult(); // 空
@@ -218,8 +204,6 @@ public class FirestoreEventRepository {
         });
     }
 
-    // ---------- helpers ----------
-    @SuppressWarnings("unchecked")
     private static List<String> strList(Object o) {
         if (o instanceof List<?>) {
             List<String> out = new ArrayList<>();
@@ -231,7 +215,6 @@ public class FirestoreEventRepository {
 
     private static String str(Object o){ return o == null ? "" : o.toString(); }
 
-    // user accepts invitation (moves into signedUp, removes from others)
     public Task<Void> signUp(@NonNull String eventId, @NonNull String deviceId) {
         DocumentReference ref = events.document(eventId);
         return db.runTransaction(tr -> {
@@ -265,7 +248,6 @@ public class FirestoreEventRepository {
         });
     }
 
-    // user declines invitation (moves into cancelled)
     public Task<Void> decline(@NonNull String eventId, @NonNull String deviceId) {
         DocumentReference ref = events.document(eventId);
         return db.runTransaction(tr -> {
@@ -296,7 +278,6 @@ public class FirestoreEventRepository {
         });
     }
 
-    // waiting list ops
     public Task<Void> joinWaitingList(@NonNull String eventId, @NonNull String deviceId) {
         DocumentReference ref = events.document(eventId);
         return db.runTransaction(tr -> {
@@ -340,7 +321,6 @@ public class FirestoreEventRepository {
         });
     }
 
-    // ---------- CSV helper ----------
     public static String buildCsvFromEvent(@NonNull DocumentSnapshot d) {
         StringBuilder sb = new StringBuilder();
         sb.append("status,entrantId\n");
@@ -355,7 +335,6 @@ public class FirestoreEventRepository {
         for (Object o : (List<?>) arr) sb.append(status).append(",").append(o).append("\n");
     }
 
-    // ---------- mapping ----------
     private List<Event> mapList(QuerySnapshot snap) {
         if (snap == null || snap.isEmpty()) return Collections.emptyList();
         List<Event> list = new ArrayList<>();
@@ -396,7 +375,6 @@ public class FirestoreEventRepository {
         for (String k : keys) if (!(map.get(k) instanceof List)) map.put(k, new ArrayList<String>());
     }
 
-    // transaction result carrier for drawWinnersAndNotify
     private static class DrawResult {
         List<String> winners = new ArrayList<>();
         String organizerId = "";

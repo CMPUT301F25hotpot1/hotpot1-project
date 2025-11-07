@@ -44,7 +44,6 @@ public class ManageEventActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_event);
 
-        // 取 eventId（兼容两种 key）
         eventId = getIntent().getStringExtra(EditEventActivity.EXTRA_EVENT_ID);
         if (TextUtils.isEmpty(eventId)) {
             eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
@@ -55,7 +54,6 @@ public class ManageEventActivity extends AppCompatActivity {
             return;
         }
 
-        // 绑定视图
         topBar    = findViewById(R.id.top_app_bar);
         txtTitle  = findViewById(R.id.txt_title);
         tabLayout = findViewById(R.id.tab_layout);
@@ -68,10 +66,8 @@ public class ManageEventActivity extends AppCompatActivity {
 
         if (topBar != null) topBar.setNavigationOnClickListener(v -> finish());
 
-        // ====== ✅ 用真正的 EntrantsListFragment 填充四个 Tab ======
         viewPager.setAdapter(new FragmentStateAdapter(this) {
             @NonNull @Override public Fragment createFragment(int position) {
-                // 0=All, 1=Chosen, 2=Signed-Up, 3=Cancelled
                 return EntrantsListFragment.newInstance(eventId, position);
             }
             @Override public int getItemCount() { return 4; }
@@ -86,10 +82,8 @@ public class ManageEventActivity extends AppCompatActivity {
             }
         }).attach();
 
-        // 监听事件文档 → 更新标题
         reg = FirestoreEventRepository.get().listenEvent(eventId, this::bindEventHeader);
 
-        // 1) 抽签并发送“已选中”通知
         btnDraw.setOnClickListener(v -> {
             btnDraw.setEnabled(false);
             FirestoreEventRepository.get()
@@ -105,22 +99,18 @@ public class ManageEventActivity extends AppCompatActivity {
                     });
         });
 
-        // 2) 进入“发送通知”页面（若未实现则提示）
         btnNotify.setOnClickListener(v ->
                 startIfExists("com.example.lottary.ui.events.manage.SendNotificationsActivity"));
 
-        // 3) 导出 CSV
         btnExport.setOnClickListener(v ->
                 com.google.firebase.firestore.FirebaseFirestore.getInstance()
                         .collection("events").document(eventId).get()
                         .addOnSuccessListener(this::shareCsvFromDoc)
                         .addOnFailureListener(e -> toast("Export failed: " + e.getMessage())));
 
-        // 4) 查看二维码
         btnQr.setOnClickListener(v ->
                 startIfExists("com.example.lottary.ui.events.manage.QrCodeActivity"));
 
-        // 5) 查看地图
         btnMap.setOnClickListener(v ->
                 startIfExists("com.example.lottary.ui.events.manage.MapActivity"));
     }

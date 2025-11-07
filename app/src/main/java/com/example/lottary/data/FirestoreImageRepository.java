@@ -120,10 +120,6 @@ public class FirestoreImageRepository {
         public void remove() { if (reg != null) reg.remove(); }
     }
 
-    // ----------------------------------------------------------------------
-    // Deletion APIs
-    // ----------------------------------------------------------------------
-
     /** Callback for delete operations */
     public interface DeleteCallback { void onComplete(@Nullable Exception error); }
 

@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
+import com.example.lottary.data.FirestoreEventRepository;
+
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,25 +27,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * CreateEventActivity
- *
- * Purpose:
- * This activity allows users to create and submit a new event. It handles user input for
- * event details such as title, description, registration period, event time, capacity,
- * price, and location settings. The data is validated, formatted, and saved to Firebase
- * Firestore through the FirestoreEventRepository.
- *
- * Design Role:
- * - Acts as the “Create” screen in the event management flow.
- * - Connects UI input fields to a Firestore data model.
- * - Uses Android system dialogs (DatePickerDialog, TimePickerDialog) for consistent UX.
- *
- * Outstanding Issues / Notes:
- * - Poster upload is currently a placeholder (stub).
- * - Does not yet validate time/date relationships (e.g., start before end).
- * - Lacks error handling for missing network or Firebase failures beyond basic toast output.
- */
 public class CreateEventActivity extends AppCompatActivity {
 
     private MaterialToolbar topBar;
@@ -90,6 +73,7 @@ public class CreateEventActivity extends AppCompatActivity {
     }
 
     private void wirePickers() {
+
         etStart.setText(fmtTime.format(calStart.getTime()));
         etEnd.setText(fmtTime.format(calEnd.getTime()));
         etRegStart.setText(fmtDate.format(calRegStart.getTime()));
@@ -174,6 +158,7 @@ public class CreateEventActivity extends AppCompatActivity {
         fields.put("capacity", capacity);
         fields.put("price", price);
         fields.put("geolocationEnabled", switchGeo.isChecked());
+
         fields.put("creatorDeviceId", deviceId);
         fields.put("organizerId", deviceId);
         fields.put("createdAt", Timestamp.now());

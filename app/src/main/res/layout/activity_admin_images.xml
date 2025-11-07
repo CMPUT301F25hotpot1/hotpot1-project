@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Row 1: 搜索 -->
     <LinearLayout
         android:id="@+id/rowSearch"
         android:layout_width="0dp"
@@ -45,7 +44,6 @@
             android:text="@string/search_caps"/>
     </LinearLayout>
 
-    <!-- Row 2: 标题 + Sort -->
     <LinearLayout
         android:id="@+id/rowTitleSort"
         android:layout_width="0dp"
@@ -77,7 +75,6 @@
             android:text="@string/sort"/>
     </LinearLayout>
 
-    <!-- 网格列表 -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/admin_images_list"
         android:layout_width="0dp"
@@ -103,7 +100,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- 底部四个 Tab：56dp 高度、24dp 图标 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavAdmin"
         android:layout_width="0dp"

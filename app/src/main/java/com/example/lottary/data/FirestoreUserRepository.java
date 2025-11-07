@@ -31,10 +31,6 @@ public class FirestoreUserRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection("users");
 
-    // ============================================================
-    // ✅ WRITES
-    // ============================================================
-
     public Task<Void> createUser(String deviceID, Map<String, Object> fields) {
         if (!fields.containsKey("createdAt"))
             fields.put("createdAt", Timestamp.now());
@@ -52,10 +48,6 @@ public class FirestoreUserRepository {
     public DocumentReference hasUser(@NonNull String deviceID) {
         return users.document(deviceID);
     }
-
-    // ============================================================
-    // ✅ LISTENERS
-    // ============================================================
 
     public interface UsersListener { void onChanged(@NonNull List<User> items); }
     public interface DocListener    { void onChanged(DocumentSnapshot doc); }
@@ -81,10 +73,6 @@ public class FirestoreUserRepository {
                 });
     }
 
-    // ============================================================
-    // ✅ MAPPING USERS
-    // ============================================================
-
     private List<User> mapList(QuerySnapshot snap) {
         if (snap == null || snap.isEmpty()) return Collections.emptyList();
         List<User> list = new ArrayList<>();
@@ -93,13 +81,11 @@ public class FirestoreUserRepository {
     }
 
     private User map(DocumentSnapshot d) {
-        // ✅ Must match Firestore field names EXACTLY
         String deviceID = safe(d.getString("userDeviceId"));
         String name     = safe(d.getString("name"));
         String email    = safe(d.getString("email"));
         String phone    = safe(d.getString("phoneNumber"));
 
-        // ✅ Correct parameter order for your User(name, email, phoneNum, deviceID)
         return new User(
                 name,
                 email,
@@ -112,11 +98,6 @@ public class FirestoreUserRepository {
         return s == null ? "" : s;
     }
 
-    // ============================================================
-    // ✅ ADMIN USERS PAGE
-    // ============================================================
-
-    // Load all users once
     public void getAllUsers(@NonNull UsersListener callback) {
         users.get().addOnSuccessListener(snap -> {
             if (snap == null) {
@@ -127,7 +108,6 @@ public class FirestoreUserRepository {
         });
     }
 
-    // Search users by name
     public void searchUsers(@NonNull String keyword, @NonNull UsersListener callback) {
         users.whereGreaterThanOrEqualTo("name", keyword)
                 .whereLessThanOrEqualTo("name", keyword + "\uf8ff")
@@ -141,7 +121,6 @@ public class FirestoreUserRepository {
                 });
     }
 
-    // Wrapper for deleteUser
     public void removeUser(@NonNull String userID) {
         deleteUser(userID);
     }

@@ -57,7 +57,6 @@ public class MapActivity extends AppCompatActivity {
         try {
             startActivity(mapIntent);
         } catch (ActivityNotFoundException e) {
-            // 没有谷歌地图，尝试任意地图
             startActivity(new Intent(Intent.ACTION_VIEW, gmmIntentUri));
         }
     }

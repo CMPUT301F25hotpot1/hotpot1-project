@@ -17,22 +17,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * EntrantEventsAdapter
+ * Entrant（加入者）视角卡片适配器：
+ * - 右上角显示状态：Open / Selected / Not Selected
+ * - 底部动态显示：Sign Up / Decline / Leave Waiting List
  *
- * Purpose:
- * RecyclerView adapter that renders the “Joined Events” list for an entrant/user.
- * Each card displays event title, time, place, a status badge (Open / Selected / Not Selected),
- * and shows action buttons depending on the precomputed visibility flags in {@link EntrantRow}.
- *
- * Design Role:
- * - Pure view-binding adapter: relies on {@link JoinedEventsFragment} to supply a list of
- *   precomputed {@link EntrantRow} items (including status text and which buttons to show).
- * - Delegates button actions via the {@link Listener} callback so the fragment handles business logic.
- *
- * Outstanding Issues / Notes:
- * - No diffing optimization (uses notifyDataSetChanged()); consider ListAdapter + DiffUtil if lists grow.
- * - Assumes {@link Event} provides non-null formatted fields (e.g., getPrettyStartTime()).
- * - Minimal error/empty handling; relies on upstream filtering and data preparation.
+ * 数据模型：JoinedEventsFragment.EntrantRow（包含 Event、status、按钮可见性）
  */
 public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdapter.VH> {
 
@@ -47,6 +36,7 @@ public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdap
 
     public EntrantEventsAdapter(Listener cb) { this.cb = cb; }
 
+    /** 接收 EntrantRow 列表（与 JoinedEventsFragment.render() 对齐） */
     public void submit(List<EntrantRow> list) {
         items.clear();
         if (list != null) items.addAll(list);
@@ -68,6 +58,7 @@ public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdap
         h.title.setText(e.getTitle());
         h.time.setText(e.getPrettyStartTime());
 
+        // 地点展示：city · venue（有哪个用哪个）
         String placeText;
         if (!e.getCity().isEmpty() && !e.getVenue().isEmpty()) {
             placeText = e.getCity() + " · " + e.getVenue();
@@ -78,13 +69,16 @@ public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdap
         }
         h.place.setText(placeText);
 
+        // —— 状态角标 —— //
         h.status.setVisibility(View.VISIBLE);
         h.status.setText(row.status);
 
+        // —— 按钮可见性（由 JoinedEventsFragment 计算完成，这里直接使用） —— //
         h.btnSignUp.setVisibility(row.showSignUp ? View.VISIBLE : View.GONE);
         h.btnDecline.setVisibility(row.showDecline ? View.VISIBLE : View.GONE);
         h.btnLeave.setVisibility(row.showLeave ? View.VISIBLE : View.GONE);
 
+        // —— 点击回调 —— //
         h.btnSignUp.setOnClickListener(v -> { if (cb != null) cb.onSignUp(e); });
         h.btnDecline.setOnClickListener(v -> { if (cb != null) cb.onDecline(e); });
         h.btnLeave.setOnClickListener(v -> { if (cb != null) cb.onLeaveWaitlist(e); });

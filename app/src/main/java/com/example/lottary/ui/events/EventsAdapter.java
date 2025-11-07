@@ -15,24 +15,6 @@ import com.example.lottary.data.Event;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * EventsAdapter
- *
- * Purpose:
- * RecyclerView adapter responsible for displaying events that the current user has created
- * or is managing. Each card shows the event title and time, along with “Manage” and “Edit”
- * action buttons that delegate user actions to a provided Listener.
- *
- * Design Role:
- * - Serves as the organizer’s event list adapter (the “Created Events” view).
- * - Decouples UI rendering from the logic that handles management and editing actions.
- * - Relies on the {@link Event} model for presentation data such as formatted start time.
- *
- * Outstanding Issues / Notes:
- * - Uses notifyDataSetChanged(); could be optimized via DiffUtil for large datasets.
- * - Assumes non-null event fields (title, startTime); upstream null safety recommended.
- * - Lacks empty/error-state UI; relies on fragment or parent activity to handle visibility.
- */
 public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder> {
 
     public interface Listener {

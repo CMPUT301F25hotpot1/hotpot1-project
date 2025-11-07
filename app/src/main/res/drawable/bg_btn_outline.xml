@@ -2,18 +2,14 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <!-- 背景透明 -->
     <solid android:color="@android:color/transparent" />
 
-    <!-- 灰色边框 -->
     <stroke
         android:width="2dp"
         android:color="#808080" />
 
-    <!-- 圆角 -->
     <corners android:radius="12dp" />
 
-    <!-- 内边距 -->
     <padding
         android:left="16dp"
         android:top="8dp"

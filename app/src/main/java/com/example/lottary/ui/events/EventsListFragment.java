@@ -24,28 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * EventsListFragment
- *
- * Purpose:
- * Fragment that displays a list of events either created by the current device (organizer view)
- * or joined by the user (entrant view). It listens to Firestore for live updates, maintains an
- * in-memory list, and exposes a text filtering API used by the parent activity.
- *
- * Design Role:
- * - Acts as a reusable list screen for two modes, controlled by an argument flag.
- * - Owns the RecyclerView and its adapter, and applies client-side text filtering.
- * - Delegates navigation to edit/manage screens when list item actions are triggered.
- *
- * Data Flow:
- * - Retrieves ANDROID_ID as a lightweight device-scoped identifier.
- * - Subscribes to Firestore via FirestoreEventRepository and updates UI reactively.
- *
- * Outstanding Issues / Notes:
- * - Uses client-side filtering only; consider server-side search for large datasets.
- * - No paging; large lists may impact performance.
- * - Fallback device id "device_demo" is used when ANDROID_ID is unavailable.
- */
 public class EventsListFragment extends Fragment implements EventsAdapter.Listener {
 
     private static final String ARG_SHOW_CREATED = "ARG_SHOW_CREATED";
@@ -63,6 +41,7 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
     private EventsAdapter adapter;
     private ListenerRegistration reg;
 
+    // local data + text query
     private final List<Event> all = new ArrayList<>();
     private String query = "";
 
@@ -118,6 +97,7 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
         }
     }
 
+    /** filter API used by activity search */
     public void applyFilter(@NonNull String q) {
         query = q.trim();
         applyCurrentFilters();
@@ -138,6 +118,7 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
         adapter.submit(out);
     }
 
+    // EventsAdapter.Listener
     @Override
     public void onManage(@NonNull Event e) {
         Intent i = new Intent(requireContext(), ManageEventActivity.class);

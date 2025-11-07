@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 内容区：沿用你的原布局，放进一个 LinearLayout 里 -->
     <LinearLayout
         android:id="@+id/content"
         android:orientation="vertical"
@@ -17,7 +16,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ✅ Search Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -41,7 +39,6 @@
                 android:layout_height="40dp"/>
         </LinearLayout>
 
-        <!-- ✅ Filter Button -->
         <Button
             android:id="@+id/btn_filter"
             android:text="Filter"
@@ -49,7 +46,6 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp" />
 
-        <!-- ✅ Title -->
         <TextView
             android:id="@+id/txt_latest_events_title"
             android:text="Latest Events"
@@ -60,7 +56,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
-        <!-- ✅ List -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/admin_events_list"
             android:layout_width="match_parent"
@@ -70,7 +65,6 @@
 
     </LinearLayout>
 
-    <!-- ✅ 固定在底部的 Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavAdmin"
         android:layout_width="0dp"

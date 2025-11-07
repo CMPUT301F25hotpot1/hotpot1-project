@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 顶部标题 -->
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
@@ -18,7 +17,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <!-- ✅ 最新事件列表（RecyclerView） -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/admin_events_list"
         android:layout_width="0dp"
@@ -29,9 +27,7 @@
         app:layout_constraintBottom_toTopOf="@id/bottomNavAdmin"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-    
 
-    <!-- ✅ Admin 底部导航栏 -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavAdmin"
         android:layout_width="0dp"

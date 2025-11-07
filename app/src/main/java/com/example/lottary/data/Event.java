@@ -15,13 +15,9 @@ public class Event {
     private final boolean geolocationEnabled;
     private final String type;
 
-    // 新增字段
     private final String status;
     private final String imageUrl;
 
-    // ==========================================================
-    // ✅ ✅ ✅ 旧版兼容构造函数 (你的旧代码全部用这个)
-    // ==========================================================
     public Event(
             String id, String title, String city, String venue,
             String prettyStartTime, boolean full,
@@ -32,10 +28,9 @@ public class Event {
                 startTimeMs, registerStartMs, registerEndMs,
                 geolocationEnabled, type,
                 full ? "Full" : "Open",
-                "");  // imageUrl 默认空
+                "");
     }
 
-    // ✅ 旧版+status，仍保留兼容
     public Event(
             String id, String title, String city, String venue,
             String prettyStartTime, boolean full,
@@ -49,9 +44,6 @@ public class Event {
                 status, "");
     }
 
-    // ==========================================================
-    // ✅ ✅ ✅ 新版（带 imageUrl，但你不一定用）
-    // ==========================================================
     public Event(
             String id,
             String title,
@@ -74,9 +66,6 @@ public class Event {
                 imageUrl);
     }
 
-    // ==========================================================
-    // ✅ ✅ ✅ 最终主构造（所有字段）
-    // ==========================================================
     public Event(
             String id, String title, String city, String venue,
             String prettyStartTime, boolean full,
@@ -101,9 +90,6 @@ public class Event {
         this.imageUrl = imageUrl == null ? "" : imageUrl;
     }
 
-    // ==========================================================
-    // ✅ Getters（保持你的旧代码完全兼容）
-    // ==========================================================
     public String getId() { return id; }
     public String getTitle() { return title; }
     public String getCity() { return city; }
@@ -120,6 +106,5 @@ public class Event {
     public String getStatus() { return status; }
     public String getImageUrl() { return imageUrl; }
 
-    // ✅ 你旧代码使用的别名
     public String getPrettyTime() { return prettyStartTime; }
 }
