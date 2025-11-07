@@ -8,7 +8,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.ComponentActivity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -69,20 +68,15 @@ public class ManageEventActivity extends AppCompatActivity {
 
         if (topBar != null) topBar.setNavigationOnClickListener(v -> finish());
 
-        // Tabs + ViewPager2（占位 Fragment，确保可编译运行）
+        // ====== ✅ 用真正的 EntrantsListFragment 填充四个 Tab ======
         viewPager.setAdapter(new FragmentStateAdapter(this) {
             @NonNull @Override public Fragment createFragment(int position) {
-                String title;
-                switch (position) {
-                    case 0: title = "All Entrants"; break;
-                    case 1: title = "Chosen Entrants"; break;
-                    case 2: title = "Signed-up Entrants"; break;
-                    default: title = "Cancelled Entrants";
-                }
-                return PlaceholderFragment.newInstance(title);
+                // 0=All, 1=Chosen, 2=Signed-Up, 3=Cancelled
+                return EntrantsListFragment.newInstance(eventId, position);
             }
             @Override public int getItemCount() { return 4; }
         });
+
         new TabLayoutMediator(tabLayout, viewPager, (tab, pos) -> {
             switch (pos) {
                 case 0: tab.setText("All Entrants"); break;
@@ -115,7 +109,7 @@ public class ManageEventActivity extends AppCompatActivity {
         btnNotify.setOnClickListener(v ->
                 startIfExists("com.example.lottary.ui.events.manage.SendNotificationsActivity"));
 
-        // 3) 导出 CSV（一次性读取 -> 构造 CSV -> 系统分享）
+        // 3) 导出 CSV
         btnExport.setOnClickListener(v ->
                 com.google.firebase.firestore.FirebaseFirestore.getInstance()
                         .collection("events").document(eventId).get()
@@ -136,7 +130,6 @@ public class ManageEventActivity extends AppCompatActivity {
         if (reg != null) { reg.remove(); reg = null; }
     }
 
-    // —— UI 绑定 —— //
     private void bindEventHeader(@Nullable DocumentSnapshot d) {
         if (d == null || !d.exists()) return;
 
@@ -144,7 +137,6 @@ public class ManageEventActivity extends AppCompatActivity {
         if (txtTitle != null) txtTitle.setText(TextUtils.isEmpty(title) ? "Manage Event" : title);
         if (topBar != null)  topBar.setTitle(TextUtils.isEmpty(title) ? "Manage Event" : title);
 
-        // 可选：把开始时间附加到标题后显示（如果你希望）
         Timestamp ts = d.getTimestamp("startTime");
         if (ts != null && txtTitle != null) {
             String pretty = DateFormat.getDateTimeInstance(
@@ -162,7 +154,6 @@ public class ManageEventActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(send, "Export CSV"));
     }
 
-    // 反射启动可选 Activity（不存在则 Toast）
     private void startIfExists(@NonNull String fqcn) {
         try {
             Class<?> cls = Class.forName(fqcn);
@@ -179,24 +170,5 @@ public class ManageEventActivity extends AppCompatActivity {
         Toast t = Toast.makeText(this, s, Toast.LENGTH_SHORT);
         t.setGravity(Gravity.CENTER, 0, 0);
         t.show();
-    }
-
-    // 一个极简占位 Fragment，先让页面跑起来
-    public static class PlaceholderFragment extends Fragment {
-        private static final String ARG_TITLE = "t";
-        public static PlaceholderFragment newInstance(String title){
-            Bundle b = new Bundle(); b.putString(ARG_TITLE, title);
-            PlaceholderFragment f = new PlaceholderFragment(); f.setArguments(b); return f;
-        }
-        @Nullable @Override
-        public android.view.View onCreateView(@NonNull android.view.LayoutInflater inflater,
-                                              @Nullable android.view.ViewGroup container,
-                                              @Nullable Bundle savedInstanceState) {
-            android.widget.TextView tv = new android.widget.TextView(requireContext());
-            tv.setText(getArguments() == null ? "" : getArguments().getString(ARG_TITLE, ""));
-            tv.setGravity(Gravity.CENTER);
-            tv.setTextSize(16);
-            return tv;
-        }
     }
 }

@@ -1,4 +1,3 @@
-
 package com.example.lottary.data;
 
 import androidx.annotation.NonNull;
@@ -57,8 +56,36 @@ public class FirestoreEventRepository {
                 });
     }
 
+    /** 等候名单（waitingList）里包含该用户的事件 */
     public ListenerRegistration listenJoined(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("waitingList", deviceId)
+                .addSnapshotListener((snap, err) -> {
+                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    l.onChanged(mapList(snap));
+                });
+    }
+
+    /** ✅ 新增：chosen（收到邀请/被选中）里包含该用户的事件 */
+    public ListenerRegistration listenChosen(@NonNull String deviceId, @NonNull EventsListener l) {
+        return events.whereArrayContains("chosen", deviceId)
+                .addSnapshotListener((snap, err) -> {
+                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    l.onChanged(mapList(snap));
+                });
+    }
+
+    /** ✅ 新增：signedUp（已报名确认）里包含该用户的事件 */
+    public ListenerRegistration listenSigned(@NonNull String deviceId, @NonNull EventsListener l) {
+        return events.whereArrayContains("signedUp", deviceId)
+                .addSnapshotListener((snap, err) -> {
+                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    l.onChanged(mapList(snap));
+                });
+    }
+
+    /** ✅ 新增：cancelled（已拒绝/取消）里包含该用户的事件 */
+    public ListenerRegistration listenCancelled(@NonNull String deviceId, @NonNull EventsListener l) {
+        return events.whereArrayContains("cancelled", deviceId)
                 .addSnapshotListener((snap, err) -> {
                     if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
                     l.onChanged(mapList(snap));
@@ -376,9 +403,8 @@ public class FirestoreEventRepository {
         String eventTitle  = "";
         String eventId     = "";
     }
+
     public Task<Void> deleteEventById(String eventId) {
         return events.document(eventId).delete();
     }
-
 }
-

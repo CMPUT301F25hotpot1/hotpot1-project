@@ -20,18 +20,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-/**
- * Merged MyEventsActivity:
- * - Same as your version and first person's one (they are effectively aligned).
- * - Keeps bottom navigation to Browse / Notifications.
- * - Keeps search to filter both tabs.
- */
 public class MyEventsActivity extends AppCompatActivity {
 
     private Button btnSearch, btnCreate;
     private EditText inputSearch;
 
-    private final EventsListFragment joinedFragment  = EventsListFragment.newInstance(false);
+    private JoinedEventsFragment joinedFragment;
+    // 你原来的 Organizer 视角页签保持不变
     private final EventsListFragment createdFragment = EventsListFragment.newInstance(true);
 
     @Override
@@ -46,6 +41,8 @@ public class MyEventsActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         ViewPager2 viewPager = findViewById(R.id.view_pager);
 
+        joinedFragment = new JoinedEventsFragment();
+
         viewPager.setAdapter(new FragmentStateAdapter(this) {
             @Override public int getItemCount() { return 2; }
             @Override public Fragment createFragment(int position) {
@@ -59,8 +56,8 @@ public class MyEventsActivity extends AppCompatActivity {
 
         btnSearch.setOnClickListener(v -> {
             String q = inputSearch.getText() == null ? "" : inputSearch.getText().toString();
-            joinedFragment.applyFilter(q);
-            createdFragment.applyFilter(q);
+            if (joinedFragment != null) joinedFragment.applyFilter(q);
+            // 如果也想过滤 Created：createdFragment.applyFilter(q);
         });
 
         btnCreate.setOnClickListener(v ->
@@ -77,7 +74,7 @@ public class MyEventsActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_my_events) {
-                return true; // already here
+                return true;
             } else if (id == R.id.nav_notifications) {
                 Intent i = new Intent(this, NotificationsActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -100,6 +97,6 @@ public class MyEventsActivity extends AppCompatActivity {
         super.onResume();
         BottomNavigationView nav = findViewById(R.id.bottomNav);
         nav.setSelectedItemId(R.id.nav_my_events);
+        // ⚠️ 不在这里触发 joinedFragment.reload()，避免 Fragment 尚未 attach 造成崩溃
     }
 }
-
