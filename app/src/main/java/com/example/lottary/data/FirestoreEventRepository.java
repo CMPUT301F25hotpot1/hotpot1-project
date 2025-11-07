@@ -1,3 +1,4 @@
+
 package com.example.lottary.data;
 
 import androidx.annotation.NonNull;
@@ -376,5 +377,3 @@ public class FirestoreEventRepository {
         String eventId     = "";
     }
 }
-
-

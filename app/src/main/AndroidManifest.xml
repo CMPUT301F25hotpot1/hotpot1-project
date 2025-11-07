@@ -22,7 +22,7 @@
         android:theme="@style/Theme.Lottary"
         tools:targetApi="31">
 
-        <!-- Browse / Notifications / Profile-->
+        <!-- Browse / Notifications / Profile -->
         <activity android:name="com.example.lottary.ui.browse.EventDetailsActivity" />
         <activity android:name="com.example.lottary.ui.browse.QrScanActivity" />
         <activity android:name="com.example.lottary.ui.notifications.NotificationsActivity" />
@@ -33,7 +33,7 @@
 
         <!-- Launcher -->
         <activity
-            android:name=".ui.events.MyEventsActivity"
+            android:name="com.example.lottary.ui.events.MyEventsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,15 +42,28 @@
         </activity>
 
         <!-- Misc -->
-        <activity android:name=".MainActivity" />
-        <activity android:name=".ui.events.create.CreateEventActivity" />
-        <activity android:name=".ui.events.edit.EditEventActivity" />
+        <activity android:name="com.example.lottary.MainActivity" />
+        <activity android:name="com.example.lottary.ui.events.create.CreateEventActivity" />
+        <activity android:name="com.example.lottary.ui.events.edit.EditEventActivity" />
 
         <!-- Manage Event flow -->
-        <activity android:name=".ui.events.manage.ManageEventActivity" />
-        <activity android:name=".ui.events.manage.SendNotificationsActivity" />
-        <activity android:name=".ui.events.manage.QrCodeActivity" />
-        <activity android:name=".ui.events.manage.MapActivity" />
+        <activity android:name="com.example.lottary.ui.events.manage.ManageEventActivity" />
+        <activity android:name="com.example.lottary.ui.events.manage.SendNotificationsActivity" />
+        <activity android:name="com.example.lottary.ui.events.manage.QrCodeActivity" />
+        <activity android:name="com.example.lottary.ui.events.manage.MapActivity" />
+
+        <!-- ✅ Admin Activities -->
+        <activity android:name="com.example.lottary.ui.admin.AdminDashboardActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminEventsActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminUsersActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminImagesActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminNotificationsActivity" />
+        <activity android:name="com.example.lottary.ui.admin.ImageViewerActivity" />
+
+        <!-- ✅✅✅ 你缺的！！ -->
+        <activity android:name="com.example.lottary.ui.admin.AdminDashboardActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminProfileActivity" />
+
 
     </application>
 </manifest>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_admin_events"
+        android:title="Events"
+        android:icon="@drawable/ic_event" />
+
+    <item
+        android:id="@+id/nav_admin_users"
+        android:title="Users"
+        android:icon="@drawable/ic_person" />
+
+    <item
+        android:id="@+id/nav_admin_images"
+        android:title="Images"
+        android:icon="@drawable/ic_image" />
+
+    <item
+        android:id="@+id/nav_admin_dashboard"
+        android:title="Admin"
+        android:icon="@drawable/ic_info" />
+</menu>
