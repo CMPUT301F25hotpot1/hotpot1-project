@@ -37,8 +37,6 @@ dependencies {
     // ✅ Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
     implementation("com.google.firebase:firebase-firestore")
-    // ✅✅ Images 页需要从 Storage 读取/回退：新增这一行
-    implementation("com.google.firebase:firebase-storage")
 
     // ✅ AndroidX
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -68,4 +66,8 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    implementation (platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
 }

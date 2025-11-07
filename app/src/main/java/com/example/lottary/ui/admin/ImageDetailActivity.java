@@ -9,8 +9,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.bumptech.glide.Glide;
 import com.example.lottary.R;
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -27,17 +27,16 @@ public class ImageDetailActivity extends AppCompatActivity {
     private String imageUrl;
     private String imageTitle;
 
-    // 若你的集合名不是 "images"，改成和仓库一致的名字
-    private static final String COLLECTION_IMAGES = "images";
+    private static final String COLLECTION_IMAGES = "images"; // 如与你项目不同，请改为实际集合名
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_detail);
 
-        imageId   = getIntent().getStringExtra(EXTRA_IMAGE_ID);
-        imageUrl  = getIntent().getStringExtra(EXTRA_IMAGE_URL);
-        imageTitle= getIntent().getStringExtra(EXTRA_IMAGE_TITLE);
+        imageId = getIntent().getStringExtra(EXTRA_IMAGE_ID);
+        imageUrl = getIntent().getStringExtra(EXTRA_IMAGE_URL);
+        imageTitle = getIntent().getStringExtra(EXTRA_IMAGE_TITLE);
 
         ImageView iv = findViewById(R.id.ivPreview);
         Glide.with(this)
