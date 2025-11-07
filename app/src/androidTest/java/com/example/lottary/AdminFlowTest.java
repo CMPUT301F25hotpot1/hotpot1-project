@@ -87,14 +87,11 @@ public class AdminFlowTest {
 
     @Test
     public void testEventsListCanScroll() {
-        // 切换到 Events tab
         onView(withId(R.id.nav_admin_events)).perform(click());
 
-        // Events 列表出现
         onView(withId(R.id.admin_events_list))
                 .check(matches(isDisplayed()));
 
-        // 尝试向下滚动（即使没有项目也不会报错）
         onView(withId(R.id.admin_events_list))
                 .perform(RecyclerViewActions.scrollToPosition(0));
     }
