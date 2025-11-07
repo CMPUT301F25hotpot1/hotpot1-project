@@ -21,20 +21,20 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 
 /**
- * Basic instrumentation tests for NotificationsActivity
+ * Basic instrumentation tests for NotificationsActivity.
  *
  * Verifies that:
- *  -NotificationsActivity can be launched without crashing
- *  -The toolbar title "Notifications" is visible
- *  -The notifications RecyclerView is visible
- *  -The bottom navigation bar is visible
+ *  - NotificationsActivity can be launched without crashing.
+ *  - The toolbar title "Notifications" is visible.
+ *  - The notifications RecyclerView is visible.
+ *  - The bottom navigation bar is visible.
  */
 @RunWith(AndroidJUnit4.class)
 public class NotificationTest {
 
     @Before
     public void clearPrefs() {
-        //ensure mute settings do not interfere with the UI for these tests.
+        // Ensure mute settings do not interfere with the UI for these tests.
         NotifyPrefs.resetAll(ApplicationProvider.getApplicationContext());
     }
 
@@ -43,14 +43,14 @@ public class NotificationTest {
         try (ActivityScenario<NotificationsActivity> scenario =
                      ActivityScenario.launch(NotificationsActivity.class)) {
 
-            //assert that the toolbar title "Notifications" is visible
-            //scope the matcher to the toolbar to avoid ambiguity
+            // Assert that the toolbar title "Notifications" is visible.
+            // Scope the matcher to the toolbar to avoid ambiguity.
             onView(allOf(
                     withText("Notifications"),
                     isDescendantOfA(withId(R.id.top_app_bar))
             )).check(matches(isDisplayed()));
 
-            //assert that the RecyclerView for notifications is visible
+            // Assert that the RecyclerView for notifications is visible.
             onView(withId(R.id.recycler))
                     .check(matches(isDisplayed()));
         }
@@ -61,7 +61,7 @@ public class NotificationTest {
         try (ActivityScenario<NotificationsActivity> scenario =
                      ActivityScenario.launch(NotificationsActivity.class)) {
 
-            //assert that the bottom navigation bar is visible
+            // Assert that the bottom navigation bar is visible.
             onView(withId(R.id.bottomNav))
                     .check(matches(isDisplayed()));
         }
