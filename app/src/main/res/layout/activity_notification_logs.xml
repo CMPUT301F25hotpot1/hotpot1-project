@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Title -->
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
@@ -14,7 +13,6 @@
         android:textStyle="bold"
         android:layout_margin="20dp" />
 
-    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_logs"
         android:layout_width="match_parent"
@@ -22,7 +20,6 @@
         android:layout_marginTop="70dp"
         android:layout_above="@id/bottom_nav" />
 
-    <!-- ✅ Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"

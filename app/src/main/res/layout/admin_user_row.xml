@@ -5,7 +5,6 @@
     android:orientation="horizontal"
     android:padding="12dp">
 
-    <!-- Avatar -->
     <ImageView
         android:id="@+id/admin_user_avatar"
         android:layout_width="44dp"
@@ -15,7 +14,6 @@
         android:tint="#6A6ACC"
         android:padding="8dp" />
 
-    <!-- Name -->
     <TextView
         android:id="@+id/admin_user_name"
         android:layout_width="0dp"
@@ -26,7 +24,6 @@
         android:textSize="16sp"
         android:layout_marginStart="14dp" />
 
-    <!-- Left Button: View Logs -->
     <ImageView
         android:id="@+id/btn_view_logs"
         android:layout_width="40dp"
@@ -36,7 +33,6 @@
         android:padding="8dp"
         android:layout_marginEnd="10dp" />
 
-    <!-- Right Button: Remove User -->
     <ImageView
         android:id="@+id/btn_remove_user"
         android:layout_width="40dp"

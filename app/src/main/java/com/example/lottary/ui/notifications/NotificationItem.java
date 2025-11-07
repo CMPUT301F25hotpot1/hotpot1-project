@@ -1,13 +1,13 @@
 /*
  * NotificationItem.java
  *
- * Model class for representing a single notification record in the app
+ * Model class for representing a single notification record in the app.
  * Used by NotificationsActivity and NotificationsAdapter to render the
- * notification inbox for an entrant device
+ * notification inbox for an entrant device.
  *
- * issues:
+ * Outstanding issues:
  * - This class is intentionally minimal and does not enforce a fixed
- *   enum for type/targetGroup; values are validated at higher layers
+ *   enum for type/targetGroup; values are validated at higher layers.
  */
 
 package com.example.lottary.ui.notifications;
@@ -22,17 +22,32 @@ package com.example.lottary.ui.notifications;
  */
 public class NotificationItem {
 
+    /** Firestore document id of this notification. */
     public final String id;
+
+    /** Identifier of the related event, if any. */
     public final String eventId;
+
+    /** Logical target group label (for example "selected", "all"). */
     public final String targetGroup;
+
+    /** Notification type (for example "selected", "cancelled", "general"). */
     public final String type;
+
+    /** Message body shown to the user. */
     public final String message;
+
+    /** Time the notification was sent, in epoch milliseconds. */
     public final long sentAtMs;
+
+    /** Title of the related event, used for display. */
     public final String eventTitle;
+
+    /** Organizer identifier, used for per-organizer opt-out filtering. */
     public final String organizerId;
 
     /**
-     * Creates a notification with basic fields
+     * Creates a notification with basic fields.
      *
      * @param id          document id of this notification
      * @param eventId     id of the related event (may be {@code null})
@@ -47,7 +62,7 @@ public class NotificationItem {
     }
 
     /**
-     * Creates a notification with additional display metadata
+     * Creates a notification with additional display metadata.
      *
      * @param id           document id of this notification
      * @param eventId      id of the related event (may be {@code null})

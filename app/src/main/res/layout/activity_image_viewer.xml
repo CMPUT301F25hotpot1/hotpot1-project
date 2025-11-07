@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- ====== 你原有的控件：一行未改 ====== -->
+
     <ImageView
         android:id="@+id/ivFull"
         android:layout_width="match_parent"
@@ -22,7 +22,6 @@
         android:textSize="16sp"
         android:background="#55000000"/>
 
-    <!-- ====== 新增：删除时的进度圈（默认隐藏） ====== -->
     <ProgressBar
         android:id="@+id/progressViewer"
         style="?android:attr/progressBarStyleLarge"
@@ -31,7 +30,6 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
-    <!-- ====== 新增：底部 Delete 按钮（悬在导航栏上方） ====== -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnDeleteImage"
         style="?attr/materialButtonStyle"

@@ -1,9 +1,9 @@
 /*
  * NotifyPrefs.java
  *
- * Utility class for reading and writing notification preference flags
+ * Utility class for reading and writing notification preference flags.
  * Preferences are stored in SharedPreferences and control whether the
- * user wants to receive notifications globally or from specific organizers
+ * user wants to receive notifications globally or from specific organizers.
  */
 
 package com.example.lottary.ui.notifications;
@@ -11,14 +11,14 @@ package com.example.lottary.ui.notifications;
 import android.content.Context;
 
 /**
- * Static helper methods for managing notification opt-out preferences
+ * Static helper methods for managing notification opt-out preferences.
  */
 public class NotifyPrefs {
     private static final String P = "notify_prefs";
     private static final String K_ALL = "opt_out_all";
 
     /**
-     * Returns whether the user has opted out of all notifications
+     * Returns whether the user has opted out of all notifications.
      *
      * @param c context used to access SharedPreferences
      * @return true if all notifications are disabled; false otherwise
@@ -28,7 +28,7 @@ public class NotifyPrefs {
     }
 
     /**
-     * Sets the global "opt out of all notifications" flag
+     * Sets the global "opt out of all notifications" flag.
      *
      * @param c context used to access SharedPreferences
      * @param v true to disable all notifications; false to enable
@@ -38,7 +38,7 @@ public class NotifyPrefs {
     }
 
     /**
-     * Returns whether notifications from the given organizer are muted
+     * Returns whether notifications from the given organizer are muted.
      *
      * @param c     context used to access SharedPreferences
      * @param orgId organizer identifier
@@ -49,7 +49,7 @@ public class NotifyPrefs {
     }
 
     /**
-     * Sets the opt-out flag for notifications from a specific organizer
+     * Sets the opt-out flag for notifications from a specific organizer.
      *
      * @param c     context used to access SharedPreferences
      * @param orgId organizer identifier
@@ -60,7 +60,7 @@ public class NotifyPrefs {
     }
 
     /**
-     * Clears all notification opt-out preferences
+     * Clears all notification opt-out preferences (global and per-organizer).
      *
      * @param c context used to access SharedPreferences
      */
