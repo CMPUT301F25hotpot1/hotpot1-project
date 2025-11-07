@@ -15,35 +15,27 @@ package com.example.lottary.ui.notifications;
 /**
  * Immutable value object representing a notification displayed in the
  * notifications inbox.
- * <p>
+ *
  * Instances are typically constructed from a Firestore document and
  * rendered by {@link NotificationsAdapter} within {@link NotificationsActivity}.
  * All nullable inputs are normalized to empty strings to simplify UI rendering.
  */
 public class NotificationItem {
 
-    /** Firestore document id of this notification. */
     public final String id;
 
-    /** Identifier of the related event, if any. */
     public final String eventId;
 
-    /** Logical target group label (for example "selected", "all"). */
     public final String targetGroup;
 
-    /** Notification type (for example "selected", "cancelled", "general"). */
     public final String type;
 
-    /** Message body shown to the user. */
     public final String message;
 
-    /** Time the notification was sent, in epoch milliseconds. */
     public final long sentAtMs;
 
-    /** Title of the related event, used for display. */
     public final String eventTitle;
 
-    /** Organizer identifier, used for per-organizer opt-out filtering. */
     public final String organizerId;
 
     /**

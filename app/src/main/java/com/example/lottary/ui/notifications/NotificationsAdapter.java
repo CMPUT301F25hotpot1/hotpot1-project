@@ -39,7 +39,7 @@ import java.util.List;
 
 /**
  * Adapter that displays a list of {@link NotificationItem} instances.
- * <p>
+ *
  * The hosting {@link android.app.Activity} or {@link androidx.fragment.app.Fragment}
  * must implement {@link NotificationsAdapter.Listener} to handle user actions.
  */
@@ -74,13 +74,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         void onOverflow(@NonNull View anchor, @NonNull NotificationItem item);
     }
 
-    /** Backing list of notifications currently displayed. */
     private final List<NotificationItem> items = new ArrayList<>();
 
-    /** Listener for row-level actions, typically implemented by the Activity. */
     private final Listener listener;
 
-    /** Formatter for displaying the sent time to the user. */
     private final DateFormat fmt =
             DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
 
@@ -127,13 +124,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                         n.type.equals("cancelled") ? "Cancelled" : "Notification"
         );
 
-        // Bind message body.
         h.txtMsg.setText(n.message);
 
-        // Bind formatted timestamp.
         h.txtTime.setText(fmt.format(new Date(n.sentAtMs)));
 
-        // Choose icon according to type.
         h.icon.setImageResource(
                 n.type.equals("selected")  ? R.drawable.ic_check :
                         n.type.equals("cancelled") ? R.drawable.ic_close :

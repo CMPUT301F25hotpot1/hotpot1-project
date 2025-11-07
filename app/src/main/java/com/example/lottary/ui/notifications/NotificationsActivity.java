@@ -54,7 +54,7 @@ import java.util.Map;
 
 /**
  * Activity that shows a list of notifications for the current device.
- * <p>
+ *
  * It subscribes to Firestore updates, filters results according to
  * {@link NotifyPrefs}, and forwards user actions (sign up / decline /
  * opt-out) to the appropriate repositories.
@@ -78,8 +78,6 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        // Ensure global opt-out is disabled by default for this screen.
-        // In a real deployment this might be removed or controlled elsewhere.
         NotifyPrefs.setAllOptedOut(this, false);
 
         // Use device id as a lightweight identity for notifications.
@@ -128,8 +126,8 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     /**
      * Subscribes to the "notifications" collection for this device and keeps
      * the {@link #latest} list in sync.
-     * <p>
-     * Uses {@code whereEqualTo("recipientId", deviceId)} and client-side
+     *
+     * Uses {@code whereEqualTo("recipientId", deviceId)} and client side
      * sorting to avoid composite index requirements.
      */
     private void startListening() {
@@ -236,12 +234,11 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         adapter.submit(filtered);
     }
 
-    // === Adapter callbacks ===
 
     /**
      * Handles the "Sign Up" action for a notification representing a successful
      * lottery selection.
-     * <p>
+     *
      * Calls the event repository, marks the notification as read,
      * and navigates to {@link MyEventsActivity} focusing on the event.
      *
@@ -272,7 +269,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     /**
      * Handles the "Decline" action for a selected notification.
-     * <p>
+     *
      * Calls the event repository to decline and marks the notification as read.
      *
      * @param item the notification that triggered the action
@@ -315,11 +312,11 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         pm.getMenu().findItem(R.id.action_optout_all).setVisible(!allMuted);
         pm.getMenu().findItem(R.id.action_optin_all).setVisible(allMuted);
 
-        // Configure organizer-specific options.
+        // Configure organizer specific options.
         MenuItem outOrg = pm.getMenu().findItem(R.id.action_optout_org);
         MenuItem inOrg = pm.getMenu().findItem(R.id.action_optin_org);
         if (item.organizerId == null || item.organizerId.isEmpty()) {
-            // No organizer id: hide organizer-specific menu items.
+            // No organizer id: hide organizer specific menu items.
             outOrg.setVisible(false);
             inOrg.setVisible(false);
         } else {
