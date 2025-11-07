@@ -1,0 +1,11 @@
+com.example.lottary
+com.example.lottary.data
+com.example.lottary.ui.admin
+com.example.lottary.ui.admin.adapters
+com.example.lottary.ui.browse
+com.example.lottary.ui.events
+com.example.lottary.ui.events.create
+com.example.lottary.ui.events.edit
+com.example.lottary.ui.events.manage
+com.example.lottary.ui.notifications
+com.example.lottary.ui.profile
