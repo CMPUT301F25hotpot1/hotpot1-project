@@ -72,8 +72,17 @@
     <string name="delete_failed">Delete failed</string>
     <string name="load_failed">Load failed</string>
 
+    <string name="image_title_placeholder">Image</string>
+    <string name="remove_image">Remove Image</string>
+    <string name="remove_image_confirm">Are you sure that you want to remove this image?</string>
+    <string name="deleted">Deleted</string>
+    <string name="error_no_id">Missing image id</string>
 
+    <string name="deleted_ok">Deleted</string>
+    <string name="deleted_fail">Delete failed: %1$s</string>
+    <string name="delete_nothing">Nothing to delete</string>
+
+    <string name="delete_failed_fmt">Delete failed: %1$s</string>
 
 
 </resources>
-
