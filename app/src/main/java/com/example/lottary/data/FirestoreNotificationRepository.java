@@ -8,6 +8,25 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * FirestoreNotificationRepository
+ *
+ * Purpose:
+ * Handles Firestore access for retrieving user-specific notification logs.
+ * Provides simple one-time queries for all notifications received by a given user.
+ *
+ * Role / Pattern:
+ * Implements a singleton repository focused on Firestore “notifications” collection.
+ * Responsible for mapping Firestore documents into NotificationLog model objects
+ * and delivering the result via callback to the UI layer.
+ *
+ * Outstanding Issues / Notes:
+ * - Query uses field name “recipientID”; ensure it matches actual Firestore schema
+ *   (case-sensitive mismatch will return no results).
+ * - Fetch is one-time only (no real-time listener implemented).
+ * - No pagination or error handling for large result sets.
+ * - Timestamps are assumed to be stored as Firestore Timestamp objects.
+ */
 
 public class FirestoreNotificationRepository {
 

@@ -1,7 +1,28 @@
 /**
- * Repository for managing admin-side event data.
- * Provides realtime Firestore updates, search filtering,
- * status filtering, and exposes results through LiveData.
+ * AdminRepository
+ *
+ * Purpose:
+ * Repository for the admin side that subscribes to Firestore for recently
+ * created events, caches them in memory, and exposes a filtered list via
+ * LiveData for UI observation.
+ *
+ * Role / Pattern:
+ * Implements a singleton Repository for admin event data. It bridges the
+ * Firestore data source and the presentation layer, applying local search
+ * and status filters before publishing results.
+ *
+ * Key Behaviors:
+ * - Start/stop a realtime Firestore listener for recent created events.
+ * - Maintain an in-memory cache of all events received.
+ * - Apply text query and status filters and post the filtered list as LiveData.
+ * - Support temporary local removal of an event for UI purposes only.
+ *
+ * Outstanding Issues / Notes:
+ * - Cache is in-memory; no persistence across process death.
+ * - Filtering is done on the full list in-process; consider server-side
+ *   queries or background threading for very large datasets.
+ * - No debounce/throttle on search updates.
+ * - Caller must pair start/stop with lifecycle to avoid leaks.
  */
 package com.example.lottary.data;
 

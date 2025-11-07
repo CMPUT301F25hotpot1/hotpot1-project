@@ -1,3 +1,22 @@
+/**
+ * Event
+ *
+ * Purpose:
+ * Immutable model class representing a single event entity with
+ * metadata for display and filtering (e.g., title, city, venue, time,
+ * registration window, and capacity state).
+ *
+ * Role / Pattern:
+ * Serves as a plain data object (POJO) used across repositories,
+ * adapters, and fragments. Designed for immutability and safe UI
+ * binding — all fields are final and exposed through getters only.
+ *
+ * Outstanding Issues / Notes:
+ * - Stores times as epoch milliseconds (no timezone conversion).
+ * - Status and type fields are free-form; no enforced enum schema.
+ * - PrettyStartTime and PrettyTime are preformatted strings,
+ *   not dynamically generated.
+ */
 package com.example.lottary.data;
 
 public class Event {

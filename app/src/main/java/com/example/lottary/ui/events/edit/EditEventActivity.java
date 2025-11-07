@@ -17,6 +17,29 @@ import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * EditEventActivity
+ *
+ * Purpose:
+ * Screen for editing an existing event. It observes the event document from Firestore,
+ * populates UI fields, allows the user to modify editable attributes (title, description,
+ * capacity, price, and geolocation flag), and submits an update back to Firestore.
+ *
+ * Design Role:
+ * - “Update” part of the CRUD flow for events.
+ * - Uses FirestoreEventRepository to listen to a single event and to push updates.
+ * - Displays a modal ProgressDialog while saving and disables the edit button to avoid duplicates.
+ *
+ * Data & UX Notes:
+ * - Reads the target event id from intent extra {@link #EXTRA_EVENT_ID}; finishes early if missing.
+ * - Timestamp fields are rendered as formatted strings for display only; they are not edited here.
+ * - Poster upload entry is currently a stub trigger.
+ *
+ * Outstanding Issues / TODOs:
+ * - No cross-field validation for date/time consistency.
+ * - Limited error handling; network/rules failures are surfaced via Toast and logcat only.
+ * - ProgressDialog is legacy; consider replacing with a non-blocking in-UI indicator.
+ */
 public class EditEventActivity extends AppCompatActivity {
 
     public static final String EXTRA_EVENT_ID = "event_id";

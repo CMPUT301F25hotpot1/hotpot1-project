@@ -23,6 +23,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * FirestoreEventRepository
+ *
+ * Purpose:
+ * Central repository that manages all Firestore operations for event creation,
+ * updates, participant actions, and real-time listeners. It serves as the data
+ * access layer between Firestore and the app’s UI logic.
+ *
+ * Role / Pattern:
+ * Implements the Repository pattern — abstracting Firestore CRUD, listener setup,
+ * and transactional logic into reusable methods for both Entrant and Organizer flows.
+ * Handles Firestore snapshot listeners, structured field updates, and transactional
+ * operations for atomic changes.
+ *
+ * Outstanding Issues / Notes:
+ * - Firestore operations are unguarded; network and permission errors are only logged.
+ * - Uses simple List fields (waitingList, chosen, signedUp, cancelled); may need refactoring
+ *   for scalability (e.g., subcollections or pagination).
+ * - Time-based logic (registration window checks) is done externally — not enforced here.
+ * - Notifications are created in drawWinnersAndNotify(), but delivery is not guaranteed.
+ */
+
+
 public class FirestoreEventRepository {
 
     private static FirestoreEventRepository INSTANCE;
