@@ -4,9 +4,20 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/image_viewer_image"
+        android:id="@+id/ivFull"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#000000"
         android:scaleType="fitCenter"
-        android:background="#000"/>
+        android:contentDescription="@string/app_name" />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:padding="12dp"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:background="#55000000"/>
 </FrameLayout>

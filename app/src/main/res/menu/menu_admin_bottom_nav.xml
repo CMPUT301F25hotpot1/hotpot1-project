@@ -11,6 +11,7 @@
         android:title="Users"
         android:icon="@drawable/ic_person" />
 
+    <!-- Images（新增） -->
     <item
         android:id="@+id/nav_admin_images"
         android:title="Images"

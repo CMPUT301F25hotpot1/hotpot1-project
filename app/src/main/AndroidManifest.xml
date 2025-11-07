@@ -56,13 +56,27 @@
         <activity android:name="com.example.lottary.ui.admin.AdminDashboardActivity" />
         <activity android:name="com.example.lottary.ui.admin.AdminEventsActivity" />
         <activity android:name="com.example.lottary.ui.admin.AdminUsersActivity" />
-        <activity android:name="com.example.lottary.ui.admin.AdminImagesActivity" />
         <activity android:name="com.example.lottary.ui.admin.AdminNotificationsActivity" />
-        <activity android:name="com.example.lottary.ui.admin.ImageViewerActivity" />
 
         <!-- ✅✅✅ 你缺的！！ -->
-        <activity android:name="com.example.lottary.ui.admin.AdminDashboardActivity" />
         <activity android:name="com.example.lottary.ui.admin.AdminProfileActivity" />
+
+        <activity
+            android:name=".ui.admin.AdminImagesActivity"
+            android:exported="false"
+            android:label="Images" />
+
+        <activity
+            android:name=".ui.admin.ImageViewerActivity"
+            android:exported="false"
+            android:label="Image" />
+
+        <!-- 🆕 仅新增：图2/图3用的详情页（与 ImageViewerActivity 并存，不修改原有） -->
+        <activity
+            android:name=".ui.admin.ImageDetailActivity"
+            android:exported="false"
+            android:label="Image"
+            android:windowSoftInputMode="adjustPan" />
 
 
     </application>

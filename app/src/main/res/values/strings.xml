@@ -54,5 +54,26 @@
     <string name="name">Name</string>
     <string name="delete_profile">Delete Profile</string>
     <string name="delete">Delete</string>
+
+    <string name="search_for_image">Search for image...</string>
+    <string name="search_caps">SEARCH</string>
+    <string name="sort">Sort</string>
+    <string name="latest_images">Latest Images</string>
+
+    <string name="title_image_detail">Image</string>
+    <string name="title_image_detail_simple">Image</string>
+    <string name="delete_image">Delete Image</string>
+    <string name="remove_image_title">Remove Image</string>
+    <string name="remove_image_message">Are you sure that you want to remove this image?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="cd_image_preview">Image preview</string>
+    <string name="image_deleted">Image deleted</string>
+    <string name="delete_failed">Delete failed</string>
+    <string name="load_failed">Load failed</string>
+
+
+
+
 </resources>
 

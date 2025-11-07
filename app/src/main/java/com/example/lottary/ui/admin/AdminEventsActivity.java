@@ -1,7 +1,12 @@
 package com.example.lottary.ui.admin;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.Button;
+import android.widget.EditText;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,46 +33,103 @@ public class AdminEventsActivity extends AppCompatActivity {
 
         repo = AdminRepository.get();
 
-        // RecyclerView
+        // =====================
+        // ✅ RecyclerView setup
+        // =====================
         RecyclerView rv = findViewById(R.id.admin_events_list);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new AdminEventsAdapter(event -> repo.removeEvent(event));
+
+        adapter = new AdminEventsAdapter((Event e) -> repo.removeEvent(e));
         rv.setAdapter(adapter);
 
-        // ✅ 从 Firestore 加载
-        repo.loadEventsFromFirestore();   // <-- 这里是正确的方法名
+        // ✅ Firestore 实时订阅
+        repo.startAdminEventsRealtime();
 
-        // ✅ 观察 LiveData，自动刷新 UI
-        repo.events().observe(this, events -> {
-            if (events != null) {
-                // 提交新列表（拷贝一份，避免 Diff 冲突）
-                adapter.submitList(new ArrayList<>(events));
-            }
-        });
+        // ✅ LiveData → UI
+        repo.events().observe(this, list ->
+                adapter.submitList(list == null ? new ArrayList<>() : new ArrayList<>(list))
+        );
 
+        setupSearchBar();
+        setupFilterButton();
         setupBottomNav();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        repo.stopAdminEventsRealtime();
+    }
+
+    // =====================
+    // ✅ Search 功能
+    // =====================
+    private void setupSearchBar() {
+        EditText search = findViewById(R.id.search_events);
+        Button btnSearch = findViewById(R.id.btn_search);
+
+        // 点击 SEARCH 按钮
+        btnSearch.setOnClickListener(v ->
+                repo.search(search.getText().toString())
+        );
+
+        // 实时搜索（用户输入时自动过滤）
+        search.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                repo.search(s.toString());
+            }
+        });
+    }
+
+    // =====================
+    // ✅ Filter 按钮功能
+    // =====================
+    private void setupFilterButton() {
+        Button filterBtn = findViewById(R.id.btn_filter);
+
+        filterBtn.setOnClickListener(v -> {
+            String[] options = { "All", "Open", "Closed", "Full" };
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Filter by status")
+                    .setItems(options, (dialog, which) -> {
+                        String choice = options[which].toUpperCase();
+                        if (choice.equals("ALL"))
+                            repo.setFilter("ALL");
+                        else
+                            repo.setFilter(choice);
+                    })
+                    .show();
+        });
+    }
+
+    // =====================
+    // ✅ Bottom Navigation
+    // =====================
     private void setupBottomNav() {
         BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
         nav.setSelectedItemId(R.id.nav_admin_events);
 
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_admin_events) {
-                // 当前页
-                return true;
-            } else if (id == R.id.nav_admin_users) {
+
+            if (id == R.id.nav_admin_users) {
                 startActivity(new Intent(this, AdminUsersActivity.class));
                 return true;
-            } else if (id == R.id.nav_admin_images) {
+            }
+            if (id == R.id.nav_admin_images) {
                 startActivity(new Intent(this, AdminImagesActivity.class));
                 return true;
-            } else if (id == R.id.nav_admin_dashboard) {
+            }
+            if (id == R.id.nav_admin_dashboard) {
                 startActivity(new Intent(this, AdminDashboardActivity.class));
                 return true;
             }
-            return false;
+
+            return true;
         });
     }
 }
