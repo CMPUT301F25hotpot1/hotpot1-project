@@ -5,16 +5,16 @@
  * notifications inbox.
  *
  * Responsibilities:
- * - Bind NotificationItem data (message, time, type-specific icon).
+ * - Bind NotificationItem data (message, time, type-specific icon)
  * - Show contextual actions for "selected" notifications
- *   (Sign Up / Decline buttons).
- * - Forward user interactions to a Listener implemented by the host Activity.
+ *   (Sign Up / Decline buttons)
+ * - Forward user interactions to a Listener implemented by the host Activity
  *
  * Outstanding notes:
- * - Type values such as "selected" and "cancelled" are string-based and
- *   must match what is written to Firestore.
+ * - Type values such as "selected" and "cancelled" are string based and
+ *   must match what is written to Firestore
  * - Diffing is not optimized (notifyDataSetChanged is used) which is
- *   acceptable for the small lists in this project.
+ *   acceptable for the small lists in this project
  */
 
 package com.example.lottary.ui.notifications;
@@ -38,20 +38,20 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Adapter that displays a list of {@link NotificationItem} instances.
+ * Adapter that displays a list of {@link NotificationItem} instances
  * <p>
  * The hosting {@link android.app.Activity} or {@link androidx.fragment.app.Fragment}
- * must implement {@link NotificationsAdapter.Listener} to handle user actions.
+ * must implement {@link NotificationsAdapter.Listener} to handle user actions
  */
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.Holder> {
 
     /**
-     * Callback interface for user interactions on notification rows.
+     * Callback interface for user interactions on notification rows
      */
     public interface Listener {
 
         /**
-         * Called when the user taps the "Sign Up" button on a notification.
+         * Called when the user taps the "Sign Up" button on a notification
          *
          * @param item the notification associated with the action
          */
@@ -74,13 +74,9 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         void onOverflow(@NonNull View anchor, @NonNull NotificationItem item);
     }
 
-    /** Backing list of notifications currently displayed. */
     private final List<NotificationItem> items = new ArrayList<>();
 
-    /** Listener for row-level actions, typically implemented by the Activity. */
     private final Listener listener;
-
-    /** Formatter for displaying the sent time to the user. */
     private final DateFormat fmt =
             DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
 
@@ -103,14 +99,13 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         if (list != null) {
             items.addAll(list);
         }
-        // For this project size, a full refresh is sufficient.
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate a single notification row layout.
+        //inflate a single notification row layout
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_notification, parent, false);
         return new Holder(v);
@@ -120,32 +115,32 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     public void onBindViewHolder(@NonNull Holder h, int position) {
         final NotificationItem n = items.get(position);
 
-        // Set title based on notification type.
-        // "selected" -> Selected, "cancelled" -> Cancelled, otherwise generic.
+        // Set title based on notification type
+        // "selected" -> Selected, "cancelled" -> Cancelled, otherwise generic
         h.txtTitle.setText(
                 n.type.equals("selected") ? "Selected" :
                         n.type.equals("cancelled") ? "Cancelled" : "Notification"
         );
 
-        // Bind message body.
+        // Bind message body
         h.txtMsg.setText(n.message);
 
-        // Bind formatted timestamp.
+        //bind formatted timestamp
         h.txtTime.setText(fmt.format(new Date(n.sentAtMs)));
 
-        // Choose icon according to type.
+        //Choose icon according to type
         h.icon.setImageResource(
                 n.type.equals("selected")  ? R.drawable.ic_check :
                         n.type.equals("cancelled") ? R.drawable.ic_close :
                                 R.drawable.ic_info
         );
 
-        // Only "selected" notifications show Sign Up / Decline actions.
+        // Only "selected" notifications show Sign Up/Decline actions
         boolean showActions = n.type.equals("selected");
         h.btnSign.setVisibility(showActions ? View.VISIBLE : View.GONE);
         h.btnDecline.setVisibility(showActions ? View.VISIBLE : View.GONE);
 
-        // Wire button callbacks to the Listener if provided.
+        //wire button callbacks to the Listener if provided.
         h.btnSign.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onSignUp(n);
@@ -171,8 +166,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     }
 
     /**
-     * ViewHolder representing a single notification row.
-     * Holds references to all views that are updated during binding.
+     * ViewHolder representing a single notification row
+     * Holds references to all views that are updated during binding
      */
     static class Holder extends RecyclerView.ViewHolder {
 

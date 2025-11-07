@@ -1,17 +1,17 @@
 /*
  * NotificationsActivity.java
  *
- * Screen displaying the notification inbox for the current device.
+ * Screen displaying the notification inbox for the current device
  * Listens to Firestore "notifications" documents filtered by recipientId,
  * applies opt-out preferences from NotifyPrefs, and allows entrants to
- * accept or decline selected invitations.
+ * accept or decline selected invitations
  *
- * Outstanding issues:
+ * issues:
  * - Identity is based on ANDROID_ID ("deviceId"). If proper user accounts
- *   are introduced, notifications should be keyed by user id instead.
+ *   are introduced, notifications should be keyed by user id instead
  * - Error handling is limited to Toast messages and does not surface all
- *   failure cases to the user.
- * - Client-side sorting assumes that "sentAt" is present and consistent.
+ *   failure cases to the user
+ * - Client side sorting assumes that "sentAt" is present and consistent
  */
 
 package com.example.lottary.ui.notifications;
@@ -67,45 +67,40 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     private ListenerRegistration reg;
     private String deviceId;
 
-    /** Latest raw notifications fetched from Firestore before opt-out filtering. */
     private final List<NotificationItem> latest = new ArrayList<>();
 
-    /**
-     * Sets up the toolbar, RecyclerView, adapter, and bottom navigation.
-     */
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        // Ensure global opt-out is disabled by default for this screen.
-        // In a real deployment this might be removed or controlled elsewhere.
+        //ensure global opt-out is disabled by default for this screen
         NotifyPrefs.setAllOptedOut(this, false);
 
-        // Use device id as a lightweight identity for notifications.
+        //use device id as a lightweight identity for notifications
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         if (deviceId == null || deviceId.isEmpty()) {
             deviceId = "device_demo";
         }
 
-        // Configure top app bar.
+        //configure top app bar
         MaterialToolbar top = findViewById(R.id.top_app_bar);
         top.setTitle(getString(R.string.notifications));
         top.setNavigationOnClickListener(v -> finish());
 
-        // Configure loading indicator and list.
+        //configure loading indicator and list
         loading = findViewById(R.id.loading);
         recycler = findViewById(R.id.recycler);
         recycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotificationsAdapter(this);
         recycler.setAdapter(adapter);
 
-        // Configure bottom navigation.
+        //configure bottom navigation
         wireBottomNav();
     }
 
     /**
-     * Starts listening for Firestore updates when the activity becomes visible.
+     * Starts listening for Firestore updates when the activity becomes visible
      */
     @Override
     protected void onStart() {
@@ -114,7 +109,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     }
 
     /**
-     * Stops listening to Firestore updates when the activity is no longer visible.
+     * Stops listening to Firestore updates when the activity is no longer visible
      */
     @Override
     protected void onStop() {
@@ -127,10 +122,10 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     /**
      * Subscribes to the "notifications" collection for this device and keeps
-     * the {@link #latest} list in sync.
+     * the {@link #latest} list in sync
      * <p>
-     * Uses {@code whereEqualTo("recipientId", deviceId)} and client-side
-     * sorting to avoid composite index requirements.
+     * Uses {@code whereEqualTo("recipientId", deviceId)} and client side
+     * sorting to avoid composite index requirements
      */
     private void startListening() {
         loading.setVisibility(View.VISIBLE);
@@ -149,7 +144,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                     loading.setVisibility(View.GONE);
 
                     if (err != null) {
-                        // On error, show empty state and surface a message.
+                        //on error, show empty state and surface a message.
                         adapter.submit(new ArrayList<>());
                         Toast.makeText(
                                 this,
@@ -163,11 +158,11 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                         return;
                     }
 
-                    // Map raw documents into model objects.
+                    // map raw documents into model objects
                     latest.clear();
                     latest.addAll(mapList(snap));
 
-                    // Sort newest first based on sentAtMs.
+                    // sort newest first based on sentAtMs
                     Collections.sort(latest, new Comparator<NotificationItem>() {
                         @Override
                         public int compare(NotificationItem a, NotificationItem b) {
@@ -175,7 +170,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                         }
                     });
 
-                    // Apply opt-out preferences before showing to the user.
+                    // Apply opt-out preferences before showing to the user
                     submitWithOptOutFilter();
                 });
     }
@@ -214,7 +209,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     /**
      * Applies opt-out preferences from {@link NotifyPrefs} to the latest list
-     * and submits the filtered result to the adapter.
+     * and submits the filtered result to the adapter
      */
     private void submitWithOptOutFilter() {
         // Global opt-out hides all notifications from the inbox.
@@ -236,14 +231,13 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         adapter.submit(filtered);
     }
 
-    // === Adapter callbacks ===
 
     /**
      * Handles the "Sign Up" action for a notification representing a successful
-     * lottery selection.
+     * lottery selection
      * <p>
      * Calls the event repository, marks the notification as read,
-     * and navigates to {@link MyEventsActivity} focusing on the event.
+     * and navigates to {@link MyEventsActivity} focusing on the event
      *
      * @param item the notification that triggered the action
      */
@@ -271,9 +265,9 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     }
 
     /**
-     * Handles the "Decline" action for a selected notification.
+     * Handles the "Decline" action for a selected notification
      * <p>
-     * Calls the event repository to decline and marks the notification as read.
+     * Calls the event repository to decline and marks the notification as read
      *
      * @param item the notification that triggered the action
      */
@@ -300,7 +294,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     /**
      * Displays the overflow menu for a notification row and handles opt-in/opt-out
-     * and reset actions for notification preferences.
+     * and reset actions for notification preferences
      *
      * @param anchor view used as the popup anchor
      * @param item   notification associated with this menu
@@ -310,16 +304,15 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         PopupMenu pm = new PopupMenu(this, anchor);
         pm.getMenuInflater().inflate(R.menu.menu_notifications_overflow, pm.getMenu());
 
-        // Toggle visibility of global opt-out / opt-in based on current state.
+        // toggle visibility of global opt-out / opt-in based on current state
         boolean allMuted = NotifyPrefs.isAllOptedOut(this);
         pm.getMenu().findItem(R.id.action_optout_all).setVisible(!allMuted);
         pm.getMenu().findItem(R.id.action_optin_all).setVisible(allMuted);
 
-        // Configure organizer-specific options.
+        //configure organizer specific options
         MenuItem outOrg = pm.getMenu().findItem(R.id.action_optout_org);
         MenuItem inOrg = pm.getMenu().findItem(R.id.action_optin_org);
         if (item.organizerId == null || item.organizerId.isEmpty()) {
-            // No organizer id: hide organizer-specific menu items.
             outOrg.setVisible(false);
             inOrg.setVisible(false);
         } else {
@@ -345,7 +338,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             } else if (id == R.id.action_optout_org
                     && item.organizerId != null
                     && !item.organizerId.isEmpty()) {
-                // Mute notifications from this organizer only.
+                //mute notifications from this organizer only
                 NotifyPrefs.setOrganizerOptedOut(this, item.organizerId, true);
                 Toast.makeText(this, "Opted out from this organizer", Toast.LENGTH_SHORT).show();
                 submitWithOptOutFilter();
@@ -353,13 +346,13 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             } else if (id == R.id.action_optin_org
                     && item.organizerId != null
                     && !item.organizerId.isEmpty()) {
-                // Unmute notifications from this organizer.
+                //unmute notifications from this organizer
                 NotifyPrefs.setOrganizerOptedOut(this, item.organizerId, false);
                 Toast.makeText(this, "Opted in to this organizer", Toast.LENGTH_SHORT).show();
                 submitWithOptOutFilter();
                 return true;
             } else if (id == R.id.action_reset_mute) {
-                // Clear all mute settings.
+                //clear all mute settings
                 NotifyPrefs.resetAll(this);
                 Toast.makeText(this, "Mute settings reset", Toast.LENGTH_SHORT).show();
                 submitWithOptOutFilter();
@@ -372,7 +365,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     }
 
     /**
-     * Marks the notification as read in Firestore and records an "actedAt" timestamp.
+     * Marks the notification as read in Firestore and records an "actedAt" timestamp
      *
      * @param notifId id of the notification document to update
      */
@@ -391,7 +384,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     /**
      * Wires up the bottom navigation bar to switch between main sections
-     * of the app: Browse, My Events, Notifications, and Profile.
+     * of the app: Browse, My Events, Notifications, and Profile
      */
     private void wireBottomNav() {
         BottomNavigationView nav = findViewById(R.id.bottomNav);
