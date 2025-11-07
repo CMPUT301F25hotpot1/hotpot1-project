@@ -2,47 +2,79 @@ package com.example.lottary.ui.admin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lottary.R;
+import com.example.lottary.data.FirestoreUserRepository;
+import com.example.lottary.data.User;
 import com.example.lottary.ui.browse.BrowseActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class AdminProfileActivity extends AppCompatActivity {
+
+    private TextView tvName, tvEmail, tvPhone;
+    private FirestoreUserRepository repo;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_profile);
 
-        // Swap to user main UI
+        repo = FirestoreUserRepository.get();
+
+        tvName = findViewById(R.id.tvName);
+        tvEmail = findViewById(R.id.tvEmail);
+        tvPhone = findViewById(R.id.tvPhone);
+
+        // ✅ 获取当前手机的 deviceID（就是 Firestore 里 userDeviceId）
+        String deviceId = Settings.Secure.getString(
+                getContentResolver(),
+                Settings.Secure.ANDROID_ID
+        );
+
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            deviceId = "device_demo";
+        }
+
+        // ✅ Firestore 实时加载用户资料（这次一定能成功）
+        repo.listenUser(deviceId, snap -> {
+            User u = snap.toObject(User.class);
+            if (u != null) {
+                tvName.setText(u.getName());
+                tvEmail.setText(u.getEmail());
+                tvPhone.setText(
+                        (u.getPhoneNum() == null || u.getPhoneNum().isEmpty()) ?
+                                "None" : u.getPhoneNum()
+                );
+            }
+        });
+
+        // ✅ Swap to user (Organizer) view
         Button btnSwap = findViewById(R.id.btnSwapToUser);
-        btnSwap.setOnClickListener(v -> {
+        btnSwap.setOnClickListener((View v) -> {
             startActivity(new Intent(this, BrowseActivity.class)
                     .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
             overridePendingTransition(0, 0);
             finish();
         });
 
-        // Bottom navigation
+        // ✅ Bottom nav
         BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
-
-        // Highlight the admin tab
         nav.setSelectedItemId(R.id.nav_admin_dashboard);
 
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
 
             if (id == R.id.nav_admin_events) {
-                // ✅ FIXED: Jump to the REAL admin events page
                 startActivity(new Intent(this, AdminEventsActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);
-                finish();
                 return true;
             }
 
@@ -50,7 +82,6 @@ public class AdminProfileActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AdminUsersActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);
-                finish();
                 return true;
             }
 
@@ -58,12 +89,10 @@ public class AdminProfileActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AdminImagesActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);
-                finish();
                 return true;
             }
 
             if (id == R.id.nav_admin_dashboard) {
-                // already here
                 return true;
             }
 

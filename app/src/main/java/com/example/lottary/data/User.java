@@ -10,7 +10,7 @@ public class User {
     private String deviceID;
     private NotifyPrefs notifyPrefs;
 
-    // ✅ REQUIRED by Firestore — otherwise fields stay NULL
+    // Firestore 需要空构造
     public User() {
         this.notifyPrefs = new NotifyPrefs();
     }
@@ -21,6 +21,11 @@ public class User {
         this.phoneNum = phoneNum;
         this.deviceID = deviceID;
         this.notifyPrefs = new NotifyPrefs();
+    }
+
+    // ✅ 这一行是新增的（不要删别的）
+    public void setUserDeviceId(String userDeviceId) {
+        this.deviceID = userDeviceId;
     }
 
     public String getName() {
