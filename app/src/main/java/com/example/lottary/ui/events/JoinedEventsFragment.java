@@ -25,19 +25,35 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Entrant 视角的“Joined Events”
- * - 四路监听：waitingList/chosen/signedUp/cancelled
- * - 合并去重并渲染状态与按钮
- * - 保障：仅在 Fragment 已 attach 时访问 Context / 调用 reload
+ * JoinedEventsFragment
+ *
+ * Purpose:
+ * Displays the entrant’s (participant’s) view of events they have interacted with,
+ * including those they have joined, been selected for, declined, or were not selected.
+ * This fragment aggregates Firestore listeners for four collections (waiting, chosen,
+ * signed, cancelled) and merges them into a unified list with corresponding UI states.
+ *
+ * Design Role:
+ * - Represents the user-facing “Joined Events” tab in the My Events section.
+ * - Maintains reactive listeners through FirestoreEventRepository for each participation state.
+ * - Dynamically renders event cards using EntrantEventsAdapter based on merged data.
+ *
+ * Key Features:
+ * - Consolidates event data into a pool to avoid duplication across categories.
+ * - Computes UI status (“Open”, “Selected”, “Not Selected”) and button visibility dynamically.
+ * - Supports live filtering and refresh triggered from the parent activity.
+ *
+ * Outstanding Issues / Notes:
+ * - No pagination or diffing; large datasets may affect performance.
+ * - Device ID is used as a lightweight user key (“device_demo” fallback).
+ * - Firestore rules or network delays can lead to inconsistent state transitions.
  */
 public class JoinedEventsFragment extends Fragment {
 
     private RecyclerView recycler;
     private EntrantEventsAdapter adapter;
 
-    // 事件池：eventId -> Event
     private final Map<String, Event> pool = new HashMap<>();
-    // 用户所在集合标记
     private final Map<String, Boolean> inWaiting   = new HashMap<>();
     private final Map<String, Boolean> inChosen    = new HashMap<>();
     private final Map<String, Boolean> inSigned    = new HashMap<>();
@@ -84,8 +100,6 @@ public class JoinedEventsFragment extends Fragment {
             }
         });
         recycler.setAdapter(adapter);
-
-        // 初次进入不强刷，由 onResume 触发（确保已 attach）
         return v;
     }
 
@@ -99,20 +113,16 @@ public class JoinedEventsFragment extends Fragment {
         detach();
     }
 
-    /** Activity 的搜索栏会调用这个方法 */
     public void applyFilter(String q) {
         currentQuery = q == null ? "" : q.trim().toLowerCase();
         render();
     }
 
-    /** 仅在已 attach 时才进行监听与渲染 */
     public void reload() {
         if (!isAdded() || getContext() == null) return;
         detach();
         attach();
     }
-
-    // ============ 监听与合并 ============
 
     private void attach() {
         String did = safeDeviceId();
@@ -180,7 +190,7 @@ public class JoinedEventsFragment extends Fragment {
             } else if (inWaiting.containsKey(id)) {
                 status = "Open";
             } else {
-                continue; // 不在四类里就不显示
+                continue;
             }
 
             boolean showSignUp   = "Selected".equals(status) && withinRegisterWindow(e) && !e.isFull();
@@ -203,7 +213,6 @@ public class JoinedEventsFragment extends Fragment {
         return true;
     }
 
-    /** 安全获取 deviceId；未 attach 则返回 null */
     @Nullable
     private String safeDeviceId() {
         if (!isAdded() || getContext() == null) return null;
@@ -213,7 +222,6 @@ public class JoinedEventsFragment extends Fragment {
         );
     }
 
-    /** UI 行模型（状态与按钮可见性已经计算好） */
     static class EntrantRow {
         final Event event;
         final String status;

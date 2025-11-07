@@ -20,13 +20,31 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+/**
+ * MyEventsActivity
+ *
+ * Purpose:
+ * Hosts the “My Events” section with two tabs: the entrant-facing Joined Events and the
+ * organizer-facing Created Events. Provides a search box that filters the Joined list and
+ * a Create button that opens the event creation flow. Also owns the bottom navigation bar
+ * for switching between major app sections.
+ *
+ * Design Role:
+ * - Container activity coordinating tabbed content via ViewPager2 + TabLayout.
+ * - Delegates list rendering to JoinedEventsFragment and EventsListFragment.
+ * - Centralizes navigation to Browse, Notifications, and Profile screens.
+ *
+ * Outstanding Issues / Notes:
+ * - Search currently applies to Joined only; Created filtering is present but commented out.
+ * - No saved state restoration for the active tab or search query.
+ * - Assumes fragments are lightweight; heavy lists may benefit from paging/diffing.
+ */
 public class MyEventsActivity extends AppCompatActivity {
 
     private Button btnSearch, btnCreate;
     private EditText inputSearch;
 
     private JoinedEventsFragment joinedFragment;
-    // 你原来的 Organizer 视角页签保持不变
     private final EventsListFragment createdFragment = EventsListFragment.newInstance(true);
 
     @Override
@@ -57,7 +75,7 @@ public class MyEventsActivity extends AppCompatActivity {
         btnSearch.setOnClickListener(v -> {
             String q = inputSearch.getText() == null ? "" : inputSearch.getText().toString();
             if (joinedFragment != null) joinedFragment.applyFilter(q);
-            // 如果也想过滤 Created：createdFragment.applyFilter(q);
+            // createdFragment.applyFilter(q);
         });
 
         btnCreate.setOnClickListener(v ->
@@ -97,6 +115,5 @@ public class MyEventsActivity extends AppCompatActivity {
         super.onResume();
         BottomNavigationView nav = findViewById(R.id.bottomNav);
         nav.setSelectedItemId(R.id.nav_my_events);
-        // ⚠️ 不在这里触发 joinedFragment.reload()，避免 Fragment 尚未 attach 造成崩溃
     }
 }
