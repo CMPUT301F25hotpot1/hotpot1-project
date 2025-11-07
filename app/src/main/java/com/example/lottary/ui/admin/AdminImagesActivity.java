@@ -44,11 +44,9 @@ public class AdminImagesActivity extends AppCompatActivity {
     private FirestoreImageRepository repo;
     private FirestoreImageRepository.ListenerHandle handle;
 
-    // 接收详情页删除成功的结果
     private final ActivityResultLauncher<Intent> detailLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == ImageDetailActivity.RESULT_DELETED) {
-                    // 立即重渲染（也会很快被 Firestore 实时监听刷新覆盖）
                     render();
                 }
             });
@@ -64,69 +62,34 @@ public class AdminImagesActivity extends AppCompatActivity {
         btnSort = findViewById(R.id.btnSortAdminImages);
         progress = findViewById(R.id.progressAdminImages);
 
-        // ==== Bottom Nav ====
-        BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
-        nav.setSelectedItemId(R.id.nav_admin_images);
-        nav.setOnItemReselectedListener(item -> { /* no-op */ });
-        nav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_admin_images) return true;
-            if (id == R.id.nav_admin_events) {
-                startActivity(new Intent(this, AdminEventsActivity.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            if (id == R.id.nav_admin_users) {
-                startActivity(new Intent(this, AdminUsersActivity.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            if (id == R.id.nav_admin_dashboard) {
-                startActivity(new Intent(this, AdminDashboardActivity.class)
-                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                overridePendingTransition(0, 0);
-                return true;
-            }
-            return true;
-        });
+        setupBottomNav();
 
-        // ==== 列表 ====
         rv.setLayoutManager(new GridLayoutManager(this, 3));
         rv.addItemDecoration(new SpacesItemDecoration(
                 getResources().getDimensionPixelSize(R.dimen.grid_gap)));
 
-        // 单击：打开查看页（✅ 关键改动：把文档 id 一并传给 ImageViewerActivity）
         adapter = new ImageGridAdapter(img -> {
-            if (img.getUrl() != null && !img.getUrl().isEmpty()) {
-                ImageViewerActivity.launch(
-                        this,
-                        img.getUrl(),
-                        img.getTitle(),
-                        img.getId()   // ← 必传，以便查看页执行 db.collection("images").document(id).delete()
-                );
-            }
+            ImageViewerActivity.launch(
+                    this,
+                    img.getUrl(),
+                    img.getTitle(),
+                    img.getId()
+            );
         });
-        // 🆕 开启稳定 ID，让动画/局部刷新更顺滑（不影响既有逻辑）
         adapter.enableStableIds(true);
-        // 🆕 如果以后采用适配器自带的长按回调，也能直接进入详情（与下方触摸监听并存）
         adapter.setOnItemLongClick(this::launchDetail);
-
         rv.setAdapter(adapter);
 
-        // 长按：进入可删除的详情页（保留你当前实现）
         rv.addOnItemTouchListener(new LongPressOpener(rv, position -> {
             if (position >= 0 && position < current.size()) {
                 launchDetail(current.get(position));
             }
         }));
 
-        // 先显示“骨架格子”
         showSkeleton(18);
 
         btnSearch.setOnClickListener(v -> {
-            query = etSearch.getText() == null ? "" : etSearch.getText().toString().trim();
+            query = etSearch.getText().toString().trim();
             render();
         });
         btnSort.setOnClickListener(v -> {
@@ -146,7 +109,7 @@ public class AdminImagesActivity extends AppCompatActivity {
             all.clear();
             if (error == null && images != null && !images.isEmpty()) {
                 all.addAll(images);
-                query = etSearch.getText() == null ? "" : etSearch.getText().toString().trim();
+                query = etSearch.getText().toString().trim();
                 render();
             } else {
                 showSkeleton(18);
@@ -176,12 +139,10 @@ public class AdminImagesActivity extends AppCompatActivity {
     }
 
     private static void sortByLatest(List<Image> list) {
-        Collections.sort(list, new Comparator<Image>() {
-            @Override public int compare(Image a, Image b) {
-                long ta = a.getCreatedAt()==null?0:a.getCreatedAt().getSeconds();
-                long tb = b.getCreatedAt()==null?0:b.getCreatedAt().getSeconds();
-                return Long.compare(tb, ta); // DESC：最新在前
-            }
+        Collections.sort(list, (a, b) -> {
+            long ta = a.getCreatedAt() == null ? 0 : a.getCreatedAt().getSeconds();
+            long tb = b.getCreatedAt() == null ? 0 : b.getCreatedAt().getSeconds();
+            return Long.compare(tb, ta);
         });
     }
 
@@ -190,27 +151,68 @@ public class AdminImagesActivity extends AppCompatActivity {
         for (int i = 0; i < count; i++) {
             Image img = new Image();
             img.setId("skeleton_" + i);
+            img.setUrl("");
             img.setTitle("");
-            img.setUrl(""); // 触发占位图
             img.setCreatedAt(Timestamp.now());
             skeleton.add(img);
         }
         adapter.submitList(skeleton);
     }
 
-    // ---- 辅助：网格间距 ----
+    // ✅ BottomNavigation 已全部修复
+    private void setupBottomNav() {
+        BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
+        nav.setSelectedItemId(R.id.nav_admin_images);
+
+        nav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_admin_images) return true;
+
+            if (id == R.id.nav_admin_events) {
+                startActivity(new Intent(this, AdminEventsActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+
+            if (id == R.id.nav_admin_users) {
+                startActivity(new Intent(this, AdminUsersActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+
+            if (id == R.id.nav_admin_dashboard) {
+                startActivity(new Intent(this, AdminProfileActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+
+            return false;
+        });
+    }
+
     static class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         private final int space;
         SpacesItemDecoration(int s) { space = s; }
+
         @Override
-        public void getItemOffsets(@NonNull android.graphics.Rect outRect, @NonNull View view,
-                                   @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-            outRect.left = space; outRect.right = space;
-            outRect.top = space;  outRect.bottom = space;
+        public void getItemOffsets(@NonNull android.graphics.Rect outRect,
+                                   @NonNull View view,
+                                   @NonNull RecyclerView parent,
+                                   @NonNull RecyclerView.State state) {
+            outRect.left = space;
+            outRect.right = space;
+            outRect.top = space;
+            outRect.bottom = space;
         }
     }
 
-    // ====== 长按打开详情 ======
     private void launchDetail(Image img) {
         Intent i = new Intent(this, ImageDetailActivity.class);
         i.putExtra(ImageDetailActivity.EXTRA_IMAGE_ID, img.getId());
@@ -229,17 +231,24 @@ public class AdminImagesActivity extends AppCompatActivity {
         LongPressOpener(RecyclerView rv, OnLongPressPositionListener l) {
             recyclerView = rv;
             listener = l;
-            detector = new GestureDetector(rv.getContext(), new GestureDetector.SimpleOnGestureListener() {
-                @Override public void onLongPress(MotionEvent e) {
-                    View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
-                    if (child != null) {
-                        int pos = recyclerView.getChildAdapterPosition(child);
-                        if (listener != null) listener.onLongPress(pos);
-                    }
-                }
-                @Override public boolean onDown(MotionEvent e) { return true; }
-            });
+            detector = new GestureDetector(rv.getContext(),
+                    new GestureDetector.SimpleOnGestureListener() {
+                        @Override
+                        public void onLongPress(MotionEvent e) {
+                            View child = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                            if (child != null) {
+                                int pos = recyclerView.getChildAdapterPosition(child);
+                                if (listener != null) listener.onLongPress(pos);
+                            }
+                        }
+
+                        @Override
+                        public boolean onDown(MotionEvent e) {
+                            return true;
+                        }
+                    });
         }
+
         @Override
         public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
             detector.onTouchEvent(e);
