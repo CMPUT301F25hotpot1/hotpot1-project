@@ -21,6 +21,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+/**
+ * A {@link AppCompatActivity} subclass that manage how the Profile tab is displayed depending on the
+ * user status
+ * @author Han Nguyen & Tianyi Zhang (for navigation bar)
+ * @version 1.0
+ * @see NewProfileFragment
+ * @see ProfileInfoFragment
+ */
 public class ProfileActivity extends AppCompatActivity {
 
     private String deviceID;
