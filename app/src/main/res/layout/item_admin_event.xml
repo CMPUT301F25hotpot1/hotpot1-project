@@ -13,14 +13,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- LEFT CONTENT -->
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1">
 
-            <!-- Title + Status -->
+
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
@@ -64,7 +63,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
-            <!-- Buttons -->
+
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="wrap_content"
@@ -88,7 +87,6 @@
 
         </LinearLayout>
 
-        <!-- RIGHT IMAGE -->
         <ImageView
             android:id="@+id/event_image"
             android:layout_width="120dp"
