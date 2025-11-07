@@ -10,10 +10,11 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:backgroundTint="@color/teal_700"
+        android:textStyle="bold"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         app:navigationIcon="@drawable/ic_arrow_back_24"
         app:title="@string/notifications"
-        app:titleTextColor="@android:color/white" />
+        app:titleTextColor="@android:color/black" />
 
     <ProgressBar
         android:id="@+id/loading"

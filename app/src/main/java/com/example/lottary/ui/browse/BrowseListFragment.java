@@ -6,6 +6,7 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
 import com.example.lottary.data.FirestoreEventRepository;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
@@ -123,10 +127,30 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
     }
 
     @Override public void onJoinClick(@NonNull Event e) {
-        String did = Settings.Secure.getString(requireContext().getContentResolver(),
+        // 设备唯一 id 作为“用户 id”
+        String uid = Settings.Secure.getString(requireContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
-        if (did == null || did.isEmpty()) did = "device_demo";
-        FirestoreEventRepository.get().joinWaitingList(e.getId(), did);
+        if (uid == null || uid.isEmpty()) uid = "device_demo";
+
+        // 直接写 Firestore，并在回调里弹 Toast
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference ref = db.collection("events").document(e.getId());
+
+        ref.update(
+                "waitingList",     FieldValue.arrayUnion(uid),
+                "allParticipants", FieldValue.arrayUnion(uid)
+        ).addOnSuccessListener(v -> {
+            toast("Success! You have joined the waitlist.");
+            // 可选：这里你也可以刷新或禁用按钮
+            // applyCurrentFilters(); // 若列表状态需要立刻变化
+        }).addOnFailureListener(err -> {
+            toast("Join failed: " + err.getMessage());
+        });
+    }
+
+    private void toast(String msg) {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+        }
     }
 }
-
