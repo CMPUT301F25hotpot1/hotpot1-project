@@ -27,7 +27,7 @@ public class QrCodeActivity extends AppCompatActivity {
         TextView txt = findViewById(R.id.txt_payload);
         Button btnCopy = findViewById(R.id.btn_copy);
 
-        // 简单把 eventId 当作“二维码载荷”展示
+
         txt.setText(eventId == null ? "(no id)" : eventId);
 
         btnCopy.setOnClickListener(v -> {

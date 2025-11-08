@@ -10,7 +10,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- 顶部关闭按钮 -->
         <ImageButton
             android:id="@+id/btn_close"
             android:layout_width="36dp"
@@ -21,7 +20,7 @@
             android:tint="@android:color/black"
             app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
 
-        <!-- 海报占位 -->
+
         <ImageView
             android:id="@+id/iv_poster"
             android:layout_width="match_parent"
@@ -31,7 +30,7 @@
             android:contentDescription="@string/event_image"
             android:layout_marginBottom="16dp"/>
 
-        <!-- 标题 -->
+
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="match_parent"
@@ -41,7 +40,6 @@
             android:textColor="@android:color/black"
             android:text="Community Swim Class" />
 
-        <!-- 场馆 -->
         <TextView
             android:id="@+id/tvVenue"
             android:layout_width="match_parent"
@@ -51,7 +49,7 @@
             android:textColor="@android:color/darker_gray"
             android:layout_marginTop="4dp"/>
 
-        <!-- 城市 + 日期时间 -->
+
         <TextView
             android:id="@+id/tvCityDate"
             android:layout_width="match_parent"
@@ -60,7 +58,7 @@
             android:textColor="@android:color/darker_gray"
             android:layout_marginBottom="8dp"/>
 
-        <!-- 描述 -->
+
         <TextView
             android:id="@+id/tvDescription"
             android:layout_width="match_parent"
@@ -71,7 +69,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="12dp"/>
 
-        <!-- 状态 -->
+
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
@@ -81,7 +79,6 @@
             android:textColor="@color/brand_green"
             android:layout_marginBottom="8dp"/>
 
-        <!-- 容量与等待人数 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -104,7 +101,7 @@
                 android:textColor="@android:color/holo_red_dark"/>
         </LinearLayout>
 
-        <!-- Join 按钮 -->
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_join"
             style="@style/Widget.Material3.Button"

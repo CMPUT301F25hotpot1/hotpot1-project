@@ -3,6 +3,7 @@ package com.example.lottary.data;
 import androidx.annotation.NonNull;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -11,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -20,6 +22,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+/**
+ * FirestoreEventRepository
+ *
+ * Purpose:
+ * Central repository that manages all Firestore operations for event creation,
+ * updates, participant actions, and real-time listeners. It serves as the data
+ * access layer between Firestore and the app’s UI logic.
+ *
+ * Role / Pattern:
+ * Implements the Repository pattern — abstracting Firestore CRUD, listener setup,
+ * and transactional logic into reusable methods for both Entrant and Organizer flows.
+ * Handles Firestore snapshot listeners, structured field updates, and transactional
+ * operations for atomic changes.
+ *
+ * Outstanding Issues / Notes:
+ * - Firestore operations are unguarded; network and permission errors are only logged.
+ * - Uses simple List fields (waitingList, chosen, signedUp, cancelled); may need refactoring
+ *   for scalability (e.g., subcollections or pagination).
+ * - Time-based logic (registration window checks) is done externally — not enforced here.
+ * - Notifications are created in drawWinnersAndNotify(), but delivery is not guaranteed.
+ */
+
 
 public class FirestoreEventRepository {
 
@@ -62,12 +87,35 @@ public class FirestoreEventRepository {
                 });
     }
 
+    public ListenerRegistration listenChosen(@NonNull String deviceId, @NonNull EventsListener l) {
+        return events.whereArrayContains("chosen", deviceId)
+                .addSnapshotListener((snap, err) -> {
+                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    l.onChanged(mapList(snap));
+                });
+    }
+
+    public ListenerRegistration listenSigned(@NonNull String deviceId, @NonNull EventsListener l) {
+        return events.whereArrayContains("signedUp", deviceId)
+                .addSnapshotListener((snap, err) -> {
+                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    l.onChanged(mapList(snap));
+                });
+    }
+
+    public ListenerRegistration listenCancelled(@NonNull String deviceId, @NonNull EventsListener l) {
+        return events.whereArrayContains("cancelled", deviceId)
+                .addSnapshotListener((snap, err) -> {
+                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    l.onChanged(mapList(snap));
+                });
+    }
+
     public ListenerRegistration listenEvent(@NonNull String eventId, @NonNull DocListener l) {
         return events.document(eventId)
                 .addSnapshotListener((snap, err) -> { if (snap != null) l.onChanged(snap); });
     }
 
-    // ---------- writes ----------
     public Task<DocumentReference> createEvent(Map<String, Object> fields) {
         ensureArrays(fields, "waitingList", "chosen", "signedUp", "cancelled");
         if (!fields.containsKey("createdAt")) fields.put("createdAt", Timestamp.now());
@@ -110,8 +158,75 @@ public class FirestoreEventRepository {
         });
     }
 
-    // ---------- helpers ----------
-    @SuppressWarnings("unchecked")
+    public Task<Void> drawWinnersAndNotify(@NonNull String eventId, String message) {
+        DocumentReference ref = events.document(eventId);
+
+        return db.runTransaction(tr -> {
+            DocumentSnapshot d = tr.get(ref);
+            if (!d.exists()) return new DrawResult(); // 空
+
+            List<String> waiting = strList(d.get("waitingList"));
+            List<String> chosen  = strList(d.get("chosen"));
+            List<String> signed  = strList(d.get("signedUp"));
+            List<String> cancel  = strList(d.get("cancelled"));
+
+            Number capNum = (Number) d.get("capacity");
+            int capacity = capNum == null ? 0 : capNum.intValue();
+
+            int remaining = LotterySampler.capacityRemaining(capacity, signed.size());
+            int toDraw = Math.max(0, remaining);
+
+            Set<String> taken = new HashSet<>();
+            taken.addAll(chosen); taken.addAll(signed); taken.addAll(cancel);
+
+            List<String> winners = LotterySampler.sampleWinners(
+                    waiting, taken, toDraw, System.currentTimeMillis());
+
+            if (!winners.isEmpty()) {
+                List<String> newChosen = new ArrayList<>(chosen);
+                newChosen.addAll(winners);
+                tr.update(ref, "chosen", newChosen);
+            }
+
+            DrawResult res = new DrawResult();
+            res.winners = winners;
+            res.organizerId = str(d.get("creatorDeviceId"));
+            res.eventTitle  = str(d.get("title"));
+            res.eventId     = eventId;
+            return res;
+        }).continueWithTask(t -> {
+            if (!t.isSuccessful()) {
+                Exception e = t.getException();
+                return Tasks.forException(e == null ? new RuntimeException("Transaction failed") : e);
+            }
+
+            DrawResult r = t.getResult();
+            if (r == null || r.winners == null || r.winners.isEmpty()) {
+                return Tasks.forResult(null);
+            }
+
+            String finalMsg = (message == null || message.trim().isEmpty())
+                    ? "Congratulations! You are selected. Please sign up to secure your spot."
+                    : message.trim();
+
+            WriteBatch batch = db.batch();
+            CollectionReference notifs = db.collection("notifications");
+
+            for (String rid : r.winners) {
+                Map<String, Object> doc = new HashMap<>();
+                doc.put("recipientId", rid);
+                doc.put("eventId", r.eventId);
+                doc.put("eventTitle", r.eventTitle);
+                doc.put("organizerId", r.organizerId);
+                doc.put("type", "selected");
+                doc.put("message", finalMsg);
+                doc.put("sentAt", Timestamp.now());
+                batch.set(notifs.document(), doc);
+            }
+            return batch.commit();
+        });
+    }
+
     private static List<String> strList(Object o) {
         if (o instanceof List<?>) {
             List<String> out = new ArrayList<>();
@@ -121,7 +236,8 @@ public class FirestoreEventRepository {
         return new ArrayList<>();
     }
 
-    // user accepts invitation (moves into signedUp, removes from others)
+    private static String str(Object o){ return o == null ? "" : o.toString(); }
+
     public Task<Void> signUp(@NonNull String eventId, @NonNull String deviceId) {
         DocumentReference ref = events.document(eventId);
         return db.runTransaction(tr -> {
@@ -155,7 +271,6 @@ public class FirestoreEventRepository {
         });
     }
 
-    // user declines invitation (moves into cancelled)
     public Task<Void> decline(@NonNull String eventId, @NonNull String deviceId) {
         DocumentReference ref = events.document(eventId);
         return db.runTransaction(tr -> {
@@ -186,7 +301,6 @@ public class FirestoreEventRepository {
         });
     }
 
-    // waiting list ops
     public Task<Void> joinWaitingList(@NonNull String eventId, @NonNull String deviceId) {
         DocumentReference ref = events.document(eventId);
         return db.runTransaction(tr -> {
@@ -230,7 +344,6 @@ public class FirestoreEventRepository {
         });
     }
 
-    // ---------- CSV helper ----------
     public static String buildCsvFromEvent(@NonNull DocumentSnapshot d) {
         StringBuilder sb = new StringBuilder();
         sb.append("status,entrantId\n");
@@ -245,7 +358,6 @@ public class FirestoreEventRepository {
         for (Object o : (List<?>) arr) sb.append(status).append(",").append(o).append("\n");
     }
 
-    // ---------- mapping ----------
     private List<Event> mapList(QuerySnapshot snap) {
         if (snap == null || snap.isEmpty()) return Collections.emptyList();
         List<Event> list = new ArrayList<>();
@@ -285,6 +397,15 @@ public class FirestoreEventRepository {
     private static void ensureArrays(Map<String, Object> map, String... keys) {
         for (String k : keys) if (!(map.get(k) instanceof List)) map.put(k, new ArrayList<String>());
     }
+
+    private static class DrawResult {
+        List<String> winners = new ArrayList<>();
+        String organizerId = "";
+        String eventTitle  = "";
+        String eventId     = "";
+    }
+
+    public Task<Void> deleteEventById(String eventId) {
+        return events.document(eventId).delete();
+    }
 }
-
-

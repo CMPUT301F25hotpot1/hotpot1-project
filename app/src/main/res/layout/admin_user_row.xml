@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <ImageView
+        android:id="@+id/admin_user_avatar"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:src="@drawable/ic_person_24"
+        android:background="@drawable/bg_circle_soft"
+        android:tint="#6A6ACC"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/admin_user_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:text="User Name"
+        android:textSize="16sp"
+        android:layout_marginStart="14dp" />
+
+    <ImageView
+        android:id="@+id/btn_view_logs"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_timeline_24"
+        android:background="@drawable/bg_circle_button"
+        android:padding="8dp"
+        android:layout_marginEnd="10dp" />
+
+    <ImageView
+        android:id="@+id/btn_remove_user"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_person_remove_24"
+        android:background="@drawable/bg_circle_button"
+        android:padding="8dp" />
+
+</LinearLayout>

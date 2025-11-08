@@ -4,4 +4,15 @@
         android:title="Opt-out all notifications"/>
     <item android:id="@+id/action_optin_all"
         android:title="Opt-in all notifications"/>
+
+    <!-- 按组织者静音/恢复（有 organizerId 时显示） -->
+    <item android:id="@+id/action_optout_org"
+        android:title="Opt-out from this organizer"/>
+    <item android:id="@+id/action_optin_org"
+        android:title="Opt-in to this organizer"/>
+
+    <!-- 调试：一键清空所有静音设置 -->
+    <item android:id="@+id/action_reset_mute"
+        android:title="Reset mute settings"/>
 </menu>
+

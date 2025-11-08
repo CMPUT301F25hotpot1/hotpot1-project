@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -22,7 +21,6 @@
         android:theme="@style/Theme.Lottary"
         tools:targetApi="31">
 
-        <!-- Browse / Notifications / Profile-->
         <activity android:name="com.example.lottary.ui.browse.EventDetailsActivity" />
         <activity android:name="com.example.lottary.ui.browse.QrScanActivity" />
         <activity android:name="com.example.lottary.ui.notifications.NotificationsActivity" />
@@ -31,9 +29,8 @@
         <activity android:name="com.example.lottary.ui.profile.CreateProfileActivity" />
         <activity android:name="com.example.lottary.ui.profile.EditProfileActivity" />
 
-        <!-- Launcher -->
         <activity
-            android:name=".ui.events.MyEventsActivity"
+            android:name="com.example.lottary.ui.events.MyEventsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,16 +38,41 @@
             </intent-filter>
         </activity>
 
-        <!-- Misc -->
-        <activity android:name=".MainActivity" />
-        <activity android:name=".ui.events.create.CreateEventActivity" />
-        <activity android:name=".ui.events.edit.EditEventActivity" />
+        <activity android:name="com.example.lottary.MainActivity" />
+        <activity android:name="com.example.lottary.ui.events.create.CreateEventActivity" />
+        <activity android:name="com.example.lottary.ui.events.edit.EditEventActivity" />
 
-        <!-- Manage Event flow -->
-        <activity android:name=".ui.events.manage.ManageEventActivity" />
-        <activity android:name=".ui.events.manage.SendNotificationsActivity" />
-        <activity android:name=".ui.events.manage.QrCodeActivity" />
-        <activity android:name=".ui.events.manage.MapActivity" />
+        <activity android:name="com.example.lottary.ui.events.manage.ManageEventActivity" />
+        <activity android:name="com.example.lottary.ui.events.manage.SendNotificationsActivity" />
+        <activity android:name="com.example.lottary.ui.events.manage.QrCodeActivity" />
+        <activity android:name="com.example.lottary.ui.events.manage.MapActivity" />
+
+        <activity android:name="com.example.lottary.ui.admin.AdminDashboardActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminEventsActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminUsersActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminNotificationsActivity" />
+        <activity android:name="com.example.lottary.ui.admin.AdminProfileActivity" />
+
+        <activity
+            android:name=".ui.admin.AdminImagesActivity"
+            android:exported="false"
+            android:label="Images" />
+
+        <activity
+            android:name=".ui.admin.ImageViewerActivity"
+            android:exported="false"
+            android:label="Image" />
+
+        <activity
+            android:name=".ui.admin.ImageDetailActivity"
+            android:exported="false"
+            android:label="Image"
+            android:windowSoftInputMode="adjustPan" />
+
+        <activity
+            android:name="com.example.lottary.ui.admin.NotificationLogsActivity"
+            android:exported="false"
+            android:label="Logs" />
 
     </application>
 </manifest>

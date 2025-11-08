@@ -1,5 +1,6 @@
 package com.example.lottary;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -7,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.lottary.ui.admin.AdminDashboardActivity;  // ✅ 加这个 import
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,5 +23,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // ✅ ✅ ✅ 加这一句：进入 app 自动跳 Admin Dashboard
+        startActivity(new Intent(this, AdminDashboardActivity.class));
     }
 }

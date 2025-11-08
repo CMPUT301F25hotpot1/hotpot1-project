@@ -24,12 +24,20 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A {@link AppCompatActivity} subclass that allow user to edit their profile information.
+ * @author Tianyi Zhang (for base code of populate(), n(), saveChanges(), require()) & Han Nguyen
+ * @version 1.0
+ * @see ProfileActivity
+ * @see ProfileInfoFragment
+ */
 public class EditProfileActivity extends AppCompatActivity {
+
 
     private String userDeviceID;
 
     private MaterialToolbar topBar;
-    private EditText etName, etEmail, etphoneNumber;
+    private EditText etName, etEmail, etPhoneNumber;
     private Button btnEditProfile;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,7 +48,7 @@ public class EditProfileActivity extends AppCompatActivity {
 
         etName = findViewById(R.id.et_name);
         etEmail = findViewById(R.id.et_email);
-        etphoneNumber = findViewById(R.id.et_phone_number);
+        etPhoneNumber = findViewById(R.id.et_phone_number);
         topBar = findViewById(R.id.top_app_bar);
         btnEditProfile = findViewById((R.id.btn_edit_profile));
 
@@ -53,14 +61,24 @@ public class EditProfileActivity extends AppCompatActivity {
         btnEditProfile.setOnClickListener(v -> saveChanges());
         }
 
+    /**
+     * Put information from an user document on display on the appropriate fields. Will automatically
+     * return if document is empty
+     * @param d - a DocumentSnapshot containing user info to populate
+     * @see FirestoreUserRepository
+     */
     private void populate(DocumentSnapshot d) {
         if (d == null || !d.exists()) return;
 
         etName.setText(n(d.getString("name")));
         etEmail.setText(n(d.getString("email")));
-        etphoneNumber.setText(n(d.getString("phoneNumber")));
+        etPhoneNumber.setText(n(d.getString("phoneNumber")));
     }
 
+    /**
+     * Update edits to the database. Nothing will be changed if there are errors while updating.
+     * @see FirestoreUserRepository
+     */
     private void saveChanges() {
         if (!require(etName)) return;
         else if (!require(etEmail)) return;
@@ -68,7 +86,7 @@ public class EditProfileActivity extends AppCompatActivity {
         Map<String, Object> update = new HashMap<>();
         update.put("name", etName.getText().toString().trim());
         update.put("email", etEmail.getText().toString().trim());
-        update.put("phoneNumber", etphoneNumber.getText().toString().trim());
+        update.put("phoneNumber", etPhoneNumber.getText().toString().trim());
         update.put("updatedAt", Timestamp.now());
 
         ProgressDialog pd = new ProgressDialog(this);
@@ -106,8 +124,17 @@ public class EditProfileActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Null string handler.
+     * @param v - a String to transform
+     * @return an empty String if parameter is null, if not return the original String.
+     */
     private static String n(String v){ return v == null ? "" : v; }
 
+    /**
+     * Forces the user to provide input on the given field
+     * @param et - the EditText field that requires a String input
+     */
     private boolean require(EditText et) {
         if (TextUtils.isEmpty(et.getText().toString().trim())) {
             et.setError("Required");

@@ -26,8 +26,13 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 /**
- * A simple {@link Fragment} subclass.
- * .
+ * A {@link Fragment} subclass that displays user information & options to edit profile, delete profile
+ * and swap to Admin View (conditional)
+ * @author Han Nguyen, Mengxi Zhang & Tianyi Zhang (for populate() and n())
+ * @version 1.1
+ * @see ProfileActivity
+ * @see EditProfileActivity
+ * @see com.example.lottary.ui.admin.AdminDashboardActivity
  */
 public class ProfileInfoFragment extends Fragment {
 
@@ -84,7 +89,12 @@ public class ProfileInfoFragment extends Fragment {
         // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
         fetchInfo(userDeviceID);
     }
-
+    /**
+     * Put information from an user document on display on the appropriate fields. Will automatically
+     * return if document is empty
+     * @param d - a DocumentSnapshot containing user info to populate
+     * @see FirestoreUserRepository
+     */
     private void populate(DocumentSnapshot d) {
         if (d == null || !d.exists()) return;
 
@@ -98,7 +108,12 @@ public class ProfileInfoFragment extends Fragment {
             infoPhoneNum.setText(phoneNum);
         }
     }
-
+    
+    /**
+     * Fetch a single user document from the database and populate user information on the screen.
+     * If there is no document the user info will be empty.
+     * @param deviceID - the current device ID of the user
+     */
     private void fetchInfo(String deviceID) {
         DocumentReference docRef = FirestoreUserRepository.get().hasUser(deviceID);
         docRef.get().addOnCompleteListener(task -> {
@@ -115,7 +130,10 @@ public class ProfileInfoFragment extends Fragment {
             }
         });
     }
-
+    /**
+     * Warn the user before allow them to delete the profile. Process deletion when the user confirm
+     * and dismiss the dialog when the user deny.
+     */
     private void warnBeforeDelete() {
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_delete_profile, null, false);
 

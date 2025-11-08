@@ -19,6 +19,13 @@ import com.google.firebase.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A {@link AppCompatActivity} subclass that allow user to create their profile information.
+ * @author Tianyi Zhang (for base code of saveProfile(), require()) & Han Nguyen
+ * @version 1.0
+ * @see ProfileActivity
+ * @see NewProfileFragment
+ */
 public class CreateProfileActivity extends AppCompatActivity {
 
     private MaterialToolbar topBar;
@@ -44,6 +51,10 @@ public class CreateProfileActivity extends AppCompatActivity {
         btnCreateProfile.setOnClickListener(v -> saveProfile());
     }
 
+    /**
+     * Add the new profile to the database. Nothing will be changed if there are errors while attempting to update.
+     * @see FirestoreUserRepository
+     */
     private void saveProfile() {
         if (!require(etName)) return;
         else if (!require(etEmail)) return;
@@ -76,6 +87,10 @@ public class CreateProfileActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Forces the user to provide input on the given field
+     * @param et - the EditText field that requires a String input
+     */
     private boolean require(EditText et) {
         if (TextUtils.isEmpty(et.getText().toString().trim())) {
             et.setError("Required");
