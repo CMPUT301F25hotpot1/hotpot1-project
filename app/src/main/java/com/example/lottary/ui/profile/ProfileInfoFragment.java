@@ -20,10 +20,15 @@ import android.widget.Toast;
 
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
+import com.example.lottary.ui.admin.AdminEventsActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A {@link Fragment} subclass that displays user information & options to edit profile, delete profile
@@ -38,7 +43,8 @@ public class ProfileInfoFragment extends Fragment {
 
     private String userDeviceID = "device_demo";
     private TextView infoName, infoEmail, infoPhoneNum;
-    private Button btnEditProfile, btnDeleteProfile;
+    private Button btnEditProfile, btnDeleteProfile, adminBtn;
+    private List<String> adminIDList;
 
     private Context context;
 
@@ -51,8 +57,12 @@ public class ProfileInfoFragment extends Fragment {
 
         context = requireContext();
 
+        // get current user ID
         userDeviceID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         Log.i("deviceID2", userDeviceID);
+        // maintain an ID list of admin
+        adminIDList.add("2a03e2bac0988d0f");
+
     }
 
     @Override
@@ -71,6 +81,7 @@ public class ProfileInfoFragment extends Fragment {
         infoEmail = view.findViewById(R.id.user_email);
         infoPhoneNum = view.findViewById(R.id.user_phone_num);
 
+        // fetch info and populate data
         fetchInfo(userDeviceID);
         // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
 
@@ -81,6 +92,19 @@ public class ProfileInfoFragment extends Fragment {
 
         btnDeleteProfile = view.findViewById(R.id.btn_delete_profile);
         btnDeleteProfile.setOnClickListener(v -> warnBeforeDelete());
+
+        // ✅ Swap to Admin View — go straight to AdminEventsActivity
+        adminBtn = view.findViewById(R.id.btn_swap_admin); // keep your existing id
+        adminBtn.setVisibility(View.GONE);
+        if (adminBtn != null && adminIDList.contains(userDeviceID)) {
+            adminBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(context, AdminEventsActivity.class);
+                intent.putExtra("open_from_profile", true);
+                startActivity(intent);
+                // finish current to avoid back-stack/lifecycle weirdness
+                Objects.requireNonNull(getActivity()).finish();
+            });
+        }
     }
 
     @Override
@@ -89,6 +113,7 @@ public class ProfileInfoFragment extends Fragment {
         // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
         fetchInfo(userDeviceID);
     }
+
     /**
      * Put information from an user document on display on the appropriate fields. Will automatically
      * return if document is empty
@@ -108,7 +133,7 @@ public class ProfileInfoFragment extends Fragment {
             infoPhoneNum.setText(phoneNum);
         }
     }
-    
+
     /**
      * Fetch a single user document from the database and populate user information on the screen.
      * If there is no document the user info will be empty.
@@ -130,6 +155,7 @@ public class ProfileInfoFragment extends Fragment {
             }
         });
     }
+
     /**
      * Warn the user before allow them to delete the profile. Process deletion when the user confirm
      * and dismiss the dialog when the user deny.
@@ -164,5 +190,10 @@ public class ProfileInfoFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Null string handler.
+     * @param v - a String to transform
+     * @return an empty String if parameter is null, if not return the original String.
+     */
     private static String n(String v){ return v == null ? "" : v; }
 }
