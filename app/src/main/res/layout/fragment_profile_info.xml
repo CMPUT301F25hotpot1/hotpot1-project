@@ -84,6 +84,16 @@
             app:backgroundTint="#E6E6E6"
             app:strokeColor="@color/admin_black"
             app:strokeWidth="1dp" />
+
+        <Button
+            android:id="@+id/btn_swap_admin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:text="Swap to Admin View"
+            android:textColor="@android:color/white"
+            app:backgroundTint="@color/admin_black" />
     </LinearLayout>
 
 </FrameLayout>

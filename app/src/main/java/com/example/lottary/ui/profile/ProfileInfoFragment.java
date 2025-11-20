@@ -1,5 +1,8 @@
 package com.example.lottary.ui.profile;
 
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,7 +36,7 @@ import java.util.Objects;
 /**
  * A {@link Fragment} subclass that displays user information & options to edit profile, delete profile
  * and swap to Admin View (conditional)
- * @author Han Nguyen, Mengxi Zhang & Tianyi Zhang (for populate() and n())
+ * @author Han Nguyen, Mengxi Zhang (for admin button config) & Tianyi Zhang (for populate() and n())
  * @version 1.1
  * @see ProfileActivity
  * @see EditProfileActivity
@@ -44,13 +47,9 @@ public class ProfileInfoFragment extends Fragment {
     private String userDeviceID = "device_demo";
     private TextView infoName, infoEmail, infoPhoneNum;
     private Button btnEditProfile, btnDeleteProfile, adminBtn;
-    private List<String> adminIDList;
-
+    private List<String> adminIDList = new ArrayList<String>();
     private Context context;
 
-    public ProfileInfoFragment() {
-        // Required empty public constructor
-    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +60,10 @@ public class ProfileInfoFragment extends Fragment {
         userDeviceID = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         Log.i("deviceID2", userDeviceID);
         // maintain an ID list of admin
-        adminIDList.add("2a03e2bac0988d0f");
+        adminIDList.add("2a03e2bac0988d0f");  // Yitong
+        adminIDList.add("c8b0b8e87f4433fd");  // Mengxi
+        adminIDList.add("ce9affac94d94f5e");  // Tianyi
+        adminIDList.add("8abccf496d141336");  // Han
 
     }
 
@@ -95,14 +97,16 @@ public class ProfileInfoFragment extends Fragment {
 
         // ✅ Swap to Admin View — go straight to AdminEventsActivity
         adminBtn = view.findViewById(R.id.btn_swap_admin); // keep your existing id
-        adminBtn.setVisibility(View.GONE);
+        adminBtn.setVisibility(INVISIBLE);
+        // only show to selected admin device IDs
         if (adminBtn != null && adminIDList.contains(userDeviceID)) {
+            adminBtn.setVisibility(VISIBLE);
             adminBtn.setOnClickListener(v -> {
                 Intent intent = new Intent(context, AdminEventsActivity.class);
                 intent.putExtra("open_from_profile", true);
                 startActivity(intent);
                 // finish current to avoid back-stack/lifecycle weirdness
-                Objects.requireNonNull(getActivity()).finish();
+                requireActivity().finish();
             });
         }
     }
@@ -161,16 +165,17 @@ public class ProfileInfoFragment extends Fragment {
      * and dismiss the dialog when the user deny.
      */
     private void warnBeforeDelete() {
+        // create & display dialogue
         View view = LayoutInflater.from(context).inflate(R.layout.dialog_delete_profile, null, false);
-
         final AlertDialog dialog = new MaterialAlertDialogBuilder(context)
                 .setView(view)
                 .create();
-
         MaterialButton btnYes = view.findViewById(R.id.btn_yes);
         MaterialButton btnNo  = view.findViewById(R.id.btn_no);
 
+        // cancel deletion
         btnNo.setOnClickListener(v -> dialog.dismiss());
+        // delete user from database
         btnYes.setOnClickListener(v -> {
             btnYes.setEnabled(false);
             btnNo.setEnabled(false);

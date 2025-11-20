@@ -9,9 +9,11 @@ import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
+import com.example.lottary.ui.admin.AdminEventsActivity;  // <-- important
 import com.example.lottary.ui.browse.BrowseActivity;
 import com.example.lottary.ui.events.MyEventsActivity;
 import com.example.lottary.ui.notifications.NotificationsActivity;
@@ -85,13 +87,13 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(i);
                 overridePendingTransition(0, 0);
                 return true;
-            } else if (id == R.id.nav_notifications) {
+            } else if (id == R.id.nav_notifications) {  // notifications tab
                 Intent i = new Intent(this, NotificationsActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(i);
                 overridePendingTransition(0, 0);
                 return true;
-            } else if (id == R.id.nav_profile) {
+            } else if (id == R.id.nav_profile) {  // already here
                 return true;
             }
             return false;
@@ -102,19 +104,20 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        // search for matching deviceID in database
+        // check if current user exists in the database
         DocumentReference docSnap = FirestoreUserRepository.get().hasUser(deviceID);
         docSnap.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot document = task.getResult();
 
-                // if device id is in the database, shows user info
+                // if user exists, attach user info
                 if (document.exists()) {
                     getSupportFragmentManager().beginTransaction()
                             .setReorderingAllowed(true)
                             .replace(R.id.profile_fragment_container_view, ProfileInfoFragment.class, null)
                             .commit();
-                // if device id is not in the database, user is new
+
+                // if user is new, attach prompt to create profile
                 } else {
                     getSupportFragmentManager().beginTransaction()
                             .setReorderingAllowed(true)
