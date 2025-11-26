@@ -4,6 +4,7 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -24,6 +25,7 @@ import android.widget.Toast;
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
 import com.example.lottary.ui.admin.AdminEventsActivity;
+import com.example.lottary.ui.admin.AdminUsersActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentReference;
@@ -83,8 +85,8 @@ public class ProfileInfoFragment extends Fragment {
         infoPhoneNum = view.findViewById(R.id.user_phone_num);
 
         // fetch info and populate data
-        fetchInfo(userDeviceID);
-        // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
+        // fetchInfo(userDeviceID);
+        FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
 
         // set button listeners
         btnEditProfile = view.findViewById(R.id.btn_edit_profile);
@@ -113,8 +115,8 @@ public class ProfileInfoFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
-        fetchInfo(userDeviceID);
+        FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
+        // fetchInfo(userDeviceID);
     }
 
     /**
@@ -165,33 +167,23 @@ public class ProfileInfoFragment extends Fragment {
      */
     private void warnBeforeDelete() {
         // create & display dialogue
-        View view = LayoutInflater.from(context).inflate(R.layout.dialog_delete_profile, null, false);
-        final AlertDialog dialog = new MaterialAlertDialogBuilder(context)
-                .setView(view)
-                .create();
-        MaterialButton btnYes = view.findViewById(R.id.btn_yes);
-        MaterialButton btnNo  = view.findViewById(R.id.btn_no);
-
-        // cancel deletion
-        btnNo.setOnClickListener(v -> dialog.dismiss());
-        // delete user from database
-        btnYes.setOnClickListener(v -> {
-            btnYes.setEnabled(false);
-            btnNo.setEnabled(false);
-            FirestoreUserRepository.get().deleteUser(userDeviceID)
-                    .addOnSuccessListener(ref -> {
-                        Toast.makeText(context, "Profile deleted", Toast.LENGTH_SHORT).show();
-                        Bundle mode = new Bundle();
-                        mode.putString("bundleKey", "New User");
-                        getParentFragmentManager().setFragmentResult("requestKey", mode);
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(context, "Deletion failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    });
-            dialog.dismiss();
-
-        });
-        dialog.show();
+        new MaterialAlertDialogBuilder(context, R.style.LotteryDialog_Entrant)
+                .setTitle(R.string.delete_profile)
+                .setMessage("Are you sure that you want to delete your profile?")
+                .setNeutralButton(R.string.no, null)
+                .setPositiveButton(R.string.yes, (d, w) -> {
+                    FirestoreUserRepository.get().deleteUser(userDeviceID)
+                            .addOnSuccessListener(ref -> {
+                                Toast.makeText(context, "Profile deleted", Toast.LENGTH_SHORT).show();
+                                Bundle mode = new Bundle();
+                                mode.putString("bundleKey", "New User");
+                                getParentFragmentManager().setFragmentResult("requestKey", mode);
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(context, "Deletion failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
+                })
+                .show();
     }
 
     /**

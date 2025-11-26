@@ -68,7 +68,7 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="12dp"
                 android:text="@string/scan_qr_code"
-                style="@style/LotteryButton.Entrant"/>
+                style="@style/LotteryButton.SignUp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_filter"

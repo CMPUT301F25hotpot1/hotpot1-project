@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -23,6 +25,7 @@ import com.example.lottary.data.FirestoreUserRepository;
 import com.example.lottary.data.User;
 import com.example.lottary.ui.admin.adapters.AdminUsersAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,10 +67,10 @@ public class AdminUsersActivity extends AppCompatActivity {
 
             @Override
             public void onRemoveUser(User u) {
-                new AlertDialog.Builder(AdminUsersActivity.this)
-                        .setTitle("Remove User?")
-                        .setMessage("Are you sure you want to delete this user?")
-                        .setNegativeButton("Cancel", null)
+                new MaterialAlertDialogBuilder(AdminUsersActivity.this, R.style.LotteryDialog_Admin)
+                        .setTitle("Remove User")
+                        .setMessage("Are you sure that you want to remove this user?")
+                        .setNeutralButton(R.string.cancel, null)
                         .setPositiveButton("Delete", (d, w) ->
                                 FirestoreUserRepository.get().deleteUser(u.getId()))
                         .show();

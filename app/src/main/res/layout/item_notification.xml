@@ -35,7 +35,7 @@
             android:id="@+id/tv_time"
             android:text="time"
             android:textSize="12sp"
-            android:textColor="#888888"
+            android:textColor="@color/text_secondary_grey"
             android:layout_marginTop="2dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
@@ -51,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/sign_up"
-                style="@style/LotteryButton.Entrant" />
+                style="@style/LotteryButton.SignUp" />
             <Button
                 android:id="@+id/btn_decline"
                 android:layout_width="wrap_content"

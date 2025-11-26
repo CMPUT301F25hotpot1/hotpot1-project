@@ -170,10 +170,10 @@ public class EventDetailsActivity extends AppCompatActivity {
                 tvStatus.setTextColor(getColor(android.R.color.darker_gray));
             } else if (!isOpen) {
                 tvStatus.setText("Full");
-                tvStatus.setTextColor(getColor(R.color.brand_red));
+                tvStatus.setTextColor(getColor(R.color.full_red));
             } else {
                 tvStatus.setText("Open");
-                tvStatus.setTextColor(getColor(R.color.brand_green));
+                tvStatus.setTextColor(getColor(R.color.open_green));
             }
         }
 

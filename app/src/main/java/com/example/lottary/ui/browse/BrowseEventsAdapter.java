@@ -93,7 +93,7 @@ class BrowseEventsAdapter extends ListAdapter<Event, BrowseEventsAdapter.VH> {
         h.status.setText(e.isFull() ? "Full" : "Open");
         int color = ContextCompat.getColor(
                 h.status.getContext(),
-                e.isFull() ? android.R.color.holo_red_dark : android.R.color.holo_green_dark
+                e.isFull() ? R.color.full_red : R.color.open_green
         );
         h.status.setTextColor(color);
 

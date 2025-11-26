@@ -73,12 +73,29 @@
                 style="@style/LotteryButton.Entrant"/>
         </LinearLayout>
 
+        <!-- Tabs-->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            app:tabIndicatorFullWidth="false"/>
+            app:tabIndicatorFullWidth="false">
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="0dp"
+                android:layout_width="match_parent"
+                android:text="Joined Events"
+                app:tabSelectedTextColor="@color/entrant_teal"
+                app:tabIndicatorColor="@color/entrant_teal"
+                />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_height="0dp"
+                android:layout_width="match_parent"
+                android:text="Created Events"
+                app:tabSelectedTextColor="@color/organizer_purple"
+                app:tabIndicatorColor="@color/organizer_purple"
+                />
+        </com.google.android.material.tabs.TabLayout>
 
     </LinearLayout>
 

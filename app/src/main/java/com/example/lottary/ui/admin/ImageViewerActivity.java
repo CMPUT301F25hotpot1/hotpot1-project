@@ -113,7 +113,7 @@ public class ImageViewerActivity extends AppCompatActivity {
     // Delete confirmation dialog
     private void showDeleteConfirmDialog() {
         new AlertDialog.Builder(this)
-                .setTitle(R.string.remove_image_title)
+                .setTitle(R.string.remove_image)
                 .setMessage(R.string.remove_image_confirm)
                 .setPositiveButton(R.string.yes, (d, w) -> {
                     d.dismiss();

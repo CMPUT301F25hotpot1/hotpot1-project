@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:text="Open"
             android:textStyle="bold"
-            android:textColor="@color/brand_green"
+            android:textColor="@color/open_green"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -92,7 +92,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/sign_up"
-                style="@style/LotteryButton.Entrant"
+                style="@style/LotteryButton.SignUp"
                 android:visibility="gone" />
             <Button
                 android:id="@+id/btn_decline"
@@ -109,8 +109,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/leave_waiting_list"
-                style="@style/LotteryButton"
-                android:backgroundTint="@color/brand_red"
+                style="@style/LotteryButton.Neutral"
                 android:visibility="gone"/>
 
             <!-- Entrants - Join Waiting List -->

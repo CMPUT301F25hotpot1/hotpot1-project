@@ -14,19 +14,17 @@
     <style name="ScreenTitle.Organizer">
         <item name="android:textColor">@color/organizer_purple</item>
     </style>
-
     <style name="ItemTitle" parent="TextAppearance.AppCompat">
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">16sp</item>
     </style>
 
+    <!--Button-related Styles-->
     <style name="LotteryButtonText" parent="TextAppearance.AppCompat.Widget.Button">
         <item name="android:fontFamily">@font/inter</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@color/text_white</item>
         <item name="textAllCaps">false</item>
-
-
     </style>
     <style name="LotteryButton" parent="Widget.Material3.Button">
         <item name="android:textAppearance">@style/LotteryButtonText</item>
@@ -45,8 +43,46 @@
     </style>
     <style name="LotteryButton.Neutral">
         <item name="android:textColor">@color/admin_black</item>
-        <item name="android:backgroundTint">@color/button_neutral</item>
+        <item name="android:backgroundTint">@color/button_neutral_grey</item>
         <item name="strokeColor">@color/admin_black</item>
         <item name="strokeWidth">1dp</item>
     </style>
+    <style name="LotteryButton.SignUp">
+        <item name="android:backgroundTint">@color/selected_green</item>
+    </style>
+    
+    <!--Dialog-related styles-->
+    <style name="LotteryDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="buttonBarNeutralButtonStyle">@style/LotteryButton.Neutral</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+    <style name="LotteryDialog.Admin">
+        <item name="buttonBarPositiveButtonStyle">@style/LotteryButton.Admin</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/DialogTitle.Admin</item>
+    </style>
+    <style name="LotteryDialog.Entrant">
+        <item name="buttonBarPositiveButtonStyle">@style/LotteryButton.Entrant</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/DialogTitle.Entrant</item>
+    </style>
+    <style name="LotteryDialog.Organizer">
+        <item name="buttonBarPositiveButtonStyle">@style/LotteryButton.Organizer</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/DialogTitle.Organizer</item>
+    </style>
+    <style name="DialogTitle" parent="TextAppearance.AppCompat">
+        <item name="android:fontFamily">@font/inter</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="DialogTitle.Admin">
+        <item name="android:textColor">@color/admin_black</item>
+    </style>
+    <style name="DialogTitle.Entrant">
+        <item name="android:textColor">@color/entrant_teal</item>
+    </style>
+    <style name="DialogTitle.Organizer">
+        <item name="android:textColor">@color/organizer_purple</item>
+    </style>
+
 </resources>
