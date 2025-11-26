@@ -71,7 +71,7 @@ public class AdminProfileActivity extends AppCompatActivity {
 
         // Bottom navigation
         BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
-        nav.setSelectedItemId(R.id.nav_admin_dashboard);
+        nav.setSelectedItemId(R.id.nav_admin_profile);
 
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -97,7 +97,7 @@ public class AdminProfileActivity extends AppCompatActivity {
                 return true;
             }
 
-            if (id == R.id.nav_admin_dashboard) {
+            if (id == R.id.nav_admin_profile) {
                 return true; // already here
             }
 

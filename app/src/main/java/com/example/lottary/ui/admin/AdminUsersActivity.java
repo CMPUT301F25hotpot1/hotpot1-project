@@ -50,7 +50,7 @@ public class AdminUsersActivity extends AppCompatActivity {
         rv = findViewById(R.id.recycler_users);
         rv.setLayoutManager(new LinearLayoutManager(this));
 
-        searchBar = findViewById(R.id.search_bar);
+        searchBar = findViewById(R.id.search_users);
         searchBtn = findViewById(R.id.btn_search);
 
         // Adapter with click actions (view logs / remove)
@@ -121,7 +121,7 @@ public class AdminUsersActivity extends AppCompatActivity {
                 return true;
             }
 
-            if (id == R.id.nav_admin_dashboard) {
+            if (id == R.id.nav_admin_profile) {
                 startActivity(new Intent(this, AdminProfileActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0,0);

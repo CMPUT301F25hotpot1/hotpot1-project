@@ -98,7 +98,7 @@ public class AdminEventsActivity extends AppCompatActivity {
                 return true;
             }
 
-            if (id == R.id.nav_admin_dashboard) {
+            if (id == R.id.nav_admin_profile) {
                 startActivity(new Intent(this, AdminProfileActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);

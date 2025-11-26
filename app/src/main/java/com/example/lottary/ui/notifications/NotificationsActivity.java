@@ -35,7 +35,7 @@ import com.example.lottary.R;
 import com.example.lottary.data.FirestoreEventRepository;
 import com.example.lottary.ui.browse.BrowseActivity;
 import com.example.lottary.ui.events.MyEventsActivity;
-import com.example.lottary.ui.profile.ProfileActivity;
+import com.example.lottary.ui.profile.MyProfileActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.Timestamp;
@@ -415,7 +415,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                 finish();
                 return true;
             } else if (id == R.id.nav_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
+                startActivity(new Intent(this, MyProfileActivity.class));
                 overridePendingTransition(0, 0);
                 finish();
                 return true;

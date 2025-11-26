@@ -5,10 +5,42 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:id="@+id/bar_image_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="36dp"
+        android:paddingVertical="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:text="@string/hint_desc"
+            android:textColor="@color/admin_black"
+            android:textSize="16sp" />
+
+        <ImageButton
+            android:id="@+id/btnClose"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/close"
+            app:tint="@color/admin_black"
+            app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/ivPreview"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="15dp"
         android:scaleType="fitCenter"
         android:contentDescription="@string/cd_image_preview"
         app:layout_constraintTop_toTopOf="parent"
@@ -18,11 +50,12 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnDeleteImage"
-        style="?attr/materialButtonStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="@string/delete_image"
+        android:layout_marginHorizontal="36dp"
+        android:layout_marginBottom="15dp"
+        android:text="@string/remove_image"
+        style="@style/LotteryButton.Admin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

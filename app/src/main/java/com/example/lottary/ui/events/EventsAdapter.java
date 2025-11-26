@@ -86,8 +86,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
 
         ViewHolder(@NonNull View v) {
             super(v);
-            txtTitle = v.findViewById(R.id.txt_title);
-            txtTime = v.findViewById(R.id.txt_time);
+            txtTitle = v.findViewById(R.id.tv_title);
+            txtTime = v.findViewById(R.id.tv_time);
             btnManage = v.findViewById(R.id.btn_manage);
             btnEdit = v.findViewById(R.id.btn_edit);
         }

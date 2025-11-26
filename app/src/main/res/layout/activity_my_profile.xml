@@ -5,17 +5,15 @@
     android:id="@+id/activity_profile"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.profile.ProfileActivity">
+    tools:context=".ui.profile.MyProfileActivity">
 
     <TextView
         android:id="@+id/profile_title"
+        style="@style/ScreenTitle.Entrant"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginVertical="50dp"
-        android:fontFamily="@font/inter"
-        android:text="@string/profile"
-        android:textColor="@color/entrant_teal"
-        android:textSize="28sp"
+        android:text="My Profile"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

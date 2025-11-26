@@ -31,14 +31,13 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * A {@link Fragment} subclass that displays user information & options to edit profile, delete profile
  * and swap to Admin View (conditional)
  * @author Han Nguyen, Mengxi Zhang (for admin button config) & Tianyi Zhang (for populate() and n())
  * @version 1.1
- * @see ProfileActivity
+ * @see MyProfileActivity
  * @see EditProfileActivity
  * @see com.example.lottary.ui.admin.AdminDashboardActivity
  */

@@ -5,6 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/profile_title"
+        style="@style/ScreenTitle.Entrant"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="20dp"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/notifications" />
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/top_app_bar"
         android:layout_width="match_parent"
@@ -14,7 +24,8 @@
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         app:navigationIcon="@drawable/ic_arrow_back_24"
         app:title="@string/notifications"
-        app:titleTextColor="@android:color/black" />
+        app:titleTextColor="@android:color/black"
+        android:visibility="gone"/>
 
     <ProgressBar
         android:id="@+id/loading"

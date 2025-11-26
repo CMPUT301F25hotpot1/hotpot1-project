@@ -36,21 +36,16 @@
             android:id="@+id/btn_yes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Yes"
-            android:textColor="@color/admin_black"
-            app:backgroundTint="#E6E6E6"
-            app:strokeColor="@color/admin_black"
-            app:strokeWidth="1dp" />
+            android:text="@string/yes"
+            style="@style/LotteryButton.Neutral" />
 
         <Button
             android:id="@+id/btn_no"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="No"
-
-            android:textColor="@android:color/white"
-            app:backgroundTint="@color/entrant_teal" />
+            android:text="@string/no"
+            style="@style/LotteryButton.Entrant"/>
 
 
     </LinearLayout>

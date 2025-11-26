@@ -9,11 +9,9 @@ import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
 
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
-import com.example.lottary.ui.admin.AdminEventsActivity;  // <-- important
 import com.example.lottary.ui.browse.BrowseActivity;
 import com.example.lottary.ui.events.MyEventsActivity;
 import com.example.lottary.ui.notifications.NotificationsActivity;
@@ -29,7 +27,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
  * @see NewProfileFragment
  * @see ProfileInfoFragment
  */
-public class ProfileActivity extends AppCompatActivity {
+public class MyProfileActivity extends AppCompatActivity {
 
     private String deviceID;
 
@@ -37,7 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_my_profile);
 
         // get current device ID
         deviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);

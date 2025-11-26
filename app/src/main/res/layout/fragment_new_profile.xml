@@ -46,8 +46,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="40dp"
             android:text="@string/create_profile"
-            android:textColor="@android:color/white"
-            app:backgroundTint="@color/entrant_teal" />
+            style="@style/LotteryButton.Entrant" />
     </LinearLayout>
 
 </FrameLayout>

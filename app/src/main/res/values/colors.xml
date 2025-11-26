@@ -6,12 +6,14 @@
     <color name="entrant_teal_dark">#018786</color>
     <color name="admin_black">#2C2C2C</color>
     <color name="admin_black_dark">#1E1E1E</color>
+    <color name="button_neutral">#E6E6E6</color>
     <color name="brand_green">#36C867</color>
     <color name="brand_red">#FD4221</color>
 
     <color name="surface_bg">#F8F5FF</color>
     <color name="text_primary">#000000</color>
     <color name="text_secondary">#666666</color>
+    <color name="text_white">#F5F5F5</color>
 
     <color name="purple_500">#532FA7</color>
     <color name="purple_700">#3700B3</color>

@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.lottary.R;
 import com.example.lottary.ui.events.MyEventsActivity;
 import com.example.lottary.ui.notifications.NotificationsActivity;
-import com.example.lottary.ui.profile.ProfileActivity;
+import com.example.lottary.ui.profile.MyProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
@@ -34,7 +34,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * - R.id.bottomNav (BottomNavigationView with nav_browse / nav_my_events / nav_notifications / nav_profile)
  *
  * Navigation:
- * - MyEventsActivity, NotificationsActivity, ProfileActivity via BottomNavigationView.
+ * - MyEventsActivity, NotificationsActivity, MyProfileActivity via BottomNavigationView.
  * - QrScanActivity via explicit button.
  *
  * State:
@@ -117,7 +117,7 @@ public class BrowseActivity extends AppCompatActivity implements FilterBottomShe
                 overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
+                startActivity(new Intent(this, MyProfileActivity.class));
                 return true;
             }
             return false; // Not handled.

@@ -64,7 +64,6 @@
     <string name="title_image_detail_simple">Image</string>
     <string name="delete_image">Delete Image</string>
     <string name="remove_image_title">Remove Image</string>
-    <string name="remove_image_message">Are you sure that you want to remove this image?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="cd_image_preview">Image preview</string>
@@ -79,10 +78,25 @@
     <string name="error_no_id">Missing image id</string>
 
     <string name="deleted_ok">Deleted</string>
-    <string name="deleted_fail">Delete failed: %1$s</string>
     <string name="delete_nothing">Nothing to delete</string>
-
     <string name="delete_failed_fmt">Delete failed: %1$s</string>
+
+    <string name="latest_events">Latest Events</string>
+    <string name="filter">Filter</string>
+    <string name="search_for_events">Search for events...</string>
+    <string name="search_someone">Search someone...</string>
+    <string name="users">Users</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="events_for_you">Events For You</string>
+    <string name="manage_event">Manage Event</string>
+    <string name="send_notification">Send Notification</string>
+    <string name="draw_winners">Draw Winners</string>
+    <string name="event_title">Event Title</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="decline">Decline</string>
+    <string name="event_poster">Event Poster</string>
+    <string name="leave_waiting_list">Leave Waiting List</string>
+    <string name="hint_date">MM/DD/YYYY</string>
 
 
 </resources>

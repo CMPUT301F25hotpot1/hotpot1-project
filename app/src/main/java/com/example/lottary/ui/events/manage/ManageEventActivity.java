@@ -55,7 +55,7 @@ public class ManageEventActivity extends AppCompatActivity {
         }
 
         topBar    = findViewById(R.id.top_app_bar);
-        txtTitle  = findViewById(R.id.txt_title);
+        txtTitle  = findViewById(R.id.tv_title);
         tabLayout = findViewById(R.id.tab_layout);
         viewPager = findViewById(R.id.view_pager);
         btnDraw   = findViewById(R.id.btn_draw);
@@ -125,7 +125,7 @@ public class ManageEventActivity extends AppCompatActivity {
 
         String title = val(d.get("title"));
         if (txtTitle != null) txtTitle.setText(TextUtils.isEmpty(title) ? "Manage Event" : title);
-        if (topBar != null)  topBar.setTitle(TextUtils.isEmpty(title) ? "Manage Event" : title);
+        if (topBar != null)  topBar.setSubtitle(TextUtils.isEmpty(title) ? "Manage Event" : title);
 
         Timestamp ts = d.getTimestamp("startTime");
         if (ts != null && txtTitle != null) {

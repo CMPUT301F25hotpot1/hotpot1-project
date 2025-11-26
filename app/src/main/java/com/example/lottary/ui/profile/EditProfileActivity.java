@@ -1,12 +1,9 @@
 package com.example.lottary.ui.profile;
 
-import static android.content.ContentValues.TAG;
-
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -18,7 +15,6 @@ import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.HashMap;
@@ -28,7 +24,7 @@ import java.util.Map;
  * A {@link AppCompatActivity} subclass that allow user to edit their profile information.
  * @author Tianyi Zhang (for base code of populate(), n(), saveChanges(), require()) & Han Nguyen
  * @version 1.0
- * @see ProfileActivity
+ * @see MyProfileActivity
  * @see ProfileInfoFragment
  */
 public class EditProfileActivity extends AppCompatActivity {

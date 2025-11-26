@@ -56,7 +56,7 @@ public class ImageDetailActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(v ->
                 new MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.remove_image_title)
-                        .setMessage(R.string.remove_image_message)
+                        .setMessage(R.string.remove_image_confirm)
                         .setPositiveButton(R.string.yes, (DialogInterface d, int w) -> doDelete())
                         .setNegativeButton(R.string.no, (d, w) -> d.dismiss())
                         .show()

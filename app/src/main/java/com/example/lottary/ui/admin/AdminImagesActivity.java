@@ -31,7 +31,6 @@ import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class AdminImagesActivity extends AppCompatActivity {
@@ -208,7 +207,7 @@ public class AdminImagesActivity extends AppCompatActivity {
                 return true;
             }
 
-            if (id == R.id.nav_admin_dashboard) {
+            if (id == R.id.nav_admin_profile) {
                 startActivity(new Intent(this, AdminProfileActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0, 0);

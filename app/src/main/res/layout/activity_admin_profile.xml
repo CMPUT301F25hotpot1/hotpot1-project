@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/surface_bg">
 
     <!-- Top Title -->
@@ -10,11 +11,9 @@
         android:id="@+id/tvAdminTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="50dp"
         android:text="Admin Profile"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#000000"
-        android:layout_marginTop="24dp"
+        style="@style/ScreenTitle.Admin"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -22,30 +21,30 @@
     <!-- Card Container -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardContainer"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="24dp"
-        android:padding="20dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginEnd="36dp"
+        android:gravity="center"
         app:cardCornerRadius="12dp"
         app:cardElevation="2dp"
         app:cardUseCompatPadding="true"
         app:layout_constraintTop_toBottomOf="@id/tvAdminTitle"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavAdmin"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:padding="36dp">
 
             <!-- Name label -->
             <TextView
-                android:text="Name"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#000000"
+                android:text="@string/name"
+                style="@style/ItemTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
@@ -60,10 +59,8 @@
 
             <!-- Email label -->
             <TextView
-                android:text="Email"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#000000"
+                android:text="@string/hint_email"
+                style="@style/ItemTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
@@ -78,10 +75,8 @@
 
             <!-- Phone label -->
             <TextView
-                android:text="Phone Number"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#000000"
+                android:text="@string/hint_phone_num"
+                style="@style/ItemTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
@@ -93,40 +88,30 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 
+            <!-- Swap to User View Button -->
+            <Button
+                android:id="@+id/btnSwapToUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="40dp"
+                android:text="Swap to User View"
+                style="@style/LotteryButton.Entrant" />
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
-
-    <!-- Swap to User View Button -->
-    <Button
-        android:id="@+id/btnSwapToUser"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="60dp"
-        android:layout_marginEnd="60dp"
-        android:layout_marginTop="24dp"
-        android:text="Swap to User View"
-        android:textSize="16sp"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#3E9C93"
-        app:layout_constraintTop_toBottomOf="@id/cardContainer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavAdmin"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/white"
-
-        app:itemIconTint="@color/black"
-        app:itemTextColor="@color/black"
-
-        app:menu="@menu/menu_admin_bottom_nav"
         app:labelVisibilityMode="labeled"
+        app:elevation="8dp"
+        app:menu="@menu/menu_admin_bottom_nav"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="BottomNavigationViewLargeScreen"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

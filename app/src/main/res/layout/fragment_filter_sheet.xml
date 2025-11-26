@@ -7,25 +7,13 @@
     android:padding="16dp"
     tools:context=".ui.browse.FilterBottomSheet">
 
-    <Switch
-        android:id="@+id/sw_open_only"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Open events only" />
-
-    <Switch
-        android:id="@+id/sw_geo_only"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Geolocation near me" />
-
+    <!--Event Categories-->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Event Type"
-        android:textStyle="bold"
-        android:layout_marginTop="12dp"/>
-
+        android:text="@string/filter_event_type"
+        style="@style/ItemTitle"
+        android:layout_marginTop="15dp"/>
     <CheckBox
         android:id="@+id/cb_sports"
         android:layout_width="match_parent"
@@ -47,13 +35,13 @@
         android:layout_height="wrap_content"
         android:text="Market" />
 
+    <!-- Date Preferences-->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="From Date / To Date (yyyy-MM-dd)"
-        android:textStyle="bold"
-        android:layout_marginTop="12dp"/>
-
+        style="@style/ItemTitle"
+        android:layout_marginTop="15dp"/>
     <EditText
         android:id="@+id/et_from_date"
         android:layout_width="match_parent"
@@ -61,8 +49,8 @@
         android:hint="From (yyyy-MM-dd)"
         android:focusable="false"
         android:inputType="none"
+        android:minHeight="48dp"
         android:padding="8dp"/>
-
     <EditText
         android:id="@+id/et_to_date"
         android:layout_width="match_parent"
@@ -70,27 +58,44 @@
         android:hint="To (yyyy-MM-dd)"
         android:focusable="false"
         android:inputType="none"
+        android:minHeight="48dp"
         android:padding="8dp"/>
 
+    <Switch
+        android:id="@+id/sw_open_only"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:minHeight="48dp"
+        android:text="Open events only" />
+    <Switch
+        android:id="@+id/sw_geo_only"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Geolocation near me" />
+
+    <!-- Buttons-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="end"
-        android:layout_marginTop="16dp">
-
+        android:layout_marginTop="15dp">
         <Button
             android:id="@+id/btn_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"/>
+            android:text="@string/cancel"
+            style="@style/LotteryButton.Neutral"/>
 
         <Button
             android:id="@+id/btn_apply"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Confirm Filter"
-            android:layout_marginStart="12dp"/>
+            android:layout_marginStart="12dp"
+            style="@style/LotteryButton.Entrant"/>
     </LinearLayout>
 
 </LinearLayout>

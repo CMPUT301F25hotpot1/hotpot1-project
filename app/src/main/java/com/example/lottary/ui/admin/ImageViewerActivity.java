@@ -72,7 +72,7 @@ public class ImageViewerActivity extends AppCompatActivity {
         imageTitle = getIntent().getStringExtra(EXTRA_TITLE);
         imageId = getIntent().getStringExtra(EXTRA_IMAGE_ID);
 
-        TextView tv = findViewById(R.id.tvTitle);
+        TextView tv = findViewById(R.id.tv_title);
         ImageView iv = findViewById(R.id.ivFull);
         btnDeleteImage = findViewById(R.id.btnDeleteImage);
         progressViewer = findViewById(R.id.progressViewer);

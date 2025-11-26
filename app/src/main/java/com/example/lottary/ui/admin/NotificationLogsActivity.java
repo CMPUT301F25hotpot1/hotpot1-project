@@ -71,7 +71,7 @@ public class NotificationLogsActivity extends AppCompatActivity {
                 return true;
             }
 
-            if (id == R.id.nav_admin_dashboard) {
+            if (id == R.id.nav_admin_profile) {
                 startActivity(new Intent(this, AdminDashboardActivity.class));
                 overridePendingTransition(0,0);
                 return true;

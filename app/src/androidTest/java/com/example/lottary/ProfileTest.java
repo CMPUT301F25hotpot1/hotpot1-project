@@ -13,7 +13,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
-import com.example.lottary.ui.profile.ProfileActivity;
+import com.example.lottary.ui.profile.MyProfileActivity;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,8 +24,8 @@ import org.junit.runner.RunWith;
 @LargeTest
 public class ProfileTest {
     @Rule
-    public ActivityScenarioRule<ProfileActivity> scenario = new
-            ActivityScenarioRule<>(ProfileActivity.class);
+    public ActivityScenarioRule<MyProfileActivity> scenario = new
+            ActivityScenarioRule<>(MyProfileActivity.class);
 
 
     @Test
