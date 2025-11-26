@@ -61,7 +61,7 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.admin_event_row, parent, false);
+                .inflate(R.layout.item_admin_event, parent, false);
         return new ViewHolder(v);
     }
 
@@ -88,15 +88,15 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            title = itemView.findViewById(R.id.admin_event_title);
-            city = itemView.findViewById(R.id.admin_event_city);
-            time = itemView.findViewById(R.id.admin_event_time);
-            venue = itemView.findViewById(R.id.admin_event_venue);
-            status = itemView.findViewById(R.id.admin_event_status);
+            title = itemView.findViewById(R.id.tv_title);
+            city = itemView.findViewById(R.id.tv_city);
+            time = itemView.findViewById(R.id.tv_time);
+            venue = itemView.findViewById(R.id.tv_venue);
+            status = itemView.findViewById(R.id.tv_status);
 
-            removeBtn = itemView.findViewById(R.id.admin_event_remove);
+            removeBtn = itemView.findViewById(R.id.btn_event_remove);
             viewImageBtn = itemView.findViewById(R.id.btn_view_image);
-            eventImage = itemView.findViewById(R.id.event_image);
+            eventImage = itemView.findViewById(R.id.img);
         }
 
         /**

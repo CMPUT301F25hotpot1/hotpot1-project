@@ -88,7 +88,7 @@ public class NotificationLogsAdapter extends ListAdapter<NotificationLog, Notifi
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.notification_log_row, parent, false);
+                .inflate(R.layout.item_notification_log_row, parent, false);
         return new ViewHolder(view);
     }
 

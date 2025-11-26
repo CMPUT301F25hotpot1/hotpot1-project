@@ -8,31 +8,29 @@
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/top_app_bar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:backgroundTint="@color/purple_700"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        android:layout_height="wrap_content"
+        android:paddingTop="36dp"
+        android:paddingHorizontal="36dp"
+        android:paddingBottom="20dp"
         app:navigationIcon="@drawable/ic_arrow_back_24"
-        app:title="Manage Event"
-        app:titleTextColor="@android:color/white" />
+        app:navigationIconTint="@color/organizer_purple"
+        app:titleTextAppearance="@style/ScreenTitle.Organizer"
+        app:title="@string/manage_event"
+        app:subtitle="Event Name" />
 
     <LinearLayout
         android:orientation="vertical"
-        android:padding="16dp"
+        android:paddingHorizontal="36dp"
+        android:paddingBottom="15dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <TextView
-            android:id="@+id/txt_title"
-            android:text="Manage Event"
-            android:textStyle="bold"
-            android:textSize="22sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            app:tabSelectedTextColor="@color/organizer_purple"
+            app:tabIndicatorColor="@color/organizer_purple"/>
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/view_pager"
@@ -42,9 +40,11 @@
 
         <Button
             android:id="@+id/btn_draw"
-            android:text="Draw Winners"
+            android:text="@string/draw_winners"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            style="@style/LotteryButton.Organizer"/>
 
         <LinearLayout
             android:orientation="horizontal"
@@ -54,10 +54,11 @@
 
             <Button
                 android:id="@+id/btn_notify"
-                android:text="Send Notification"
+                android:text="@string/send_notification"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                style="@style/LotteryButton.Organizer" />
 
             <Button
                 android:id="@+id/btn_export"
@@ -65,7 +66,8 @@
                 android:layout_marginStart="8dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                style="@style/LotteryButton.Neutral"/>
         </LinearLayout>
 
         <LinearLayout
@@ -79,7 +81,8 @@
                 android:text="View QR Code"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                style="@style/LotteryButton.Neutral"/>
 
             <Button
                 android:id="@+id/btn_map"
@@ -87,7 +90,8 @@
                 android:layout_marginStart="8dp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                style="@style/LotteryButton.Neutral"/>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

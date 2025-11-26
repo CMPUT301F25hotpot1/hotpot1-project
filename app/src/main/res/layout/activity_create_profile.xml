@@ -14,13 +14,15 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/top_app_bar"
-            style="@style/Widget.MaterialComponents.Toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:title="@string/create_profile"
-            app:titleTextColor="@android:color/white"
-            app:navigationIcon="@drawable/ic_arrow_back_24"/>
+            android:layout_height="wrap_content"
+            android:paddingTop="36dp"
+            android:paddingHorizontal="36dp"
+            android:paddingBottom="20dp"
+            app:navigationIcon="@drawable/ic_arrow_back_24"
+            app:navigationIconTint="@color/entrant_teal"
+            app:titleTextAppearance="@style/ScreenTitle.Entrant"
+            app:title="@string/create_profile" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -42,8 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/name"
-                android:textStyle="bold"
-                android:textSize="16sp"
+                style="@style/ItemTitle"
                 android:layout_marginTop="12dp"/>
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -61,8 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/hint_email"
-                android:textStyle="bold"
-                android:textSize="16sp"
+                style="@style/ItemTitle"
                 android:layout_marginTop="15dp"/>
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -80,8 +80,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/hint_phone_num"
-                android:textStyle="bold"
-                android:textSize="16sp"
+                style="@style/ItemTitle"
                 android:layout_marginTop="15dp"/>
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -109,8 +108,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="40dp"
                 android:text="@string/create_profile"
-                android:textColor="@android:color/white"
-                app:backgroundTint="@color/entrant_teal" />
+                style="@style/LotteryButton.Entrant" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

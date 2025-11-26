@@ -72,7 +72,7 @@ public class ImageViewerActivity extends AppCompatActivity {
         imageTitle = getIntent().getStringExtra(EXTRA_TITLE);
         imageId = getIntent().getStringExtra(EXTRA_IMAGE_ID);
 
-        TextView tv = findViewById(R.id.tvTitle);
+        TextView tv = findViewById(R.id.tv_title);
         ImageView iv = findViewById(R.id.ivFull);
         btnDeleteImage = findViewById(R.id.btnDeleteImage);
         progressViewer = findViewById(R.id.progressViewer);
@@ -113,7 +113,7 @@ public class ImageViewerActivity extends AppCompatActivity {
     // Delete confirmation dialog
     private void showDeleteConfirmDialog() {
         new AlertDialog.Builder(this)
-                .setTitle(R.string.remove_image_title)
+                .setTitle(R.string.remove_image)
                 .setMessage(R.string.remove_image_confirm)
                 .setPositiveButton(R.string.yes, (d, w) -> {
                     d.dismiss();

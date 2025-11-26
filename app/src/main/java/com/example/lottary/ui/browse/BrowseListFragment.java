@@ -65,7 +65,7 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // Inflate the fragment layout that contains the RecyclerView with id @id/recycler.
-        return inflater.inflate(R.layout.fragment_browse_list, container, false);
+        return inflater.inflate(R.layout.fragment_events_list, container, false);
     }
 
     @Override

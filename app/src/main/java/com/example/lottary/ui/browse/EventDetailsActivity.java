@@ -87,15 +87,15 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         // View lookups.
         ivPoster      = findViewById(R.id.iv_poster);
-        tvTitle       = findViewById(R.id.tvTitle);
-        tvVenue       = findViewById(R.id.tvVenue);
+        tvTitle       = findViewById(R.id.tv_title);
+        tvVenue       = findViewById(R.id.tv_venue);
         tvCityDate    = findViewById(R.id.tvCityDate);
         tvDescription = findViewById(R.id.tvDescription);
-        tvStatus      = findViewById(R.id.tvStatus);
+        tvStatus      = findViewById(R.id.tv_status);
         tvCapacity    = findViewById(R.id.tvCapacity);
         tvWaitlist    = findViewById(R.id.tvWaitlist);
         btnJoin       = findViewById(R.id.btn_join);
-        btnClose      = findViewById(R.id.btn_close);
+        btnClose      = findViewById(R.id.btnClose);
 
         // Long descriptions should scroll inside their TextView.
         if (tvDescription != null) tvDescription.setMovementMethod(new ScrollingMovementMethod());
@@ -170,10 +170,10 @@ public class EventDetailsActivity extends AppCompatActivity {
                 tvStatus.setTextColor(getColor(android.R.color.darker_gray));
             } else if (!isOpen) {
                 tvStatus.setText("Full");
-                tvStatus.setTextColor(getColor(android.R.color.darker_gray));
+                tvStatus.setTextColor(getColor(R.color.full_red));
             } else {
                 tvStatus.setText("Open");
-                tvStatus.setTextColor(getColor(R.color.brand_green));
+                tvStatus.setTextColor(getColor(R.color.open_green));
             }
         }
 

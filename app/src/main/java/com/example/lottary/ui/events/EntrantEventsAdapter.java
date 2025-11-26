@@ -99,7 +99,7 @@ public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdap
             super(v);
             title = v.findViewById(R.id.tv_title);
             time  = v.findViewById(R.id.tv_time);
-            place = v.findViewById(R.id.tv_place);
+            place = v.findViewById(R.id.tv_city);
             status = v.findViewById(R.id.tv_status);
             btnSignUp = v.findViewById(R.id.btn_sign_up);
             btnDecline = v.findViewById(R.id.btn_decline);

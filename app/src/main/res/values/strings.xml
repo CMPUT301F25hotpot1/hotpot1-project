@@ -6,26 +6,32 @@
     <string name="my_events">My Events</string>
     <string name="notifications">Notifications</string>
     <string name="profile">Profile</string>
-    <string name="create_event">Create Event</string>
-    <string name="edit_event">Edit Event</string>
-    <string name="create_profile">Create Profile</string>
-    <string name="edit_profile">Edit Profile</string>
+    <string name="users">Users</string>
 
     <!-- Hints -->
     <string name="hint_title">Title</string>
     <string name="hint_desc">Description</string>
     <string name="hint_city">City</string>
     <string name="hint_venue">Venue</string>
+    <string name="hint_date">MM/DD/YYYY</string>
     <string name="hint_start">Start Time (yyyy-MM-dd HH:mm)</string>
     <string name="hint_end">End Time (yyyy-MM-dd HH:mm)</string>
     <string name="hint_reg_start">Register Start (yyyy-MM-dd)</string>
     <string name="hint_reg_end">Register End (yyyy-MM-dd)</string>
     <string name="enable_geo">Enable Geolocation</string>
-
+    <string name="name">Name</string>
     <string name="hint_email">Email</string>
     <string name="hint_phone_num">Phone number (optional)</string>
 
+    <!--Search Hints-->
+    <string name="search_caps">SEARCH</string>
+    <string name="sort">Sort</string>
+    <string name="search_for_events">Search for events...</string>
+    <string name="search_someone">Search someone...</string>
+    <string name="search_for_image">Search for image...</string>
+
     <!-- Filter -->
+    <string name="filter">Filter</string>
     <string name="filter_open_only">Open events only</string>
     <string name="filter_geo">Geolocation near me</string>
     <string name="filter_event_type">Event Type</string>
@@ -36,7 +42,6 @@
     <string name="filter_from">From (yyyy-MM-dd)</string>
     <string name="filter_to">To (yyyy-MM-dd)</string>
     <string name="filter_confirm">Confirm Filter</string>
-    <string name="filter_cancel">Cancel</string>
 
     <!-- Event details / dialog -->
     <string name="close">Close</string>
@@ -47,41 +52,52 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="apply">Apply</string>
+    <string name="delete">Delete</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="decline">Decline</string>
+    <string name="leave_waiting_list">Leave Waiting List</string>
+    <string name="i_agree">I Agree</string>
 
     <!-- Empty instructions -->
     <string name="welcome_new_users">Welcome to EventLottery!</string>
     <string name="instructions_new_user">It seems like no profile is linked to this device.\nCreate a profile to join event waitlists,\ncreate events, and more.</string>
-    <string name="name">Name</string>
-    <string name="delete_profile">Delete Profile</string>
-    <string name="delete">Delete</string>
 
-    <string name="search_for_image">Search for image...</string>
-    <string name="search_caps">SEARCH</string>
-    <string name="sort">Sort</string>
+    <!-- User Actions-->
+    <string name="create_event">Create Event</string>
+    <string name="edit_event">Edit Event</string>
+    <string name="manage_event">Manage Event</string>
+    <string name="send_notification">Send Notification</string>
+    <string name="draw_winners">Draw Winners</string>
+    <string name="cancel_entrant">Cancel Entrant</string>
+    <string name="qr_code">QR Code</string>
+    <string name="create_profile">Create Profile</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="latest_events">Latest Events</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="events_for_you">Events For You</string>
+    <string name="event_title">Event Title</string>
+    <string name="event_poster">Event Poster</string>
+
     <string name="latest_images">Latest Images</string>
-
     <string name="title_image_detail">Image</string>
-    <string name="title_image_detail_simple">Image</string>
-    <string name="delete_image">Delete Image</string>
-    <string name="remove_image_title">Remove Image</string>
-    <string name="remove_image_message">Are you sure that you want to remove this image?</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
     <string name="cd_image_preview">Image preview</string>
-    <string name="image_deleted">Image deleted</string>
-    <string name="delete_failed">Delete failed</string>
-    <string name="load_failed">Load failed</string>
 
-    <string name="image_title_placeholder">Image</string>
+    <!--Deletion/Remove Prompts-->
+    <string name="delete_profile">Delete Profile</string>
+    <string name="remove_event">Remove Event</string>
+    <string name="remove_user">Remove User</string>
     <string name="remove_image">Remove Image</string>
     <string name="remove_image_confirm">Are you sure that you want to remove this image?</string>
+
+    <!-- Toast Feedbacks-->
     <string name="deleted">Deleted</string>
+    <string name="image_deleted">Image deleted</string>
+    <string name="delete_failed">Deletion failed</string>
+    <string name="load_failed">Load failed</string>
     <string name="error_no_id">Missing image id</string>
-
-    <string name="deleted_ok">Deleted</string>
-    <string name="deleted_fail">Delete failed: %1$s</string>
     <string name="delete_nothing">Nothing to delete</string>
-
     <string name="delete_failed_fmt">Delete failed: %1$s</string>
 
 

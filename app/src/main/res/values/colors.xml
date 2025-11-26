@@ -6,17 +6,17 @@
     <color name="entrant_teal_dark">#018786</color>
     <color name="admin_black">#2C2C2C</color>
     <color name="admin_black_dark">#1E1E1E</color>
-    <color name="brand_green">#36C867</color>
-    <color name="brand_red">#FD4221</color>
+    <color name="button_neutral_grey">#E6E6E6</color>
+
+    <color name="selected_green">#02542D</color>
+    <color name="not_selected_red">#900B09</color>
+    <color name="open_green">#36C867</color>
+    <color name="full_red">#FD4221</color>
 
     <color name="surface_bg">#F8F5FF</color>
-    <color name="text_primary">#000000</color>
-    <color name="text_secondary">#666666</color>
+    <color name="text_secondary_grey">#666666</color>
+    <color name="text_white">#F5F5F5</color>
 
-    <color name="purple_500">#532FA7</color>
-    <color name="purple_700">#3700B3</color>
-    <color name="teal_200">#27A18E</color>
-    <color name="teal_700">#018786</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 </resources>

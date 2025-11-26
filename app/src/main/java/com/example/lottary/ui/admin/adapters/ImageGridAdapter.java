@@ -178,7 +178,7 @@ public class ImageGridAdapter extends ListAdapter<Image, ImageGridAdapter.VH> {
         public VH(@NonNull View itemView) {
             super(itemView);
             image = itemView.findViewById(R.id.ivThumb);
-            title = itemView.findViewById(R.id.tvTitle);
+            title = itemView.findViewById(R.id.tv_title);
         }
     }
 }

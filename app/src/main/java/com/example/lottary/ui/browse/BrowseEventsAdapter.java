@@ -93,7 +93,7 @@ class BrowseEventsAdapter extends ListAdapter<Event, BrowseEventsAdapter.VH> {
         h.status.setText(e.isFull() ? "Full" : "Open");
         int color = ContextCompat.getColor(
                 h.status.getContext(),
-                e.isFull() ? android.R.color.holo_red_dark : android.R.color.holo_green_dark
+                e.isFull() ? R.color.full_red : R.color.open_green
         );
         h.status.setTextColor(color);
 
@@ -116,10 +116,10 @@ class BrowseEventsAdapter extends ListAdapter<Event, BrowseEventsAdapter.VH> {
         VH(@NonNull View v) {
             super(v);
             root = (CardView) v;
-            title = v.findViewById(R.id.tvTitle);
-            location = v.findViewById(R.id.tvLocation);
-            time = v.findViewById(R.id.tvTime);
-            status = v.findViewById(R.id.tvStatus);
+            title = v.findViewById(R.id.tv_title);
+            location = v.findViewById(R.id.tv_city);
+            time = v.findViewById(R.id.tv_time);
+            status = v.findViewById(R.id.tv_status);
             btnJoin = v.findViewById(R.id.btnJoin);
         }
     }

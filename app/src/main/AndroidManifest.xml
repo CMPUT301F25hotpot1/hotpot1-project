@@ -25,7 +25,7 @@
         <activity android:name="com.example.lottary.ui.browse.QrScanActivity" />
         <activity android:name="com.example.lottary.ui.notifications.NotificationsActivity" />
         <activity android:name="com.example.lottary.ui.browse.BrowseActivity" />
-        <activity android:name="com.example.lottary.ui.profile.ProfileActivity" />
+        <activity android:name="com.example.lottary.ui.profile.MyProfileActivity" />
         <activity android:name="com.example.lottary.ui.profile.CreateProfileActivity" />
         <activity android:name="com.example.lottary.ui.profile.EditProfileActivity" />
 

@@ -181,10 +181,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         Holder(@NonNull View v) {
             super(v);
             icon = v.findViewById(R.id.icon);
-            txtTitle = v.findViewById(R.id.txt_title);
+            txtTitle = v.findViewById(R.id.tv_title);
             txtMsg = v.findViewById(R.id.txt_msg);
-            txtTime = v.findViewById(R.id.txt_time);
-            btnSign = v.findViewById(R.id.btn_sign);
+            txtTime = v.findViewById(R.id.tv_time);
+            btnSign = v.findViewById(R.id.btn_sign_up);
             btnDecline = v.findViewById(R.id.btn_decline);
             btnOverflow = v.findViewById(R.id.btn_overflow);
         }

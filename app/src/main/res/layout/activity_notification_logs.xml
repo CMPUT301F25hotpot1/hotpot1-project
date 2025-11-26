@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/top_app_bar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Notification Logs"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_margin="20dp" />
+        android:paddingTop="36dp"
+        android:paddingHorizontal="36dp"
+        android:paddingBottom="20dp"
+        app:navigationIcon="@drawable/ic_arrow_back_24"
+        app:navigationIconTint="@color/admin_black"
+        app:titleTextAppearance="@style/ScreenTitle.Admin"
+        app:title="Notification Logs"
+        app:subtitle="User" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_logs"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="70dp"
-        android:layout_above="@id/bottom_nav" />
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/white"
+        android:layout_height="wrap_content"
         app:menu="@menu/menu_admin_bottom_nav"
         app:labelVisibilityMode="labeled" />
-
-</RelativeLayout>
+</LinearLayout>

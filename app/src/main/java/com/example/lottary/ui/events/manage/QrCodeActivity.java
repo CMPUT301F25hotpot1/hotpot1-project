@@ -22,18 +22,16 @@ public class QrCodeActivity extends AppCompatActivity {
 
         com.google.android.material.appbar.MaterialToolbar top = findViewById(R.id.top_app_bar);
         top.setNavigationOnClickListener(v -> finish());
-        top.setTitle("QR Code");
+        top.setTitle(R.string.qr_code);
 
-        TextView txt = findViewById(R.id.txt_payload);
-        Button btnCopy = findViewById(R.id.btn_copy);
+        // TextView txt = findViewById(R.id.txt_payload);
+        // txt.setText(eventId == null ? "(no id)" : eventId);
 
-
-        txt.setText(eventId == null ? "(no id)" : eventId);
-
+        Button btnCopy = findViewById(R.id.btn_export_qr_png);
         btnCopy.setOnClickListener(v -> {
             ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            cm.setPrimaryClip(ClipData.newPlainText("event_id", txt.getText().toString()));
-            Toast.makeText(this, "Copied", Toast.LENGTH_SHORT).show();
+            // cm.setPrimaryClip(ClipData.newPlainText("event_id", txt.getText().toString()));
+            Toast.makeText(this, "QR code is saved to your device", Toast.LENGTH_SHORT).show();
         });
 
         // 如果你想显示标题，也可以监听：

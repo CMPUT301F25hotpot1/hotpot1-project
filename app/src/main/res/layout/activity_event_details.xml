@@ -6,33 +6,33 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_gravity="bottom"
+        android:paddingHorizontal="36dp">
 
         <ImageButton
-            android:id="@+id/btn_close"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:id="@+id/btnClose"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="end"
+            android:layout_marginTop="15dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/close"
-            android:tint="@android:color/black"
+            app:tint="@color/admin_black"
             app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
-
 
         <ImageView
             android:id="@+id/iv_poster"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:scaleType="centerCrop"
+            android:layout_height="250dp"
+            android:layout_marginVertical="15dp"
+            android:scaleType="fitCenter"
             android:background="@android:color/darker_gray"
-            android:contentDescription="@string/event_image"
-            android:layout_marginBottom="16dp"/>
-
+            android:contentDescription="@string/event_image" />
 
         <TextView
-            android:id="@+id/tvTitle"
+            android:id="@+id/tv_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textStyle="bold"
@@ -41,14 +41,13 @@
             android:text="Community Swim Class" />
 
         <TextView
-            android:id="@+id/tvVenue"
-            android:layout_width="match_parent"
+            android:id="@+id/tv_venue"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Van Vliet Complex"
             android:textStyle="bold"
             android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="4dp"/>
-
+            android:layout_marginTop="8dp"/>
 
         <TextView
             android:id="@+id/tvCityDate"
@@ -56,34 +55,35 @@
             android:layout_height="wrap_content"
             android:text="Edmonton, AB, Mar 5, 2023 1:30 PM"
             android:textColor="@android:color/darker_gray"
-            android:layout_marginBottom="8dp"/>
-
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="15dp"/>
 
         <TextView
             android:id="@+id/tvDescription"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="150dp"
             android:overScrollMode="always"
             android:text="Event description goes here..."
             android:scrollbars="vertical"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="15dp"/>
 
 
         <TextView
-            android:id="@+id/tvStatus"
+            android:id="@+id/tv_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:text="Open"
             android:textStyle="bold"
-            android:textColor="@color/brand_green"
-            android:layout_marginBottom="8dp"/>
+            android:textSize="20sp"
+            android:textColor="@color/open_green"
+            android:layout_marginBottom="15dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="15dp">
 
             <TextView
                 android:id="@+id/tvCapacity"
@@ -91,26 +91,24 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="60 slots"
-                android:textColor="@android:color/holo_green_dark"/>
+                android:textColor="@color/open_green"/>
 
             <TextView
                 android:id="@+id/tvWaitlist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="100 on waiting list"
-                android:textColor="@android:color/holo_red_dark"/>
+                android:textColor="@color/full_red"/>
         </LinearLayout>
 
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_join"
-            style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
             android:text="@string/join_waiting_list"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:background="@drawable/bg_btn_green_rounded"/>
+            style="@style/LotteryButton.Entrant"/>
 
     </LinearLayout>
 </ScrollView>

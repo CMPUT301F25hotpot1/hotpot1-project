@@ -11,16 +11,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.example.lottary.R;
-import com.example.lottary.ui.events.create.CreateEventActivity;
 
 /**
  * A {@link Fragment} subclass that prompts the user to create a profile
  * @author Han Nguyen
  * @version 1.0
- * @see ProfileActivity
+ * @see MyProfileActivity
  * @see CreateProfileActivity
  */
 public class NewProfileFragment extends Fragment {

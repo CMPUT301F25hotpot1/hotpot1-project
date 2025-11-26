@@ -3,7 +3,6 @@ package com.example.lottary.ui.profile;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -23,7 +22,7 @@ import java.util.Map;
  * A {@link AppCompatActivity} subclass that allow user to create their profile information.
  * @author Tianyi Zhang (for base code of saveProfile(), require()) & Han Nguyen
  * @version 1.0
- * @see ProfileActivity
+ * @see MyProfileActivity
  * @see NewProfileFragment
  */
 public class CreateProfileActivity extends AppCompatActivity {

@@ -15,7 +15,7 @@ import com.example.lottary.R;
 import com.example.lottary.ui.browse.BrowseActivity;
 import com.example.lottary.ui.events.create.CreateEventActivity;
 import com.example.lottary.ui.notifications.NotificationsActivity;
-import com.example.lottary.ui.profile.ProfileActivity;
+import com.example.lottary.ui.profile.MyProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -100,7 +100,7 @@ public class MyEventsActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_profile) {
-                Intent i = new Intent(this, ProfileActivity.class);
+                Intent i = new Intent(this, MyProfileActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(i);
                 overridePendingTransition(0, 0);

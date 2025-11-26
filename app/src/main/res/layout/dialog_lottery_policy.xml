@@ -1,51 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="20dp"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:layout_gravity="center_vertical"
+    android:padding="20dp"
+    app:strokeColor="#D9D9D9"
+    app:strokeWidth="1dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Lottery Rules &amp; Guidelines"
-        android:textStyle="bold"
-        android:textSize="18sp"/>
+        android:textColor="@color/entrant_teal"
+        android:textSize="20sp"
+        android:fontFamily="@font/inter"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="By joining, you agree to the lottery rules and deadlines."
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="8dp"/>
 
     <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/cb_dont_ask"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Don't ask again"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="12dp"
+        android:backgroundTint="@color/entrant_teal"
+        android:text="Don't ask again" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="end"
-        android:layout_marginTop="12dp">
+        android:layout_marginTop="15dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_no"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"
-            android:textAllCaps="false"/>
+            android:text="@string/cancel"
+            style="@style/LotteryButton.Neutral"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_yes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="I Agree"
             android:layout_marginStart="8dp"
-            android:textAllCaps="false"/>
+            android:text="@string/i_agree"
+            style="@style/LotteryButton.Entrant"/>
     </LinearLayout>
 </LinearLayout>
 

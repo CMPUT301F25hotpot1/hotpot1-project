@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Scrollable content -->
     <LinearLayout
@@ -10,65 +11,72 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginHorizontal="36dp"
         android:clipToPadding="false"
-        android:paddingBottom="80dp">
+        android:paddingBottom="80dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Search Row -->
         <LinearLayout
+            android:id="@+id/bar_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <EditText
-                android:id="@+id/search_bar"
+                android:id="@+id/search_users"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Search someone..."
-                android:padding="12dp"
-                android:textColor="@color/black"
-                android:textColorHint="#888"/>
+                android:hint="@string/search_someone"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:singleLine="true"
+                android:background="@android:drawable/edit_text"
+                android:layout_marginEnd="8dp"
+                tools:ignore="Autofill"/>
 
             <Button
                 android:id="@+id/btn_search"
-                android:layout_width="90dp"
-                android:layout_height="48dp"
-                android:text="SEARCH"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:layout_marginStart="10dp"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/search_caps"
+                style="@style/LotteryButton.Admin"/>
         </LinearLayout>
 
         <!-- Title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Users"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginTop="22dp"
-            android:layout_marginBottom="12dp"/>
+            android:text="@string/users"
+            android:layout_marginTop="15dp"
+            style="@style/ScreenTitle.Admin" />
 
         <!-- User List -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_users"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:paddingBottom="40dp"
-            android:clipToPadding="false"/>
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="15dp"
+            android:clipToPadding="false" />
     </LinearLayout>
 
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/white"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         app:labelVisibilityMode="labeled"
-        app:menu="@menu/menu_admin_bottom_nav"/>
+        app:elevation="8dp"
+        app:menu="@menu/menu_admin_bottom_nav"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="BottomNavigationViewLargeScreen"/>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
