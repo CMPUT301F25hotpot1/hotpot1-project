@@ -63,7 +63,9 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         // Inflate the fragment layout that contains the RecyclerView with id @id/recycler.
         return inflater.inflate(R.layout.fragment_events_list, container, false);
     }
@@ -91,19 +93,29 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
     public void onDestroyView() {
         super.onDestroyView();
         // Detach Firestore listener and release view references to prevent memory leaks.
-        if (reg != null) { reg.remove(); reg = null; }
-        recyclerView = null; adapter = null;
+        if (reg != null) {
+            reg.remove();
+            reg = null;
+        }
+        recyclerView = null;
+        adapter = null;
     }
 
     /** Apply a new free-text query; re-filters the in-memory list. */
-    public void applyFilter(@NonNull String q) { query = q.trim(); applyCurrentFilters(); }
+    public void applyFilter(@NonNull String q) {
+        query = q.trim();
+        applyCurrentFilters();
+    }
 
     /** Apply new structured options (open/geo/date/types); re-filters the in-memory list. */
-    public void applyOptions(@NonNull FilterOptions opts) { options = opts; applyCurrentFilters(); }
+    public void applyOptions(@NonNull FilterOptions opts) {
+        options = opts;
+        applyCurrentFilters();
+    }
 
     /**
-     * Recompute the filtered result from {@link #all} using the current {@link #query} and {@link #options},
-     * then submit the resulting list to the adapter.
+     * Recompute the filtered result from {@link #all} using the current {@link #query} and
+     * {@link #options}, then submit the resulting list to the adapter.
      */
     private void applyCurrentFilters() {
         if (adapter == null) return;
@@ -115,7 +127,8 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
         for (Event e : all) {
             // Keyword search (title/city/venue).
             if (!q.isEmpty()) {
-                String blob = (e.getTitle() + " " + e.getCity() + " " + e.getVenue()).toLowerCase(Locale.ROOT);
+                String blob = (e.getTitle() + " " + e.getCity() + " " + e.getVenue())
+                        .toLowerCase(Locale.ROOT);
                 if (!blob.contains(q)) continue;
             }
             // "Open only" filter: exclude full events.
@@ -126,8 +139,10 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
 
             // Date range filter based on startTimeMs.
             long startMs = e.getStartTimeMs();
-            if (fo.getFromDateMs() > 0 && (startMs == 0 || startMs < fo.getFromDateMs())) continue;
-            if (fo.getToDateMs()   > 0 && (startMs == 0 || startMs > fo.getToDateMs())) continue;
+            if (fo.getFromDateMs() > 0 && (startMs == 0 || startMs < fo.getFromDateMs()))
+                continue;
+            if (fo.getToDateMs() > 0 && (startMs == 0 || startMs > fo.getToDateMs()))
+                continue;
 
             // Type matching: prefer the explicit type field; fall back to keywords in the title.
             if (!matchesTypes(e, fo.getTypes())) continue;
@@ -152,21 +167,29 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
 
         String title = e.getTitle().toLowerCase(Locale.ROOT);
         Set<String> hit = new HashSet<>();
-        if (title.contains("swim") || title.contains("soccer") || title.contains("run") || title.contains("basketball"))
+        if (title.contains("swim") || title.contains("soccer")
+                || title.contains("run") || title.contains("basketball")) {
             hit.add("Sports");
-        if (title.contains("music") || title.contains("concert") || title.contains("piano") || title.contains("guitar"))
+        }
+        if (title.contains("music") || title.contains("concert")
+                || title.contains("piano") || title.contains("guitar")) {
             hit.add("Music");
-        if (title.contains("art") || title.contains("craft"))
+        }
+        if (title.contains("art") || title.contains("craft")) {
             hit.add("Arts & Crafts");
-        if (title.contains("market") || title.contains("fair") || title.contains("bazaar"))
+        }
+        if (title.contains("market") || title.contains("fair")
+                || title.contains("bazaar")) {
             hit.add("Market");
+        }
 
         for (String s : selected) if (hit.contains(s)) return true;
         return false;
     }
 
     /** Open the details screen for the tapped event, passing its id as an extra. */
-    @Override public void onEventClick(@NonNull Event e) {
+    @Override
+    public void onEventClick(@NonNull Event e) {
         startActivity(new Intent(requireContext(), EventDetailsActivity.class)
                 .putExtra(EventDetailsActivity.EXTRA_EVENT_ID, e.getId()));
     }
@@ -178,10 +201,13 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
      * - Updates two array fields in Firestore (waitingList, allParticipants) atomically.
      * - Shows a short Toast for success/failure feedback.
      */
-    @Override public void onJoinClick(@NonNull Event e) {
+    @Override
+    public void onJoinClick(@NonNull Event e) {
         // Use a device-unique id as a stand-in "user id".
-        String uid = Settings.Secure.getString(requireContext().getContentResolver(),
-                Settings.Secure.ANDROID_ID);
+        String uid = Settings.Secure.getString(
+                requireContext().getContentResolver(),
+                Settings.Secure.ANDROID_ID
+        );
         if (uid == null || uid.isEmpty()) uid = "device_demo";
 
         // Write to Firestore and show feedback via Toast callbacks.
@@ -189,12 +215,10 @@ public class BrowseListFragment extends Fragment implements BrowseEventsAdapter.
         DocumentReference ref = db.collection("events").document(e.getId());
 
         ref.update(
-                "waitingList",     FieldValue.arrayUnion(uid),
+                "waitingList", FieldValue.arrayUnion(uid),
                 "allParticipants", FieldValue.arrayUnion(uid)
         ).addOnSuccessListener(v -> {
             toast("Success! You have joined the waitlist.");
-            // Optional: refresh or disable the button if you want immediate visual feedback.
-            // applyCurrentFilters(); // Enable if list item should reflect the new state instantly.
         }).addOnFailureListener(err -> {
             toast("Join failed: " + err.getMessage());
         });

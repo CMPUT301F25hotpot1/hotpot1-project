@@ -31,16 +31,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    // 提升 Espresso 稳定性：禁用动画
     testOptions {
         animationsDisabled = true
     }
 }
 
-/** 统一 protobuf 版本，防止运行时混载旧版本导致 NoSuchMethodError */
 configurations.all {
     resolutionStrategy {
-        // 如仍冲突，可把 3.21.12 换为 3.25.3（两处一起改）
         force("com.google.protobuf:protobuf-javalite:3.21.12")
     }
 }
@@ -75,13 +72,14 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.squareup.picasso:picasso:2.71828")
 
-    // ===== 显式声明 protobuf（与上面的 force 保持一致）=====
+
     implementation("com.google.protobuf:protobuf-javalite:3.21.12")
 
-    // ===== 本地单元测试 =====
+
+    implementation("com.google.zxing:core:3.5.1")
+
     testImplementation("junit:junit:4.13.2")
 
-    // ===== 仪器化测试（Espresso）=====
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test:rules:1.5.0")      // GrantPermissionRule / ActivityTestRule
@@ -93,11 +91,11 @@ dependencies {
         exclude(group = "com.google.protobuf")
     }
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1") {
-        // contrib 里经常带旧的 protobuf(-lite)；这里统一排除
+
         exclude(group = "com.google.protobuf", module = "protobuf-javalite")
         exclude(group = "com.google.protobuf", module = "protobuf-lite")
     }
 
-    // 为 androidTest 显式引入同版 protobuf，确保测试运行时 classpath 唯一版本
     androidTestImplementation("com.google.protobuf:protobuf-javalite:3.21.12")
 }
+

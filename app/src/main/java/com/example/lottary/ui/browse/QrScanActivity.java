@@ -1,154 +1,186 @@
 package com.example.lottary.ui.browse;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageProxy;
-import androidx.camera.view.CameraController;
-import androidx.camera.view.LifecycleCameraController;
-import androidx.camera.view.PreviewView;
-import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
-import com.google.mlkit.vision.barcode.BarcodeScanner;
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
-import com.google.mlkit.vision.barcode.BarcodeScanning;
-import com.google.mlkit.vision.barcode.common.Barcode;
-import com.google.mlkit.vision.common.InputImage;
+import com.example.lottary.data.Event;
+import com.example.lottary.data.FirestoreEventRepository;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
-import java.util.concurrent.Executor;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * QrScanActivity
+ * QrScanActivity (now actually: "Choose event and show its QR code").
  *
- * Purpose:
- * - CameraX + ML Kit based QR/Barcode scanner.
- * - When a barcode value is recognized, it is treated as an event id and
- *   {@link EventDetailsActivity} is launched with that id, then this activity finishes.
- *
- * Key points:
- * - Uses {@link LifecycleCameraController} to simplify CameraX setup (no direct provider/futures).
- * - Requests CAMERA permission at runtime if not granted.
- * - Runs an {@link ImageAnalysis.Analyzer} on the main executor and applies
- *   {@link ImageAnalysis#STRATEGY_KEEP_ONLY_LATEST} to avoid analysis backlog.
- * - Debounces multiple detections with a simple {@code handled} flag.
+ * Flow:
+ * - When this activity is opened from Browse, it subscribes to Firestore and shows
+ *   a list of events at the top.
+ * - When the user taps an event, we generate a QR code from that event's id and
+ *   render it into an ImageView.
+ * - Another device can scan this QR code (the raw value is the event id) and
+ *   then launch EventDetailsActivity with that id.
+ * - A "Back" button at the bottom returns to the previous screen.
  */
 public class QrScanActivity extends AppCompatActivity {
 
-    /** Camera preview surface embedded in the layout. */
-    private PreviewView preview;
-    /** High-level CameraX controller bound to this Activity lifecycle. */
-    private LifecycleCameraController controller;
-    /** One-shot guard: prevents handling the same scan result multiple times. */
-    private boolean handled = false;
+    private RecyclerView recycler;
+    private ImageView qrImage;
+    private TextView selectedTitle;
+    private Button btnBack;
 
-    /** Activity Result API launcher for the CAMERA permission. */
-    private final ActivityResultLauncher<String> perm =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
-                if (granted) startCamera();
-            });
+    /** In-memory list of events loaded from Firestore. */
+    private final List<Event> events = new ArrayList<>();
+    private EventsAdapter adapter;
+
+    /** Firestore listener; removed in onDestroy() to avoid leaks. */
+    @Nullable
+    private ListenerRegistration reg;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_scan);
-        preview = findViewById(R.id.preview);
 
-        // Check camera permission; request if not yet granted.
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            startCamera();
-        } else {
-            perm.launch(Manifest.permission.CAMERA);
-        }
-    }
+        recycler = findViewById(R.id.recycler_events);
+        qrImage = findViewById(R.id.image_qr);
+        selectedTitle = findViewById(R.id.text_selected_title);
+        btnBack = findViewById(R.id.btn_back);
 
-    /**
-     * Initialize CameraX and the ML Kit analyzer.
-     * - Back camera only.
-     * - Image analysis only (no still capture).
-     * - Keep-only-latest strategy to minimize latency on slower devices.
-     * - Barcode scanner created with default options (all supported formats).
-     */
-    private void startCamera() {
-        // 1) 创建 controller（代替 ProcessCameraProvider + ListenableFuture）
-        controller = new LifecycleCameraController(this);
-        controller.setCameraSelector(
-                new CameraSelector.Builder()
-                        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                        .build()
-        );
-        controller.setImageAnalysisBackpressureStrategy(
-                ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
-        );
-        // 只需预览+分析
-        controller.setEnabledUseCases(CameraController.IMAGE_ANALYSIS);
+        // Initial label before any selection.
+        selectedTitle.setText("No event selected yet");
 
-        // 2) 绑定到 PreviewView
-        preview.setController(controller);
-        controller.bindToLifecycle(this);
+        // --- RecyclerView setup ---
+        recycler.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new EventsAdapter(events, this::onEventSelected);
+        recycler.setAdapter(adapter);
 
-        // 3) 设置条码分析器（ML Kit）
-        BarcodeScannerOptions opts = new BarcodeScannerOptions.Builder().build(); // default: all formats
-        BarcodeScanner scanner = BarcodeScanning.getClient(opts);
-        Executor main = ContextCompat.getMainExecutor(this);
+        // --- Back button ---
+        btnBack.setOnClickListener(v -> finish());
 
-        // Forward each frame to ML Kit; proxy must be closed in callbacks.
-        controller.setImageAnalysisAnalyzer(main, image -> analyze(scanner, image));
-    }
-
-    /**
-     * Analyze a single frame and attempt to decode barcodes.
-     * - Closes the {@link ImageProxy} in all paths to avoid analyzer stalls.
-     * - On first non-empty {@link Barcode#getRawValue()}:
-     *   * Sets {@code handled = true} to debounce
-     *   * Launches {@link EventDetailsActivity} with EXTRA_EVENT_ID
-     *   * Finishes this activity
-     */
-    private void analyze(BarcodeScanner scanner, ImageProxy proxy) {
-        if (handled) { proxy.close(); return; }
-        try {
-            if (proxy.getImage() == null) { proxy.close(); return; }
-            InputImage img = InputImage.fromMediaImage(
-                    proxy.getImage(), proxy.getImageInfo().getRotationDegrees());
-
-            scanner.process(img)
-                    .addOnSuccessListener(barcodes -> {
-                        if (handled) return;
-                        for (Barcode b : barcodes) {
-                            String v = b.getRawValue();
-                            if (v != null && !v.isEmpty()) {
-                                handled = true; // debounce: only handle first successful scan
-                                Intent i = new Intent(this, EventDetailsActivity.class);
-                                i.putExtra(EventDetailsActivity.EXTRA_EVENT_ID, v);
-                                startActivity(i);
-                                finish();
-                                break;
-                            }
-                        }
-                    })
-                    // Always close the frame regardless of success/failure to keep analyzer flowing.
-                    .addOnCompleteListener(t -> proxy.close());
-        } catch (Exception e) {
-            // Defensive: make sure to close the proxy even if unexpected errors occur.
-            proxy.close();
-        }
+        // --- Subscribe to Firestore events (reuses the same repository as BrowseListFragment) ---
+        reg = FirestoreEventRepository.get().listenRecentCreated(items -> {
+            events.clear();
+            events.addAll(items);
+            adapter.notifyDataSetChanged();
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Clear analyzer to release references promptly; unbinding is handled by lifecycle.
-        if (controller != null) {
-            controller.clearImageAnalysisAnalyzer();
-            // controller.unbind();
+        if (reg != null) {
+            reg.remove();
+            reg = null;
+        }
+    }
+
+    /**
+     * Called when the user taps an event row in the list.
+     * Generates a QR code for that event's id and updates the UI.
+     */
+    private void onEventSelected(@NonNull Event e) {
+        selectedTitle.setText("QR code for: " + e.getTitle());
+
+        // Encode ONLY the event id. The scanner on another device should treat this
+        // value as EventDetailsActivity.EXTRA_EVENT_ID.
+        String value = e.getId();
+        Bitmap bmp = createQrBitmap(value, 800);
+        qrImage.setImageBitmap(bmp);
+    }
+
+    /**
+     * Create a square QR code bitmap for the given text.
+     */
+    private Bitmap createQrBitmap(@NonNull String text, int sizePx) {
+        QRCodeWriter writer = new QRCodeWriter();
+        try {
+            BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, sizePx, sizePx);
+            Bitmap bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888);
+            for (int x = 0; x < sizePx; x++) {
+                for (int y = 0; y < sizePx; y++) {
+                    bmp.setPixel(x, y, matrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+            return bmp;
+        } catch (WriterException e) {
+            // Fallback: create a blank white bitmap so the app does not crash.
+            Bitmap bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888);
+            bmp.eraseColor(Color.WHITE);
+            return bmp;
+        }
+    }
+
+    // ------------------------------------------------------------------------
+    // RecyclerView adapter + view holder for the event list
+    // ------------------------------------------------------------------------
+
+    /**
+     * ViewHolder for a simple row containing an event title.
+     */
+    private static class EventViewHolder extends RecyclerView.ViewHolder {
+        final TextView title;
+
+        EventViewHolder(@NonNull View itemView) {
+            super(itemView);
+            title = itemView.findViewById(R.id.text_title);
+        }
+    }
+
+    /**
+     * Adapter that shows the list of events and forwards clicks to a listener.
+     */
+    private static class EventsAdapter extends RecyclerView.Adapter<EventViewHolder> {
+
+        interface Listener {
+            void onClick(@NonNull Event e);
+        }
+
+        private final List<Event> data;
+        private final Listener listener;
+
+        EventsAdapter(@NonNull List<Event> data, @NonNull Listener listener) {
+            this.data = data;
+            this.listener = listener;
+        }
+
+        @NonNull
+        @Override
+        public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.item_qr_event, parent, false);
+            return new EventViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
+            Event e = data.get(position);
+            holder.title.setText(e.getTitle());
+            holder.itemView.setOnClickListener(v -> listener.onClick(e));
+        }
+
+        @Override
+        public int getItemCount() {
+            return data.size();
         }
     }
 }
+
