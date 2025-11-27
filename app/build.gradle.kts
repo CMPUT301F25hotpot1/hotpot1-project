@@ -59,6 +59,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.activity:activity:1.9.3")
+    implementation(libs.play.services.location)
 
     // ===== CameraX =====
     val camerax = "1.3.4"

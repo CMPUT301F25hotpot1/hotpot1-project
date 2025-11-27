@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -27,18 +28,28 @@ import java.util.Map;
 
 /**
  * A {@link AppCompatActivity} subclass that allow user to create their profile information.
- * @author Tianyi Zhang (for base code of saveProfile(), require()) & Han Nguyen
- * @version 1.0
+ * @author Han Nguyen, Tianyi Zhang (for base code of saveProfile(), require()), Google Developers & GeekForGeeks
+ * @version 2.0
  * @see MyProfileActivity
  * @see NewProfileFragment
+ * @see <a href="https://www.geeksforgeeks.org/android/how-to-get-user-location-in-android"/>GeekForGeeks's Tutorial on Getting User Location</a>
+ * @see <a href="https://developers.google.com/maps/documentation/android-sdk/examples/my-location?_gl=1*1d0qewx*_up*MQ..*_ga*MTYxNjI3NTgzMi4xNzY0MjQxOTA4*_ga_SM8HXJ53K2*czE3NjQyNDE5MDgkbzEkZzAkdDE3NjQyNDE5MDgkajYwJGwwJGgw*_ga_NRWSTWS78N*czE3NjQyNDE5MDgkbzEkZzEkdDE3NjQyNDE5MjckajQxJGwwJGgw#maps_android_sample_my_location-java"/>Google Developers's Example on Getting Location Permission</a>
  */
-public class CreateProfileActivity extends AppCompatActivity {
+public class CreateProfileActivity extends AppCompatActivity
+        implements ActivityCompat.OnRequestPermissionsResultCallback {
 
+    /**
+     * Request code for location permission request.
+     *
+     * @see #onRequestPermissionsResult(int, String[], int[])
+     */
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
     private MaterialToolbar topBar;
     private EditText etName, etEmail, etPhoneNum;
     private Button btnCreateProfile;
     private MaterialCheckBox cbIDConsent, cbIDLocation;
+    private Double latitude = 0.0, longitude = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +70,13 @@ public class CreateProfileActivity extends AppCompatActivity {
         // listener
         topBar.setNavigationOnClickListener(v -> finish());
         btnCreateProfile.setOnClickListener(v -> saveProfile());
+        cbIDLocation.setOnCheckedChangeListener((b, isChecked) -> {
+            // ask for user permission to get location when location checkbox is checked
+            if (cbIDLocation.isChecked()) {
+                String[] permissionList = {Manifest.permission.ACCESS_COARSE_LOCATION};
+                ActivityCompat.requestPermissions(this, permissionList, LOCATION_PERMISSION_REQUEST_CODE);
+            }
+        });
     }
 
     /**
@@ -66,6 +84,7 @@ public class CreateProfileActivity extends AppCompatActivity {
      * @see FirestoreUserRepository
      */
     private void saveProfile() {
+        // Make sure required fields are filled
         if (!require(etName)) return;
         else if (!require(etEmail)) return;
         else if (!(cbIDConsent.isChecked())) {
@@ -79,44 +98,21 @@ public class CreateProfileActivity extends AppCompatActivity {
             return;
         }
 
+        // get user device ID
         String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         if (TextUtils.isEmpty(deviceId)) deviceId = "device_demo";
 
+        // map data in preparation for the server
         Map<String, Object> fields = new HashMap<>();
         fields.put("name", etName.getText().toString().trim());
         fields.put("email", etEmail.getText().toString().trim());
         fields.put("phoneNumber", etPhoneNum.getText().toString().trim());
-        fields.put("latitude", etPhoneNum.getText().toString().trim());
-        fields.put("longitude", etPhoneNum.getText().toString().trim());
         fields.put("userDeviceId", deviceId);
         fields.put("createdAt", Timestamp.now());
+        fields.put("latitude", latitude);
+        fields.put("longitude", longitude);
 
-        // https://www.geeksforgeeks.org/android/how-to-get-user-location-in-android/
-        // https://developers.google.com/maps/documentation/android-sdk/examples/my-location?_gl=1*1d0qewx*_up*MQ..*_ga*MTYxNjI3NTgzMi4xNzY0MjQxOTA4*_ga_SM8HXJ53K2*czE3NjQyNDE5MDgkbzEkZzAkdDE3NjQyNDE5MDgkajYwJGwwJGgw*_ga_NRWSTWS78N*czE3NjQyNDE5MDgkbzEkZzEkdDE3NjQyNDE5MjckajQxJGwwJGgw#maps_android_sample_my_location-java
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-                // Got last known location. In some rare situations this can be null.
-                if (location != null) {
-                    fields.put("latitude", location.getLatitude());
-                    fields.put("longitude", location.getLongitude());
-                }
-                else {
-                    fields.put("latitude", null);
-                    fields.put("longitude", null);
-            }
-        });
-
+        // send data to server
         btnCreateProfile.setEnabled(false);
         FirestoreUserRepository.get()
                 .createUser(deviceId, fields)
@@ -128,6 +124,22 @@ public class CreateProfileActivity extends AppCompatActivity {
                     Toast.makeText(this, "Create failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     btnCreateProfile.setEnabled(true);
                 });
+    }
+
+    @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // If allowed, get the last known location. If not, it will be set to 0 by default;
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
+                // Record coordinators of user's last known location.
+                if (location != null) {
+                    latitude = location.getLatitude();
+                    longitude = location.getLongitude();
+                    Toast.makeText(this, "Location temporarily recorded.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     /**

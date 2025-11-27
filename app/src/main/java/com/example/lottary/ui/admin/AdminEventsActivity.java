@@ -16,8 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lottary.R;
 import com.example.lottary.data.AdminRepository;
 import com.example.lottary.data.Event;
+import com.example.lottary.data.FirestoreEventRepository;
+import com.example.lottary.data.FirestoreUserRepository;
 import com.example.lottary.ui.admin.adapters.AdminEventsAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +56,15 @@ public class AdminEventsActivity extends AppCompatActivity {
 
         RecyclerView rv = findViewById(R.id.admin_events_list);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new AdminEventsAdapter((Event e) -> repo.removeEvent(e));
+        adapter = new AdminEventsAdapter((Event e) ->
+                new MaterialAlertDialogBuilder(AdminEventsActivity.this, R.style.LotteryDialog_Admin)
+                    .setTitle(R.string.remove_event)
+                    .setMessage("Are you sure that you want to remove this event?")
+                    .setNeutralButton(R.string.cancel, null)
+                    .setPositiveButton(R.string.delete, (d, w) ->
+                            FirestoreEventRepository.get().deleteEventById(e.getId()))
+                    .show());
+
         rv.setAdapter(adapter);
 
         etSearch  = findViewById(R.id.search_events);
