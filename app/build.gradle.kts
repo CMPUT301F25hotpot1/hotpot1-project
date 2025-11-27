@@ -67,6 +67,10 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:$camerax")
     implementation("androidx.camera:camera-view:$camerax")
 
+    // ===== Map Functionality =====
+    implementation("com.google.android.gms:play-services-maps:17.0.1")
+    implementation("com.google.android.gms:play-services-location:17.0.0")
+
     // ===== ML Kit =====
     implementation("com.google.mlkit:barcode-scanning:17.2.0")
 

@@ -337,8 +337,10 @@ public class FirestoreEventRepository {
             if (!d.exists()) return null;
 
             List<String> waiting = strList(d.get("waitingList"));
-            if (waiting.remove(deviceId)) {
+            List<String> allParticipants = strList(d.get("waitingList"));
+            if (waiting.remove(deviceId) && allParticipants.remove(deviceId)) {
                 tr.update(ref, "waitingList", waiting);
+                tr.update(ref, "allParticipants", allParticipants);
             }
             return null;
         });
