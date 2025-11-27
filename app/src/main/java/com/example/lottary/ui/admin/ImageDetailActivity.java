@@ -54,11 +54,11 @@ public class ImageDetailActivity extends AppCompatActivity {
         // Delete button
         MaterialButton btnDelete = findViewById(R.id.btnDeleteImage);
         btnDelete.setOnClickListener(v ->
-                new MaterialAlertDialogBuilder(this)
+                new MaterialAlertDialogBuilder(this, R.style.LotteryDialog_Admin)
                         .setTitle(R.string.remove_image)
                         .setMessage(R.string.remove_image_confirm)
                         .setPositiveButton(R.string.yes, (DialogInterface d, int w) -> doDelete())
-                        .setNegativeButton(R.string.no, (d, w) -> d.dismiss())
+                        .setNeutralButton(R.string.no, (d, w) -> d.dismiss())
                         .show()
         );
     }

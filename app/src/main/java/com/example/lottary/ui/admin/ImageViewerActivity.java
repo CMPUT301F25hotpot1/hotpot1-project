@@ -15,7 +15,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
@@ -23,6 +22,7 @@ import com.example.lottary.R;
 import com.google.android.material.button.MaterialButton;
 
 // Firebase
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -112,14 +112,14 @@ public class ImageViewerActivity extends AppCompatActivity {
 
     // Delete confirmation dialog
     private void showDeleteConfirmDialog() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this, R.style.LotteryDialog_Admin)
                 .setTitle(R.string.remove_image)
                 .setMessage(R.string.remove_image_confirm)
                 .setPositiveButton(R.string.yes, (d, w) -> {
                     d.dismiss();
                     performDelete();
                 })
-                .setNegativeButton(R.string.no, (d, w) -> d.dismiss())
+                .setNeutralButton(R.string.no, (d, w) -> d.dismiss())
                 .setCancelable(true)
                 .show();
     }

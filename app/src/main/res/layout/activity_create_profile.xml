@@ -4,8 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_create_profile"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:layout_height="match_parent">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -100,6 +99,12 @@
                 android:layout_height="wrap_content"
                 android:text="I agree to let my device ID be used as login."
                 android:layout_marginTop="15dp"/>
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cb_location_consent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="I agree to share my approximate location for organizers of events I joined." />
 
             <Button
                 android:id="@+id/btn_create_profile"

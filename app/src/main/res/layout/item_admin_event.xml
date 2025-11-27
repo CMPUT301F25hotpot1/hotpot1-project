@@ -44,23 +44,15 @@
             android:text="Mar 5, 2023 1:30PM"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_city" />
+            app:layout_constraintTop_toBottomOf="@id/tv_location" />
         <TextView
-            android:id="@+id/tv_city"
+            android:id="@+id/tv_location"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Edmonton, AB"
+            android:text="Edmonton, AB, Van Vliet Complex"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_title" />
-        <TextView
-            android:id="@+id/tv_venue"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Van Vliet Complex"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_time"/>
 
         <!-- Event Thumbnail -->
         <ImageView
@@ -81,11 +73,12 @@
             android:id="@+id/btn_row"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tv_city"
+            android:layout_below="@id/tv_location"
             android:layout_alignParentStart="true"
+            android:layout_marginTop="8dp"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_venue"
+            app:layout_constraintTop_toBottomOf="@id/tv_time"
             app:layout_constraintBottom_toBottomOf="parent">
 
             <!-- Entrants - Sign Up & Decline -->
