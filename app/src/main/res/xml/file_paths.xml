@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 允许通过 FileProvider 共享 cache 目录下的导出文件 -->
+    <cache-path
+        name="exports"
+        path="." />
+</paths>

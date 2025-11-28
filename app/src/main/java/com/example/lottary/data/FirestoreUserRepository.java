@@ -16,6 +16,7 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,9 +53,13 @@ public class FirestoreUserRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection("users");
 
+    // ---------- basic CRUD ----------
+
     public Task<Void> createUser(String deviceID, Map<String, Object> fields) {
-        if (!fields.containsKey("createdAt"))
+        if (!fields.containsKey("createdAt")) {
             fields.put("createdAt", Timestamp.now());
+        }
+        // 文档 id 就是 deviceID
         return users.document(deviceID).set(fields);
     }
 
@@ -69,6 +74,8 @@ public class FirestoreUserRepository {
     public DocumentReference hasUser(@NonNull String deviceID) {
         return users.document(deviceID);
     }
+
+    // ---------- listeners ----------
 
     public interface UsersListener { void onChanged(@NonNull List<User> items); }
     public interface DocListener    { void onChanged(DocumentSnapshot doc); }
@@ -94,6 +101,8 @@ public class FirestoreUserRepository {
                 });
     }
 
+    // ---------- mapping helpers ----------
+
     private List<User> mapList(QuerySnapshot snap) {
         if (snap == null || snap.isEmpty()) return Collections.emptyList();
         List<User> list = new ArrayList<>();
@@ -102,7 +111,8 @@ public class FirestoreUserRepository {
     }
 
     private User map(DocumentSnapshot d) {
-        String deviceID = safe(d.getString("userDeviceId"));
+        // ✅ 把文档 id 当作 deviceId，这个和 events 里的 deviceId 一致
+        String deviceID = d.getId();
         String name     = safe(d.getString("name"));
         String email    = safe(d.getString("email"));
         String phone    = safe(d.getString("phoneNumber"));
@@ -118,6 +128,8 @@ public class FirestoreUserRepository {
     private static String safe(String s) {
         return s == null ? "" : s;
     }
+
+    // ---------- convenience APIs for lists / search ----------
 
     public void getAllUsers(@NonNull UsersListener callback) {
         users.get().addOnSuccessListener(snap -> {
@@ -144,5 +156,38 @@ public class FirestoreUserRepository {
 
     public void removeUser(@NonNull String userID) {
         deleteUser(userID);
+    }
+
+    // ---------- 设备 ID -> 用户名 映射（给 ManageEvent 用） ----------
+
+    public interface DeviceNameMapCallback {
+        void onLoaded(@NonNull Map<String, String> deviceIdToName);
+    }
+
+    /**
+     * 读取所有用户，生成一个 deviceId -> name 的 Map：
+     * - key:  user 文档的 id（即 deviceId）
+     * - value: "name" 字段；如果为空则退回 deviceId 本身
+     */
+    public void getDeviceNameMap(@NonNull DeviceNameMapCallback cb) {
+        users.get()
+                .addOnSuccessListener(snap -> {
+                    Map<String, String> map = new HashMap<>();
+                    if (snap != null) {
+                        for (DocumentSnapshot d : snap.getDocuments()) {
+                            String deviceId = d.getId();
+                            String name = safe(d.getString("name"));
+                            if (name.isEmpty()) {
+                                name = deviceId;
+                            }
+                            map.put(deviceId, name);
+                        }
+                    }
+                    cb.onLoaded(map);
+                })
+                .addOnFailureListener(e -> {
+                    // 失败就返回空 map，界面上会退回显示 deviceId
+                    cb.onLoaded(new HashMap<>());
+                });
     }
 }
