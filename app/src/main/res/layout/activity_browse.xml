@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -54,22 +55,35 @@
             android:layout_marginTop="15dp"
             android:text="@string/events_for_you" />
 
-        <!-- QR Scan & Filter button Bar -->
+        <!-- QR tools & Filter button bar -->
         <LinearLayout
+            android:id="@+id/bar_qr_and_filter"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
             android:orientation="horizontal">
 
+            <!-- Generate QR for an event (opens QrScanActivity) -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_scan_qr"
+                android:id="@+id/btn_generate_qr"
                 style="@style/LotteryButton.SignUp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:text="@string/scan_qr_code" />
+                android:layout_marginEnd="8dp"
+                android:text="Generate QR" />
 
+            <!-- In-app scanner that uses camera to scan an event QR -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_scan_event_qr"
+                style="@style/LotteryButton.Neutral"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Scan Event QR" />
+
+            <!-- Filter keeps using the existing string resource -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_filter"
                 style="@style/LotteryButton.Neutral"
@@ -103,4 +117,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:menu="@menu/menu_bottom_nav" />
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 

@@ -20,7 +20,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * Role / Purpose:
  * - The entry point of the "Browse" tab. Hosts a {@link BrowseListFragment} that shows a
  *   scrollable list of events and exposes top-level actions: free-text search, filter sheet,
- *   QR scan, and bottom navigation to other top destinations.
+ *   QR tools (generate + scan), and bottom navigation to other top destinations.
  */
 public class BrowseActivity extends AppCompatActivity implements FilterBottomSheet.Listener {
 
@@ -62,9 +62,15 @@ public class BrowseActivity extends AppCompatActivity implements FilterBottomShe
                         .show(getSupportFragmentManager(), "filter")
         );
 
-        // --- QR Scan entry point ---
-        findViewById(R.id.btn_scan_qr).setOnClickListener(v ->
+        // --- QR tools entry points ---
+
+        // 1) Generate a QR code for an event (this is the page你刚刚已经做好的).
+        findViewById(R.id.btn_generate_qr).setOnClickListener(v ->
                 startActivity(new Intent(this, QrScanActivity.class)));
+
+        // 2) In-app scanner: open camera and scan a QR code to jump to EventDetailsActivity.
+        findViewById(R.id.btn_scan_event_qr).setOnClickListener(v ->
+                startActivity(new Intent(this, EventQrScannerActivity.class)));
 
         // --- Bottom navigation setup ---
         BottomNavigationView nav = findViewById(R.id.bottomNav);
