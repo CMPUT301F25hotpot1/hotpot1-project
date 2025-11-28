@@ -9,7 +9,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.lottary.ui.admin.AdminDashboardActivity;  // ✅ 加这个 import
+import com.example.lottary.ui.admin.AdminDashboardActivity;  
 
 public class MainActivity extends AppCompatActivity {
 
