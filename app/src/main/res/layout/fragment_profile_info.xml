@@ -89,7 +89,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp"
                 android:text="@string/delete_profile"
-                style="@style/LotteryButton.Neutral"/>
+                style="@style/LotteryButton.Neutral" />
             <Button
                 android:id="@+id/btn_swap_admin"
                 android:layout_width="match_parent"
@@ -97,7 +97,8 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp"
                 android:text="Swap to Admin View"
-                style="@style/LotteryButton.Admin" />
+                style="@style/LotteryButton.Admin"
+                android:visibility="gone"/>
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

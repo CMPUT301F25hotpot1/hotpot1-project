@@ -2,26 +2,36 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginHorizontal="20dp"
+    android:layout_height="match_parent"
     android:layout_gravity="center"
     android:orientation="vertical"
-    android:padding="20dp"
     android:id="@+id/dialog_send_notification"
     app:strokeColor="#D9D9D9"
     app:strokeWidth="1dp">
 
-    <TextView
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/send_notification"
-        style="@style/DialogTitle.Organizer" />
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/top_app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="36dp"
+            android:paddingHorizontal="36dp"
+            android:paddingBottom="20dp"
+            app:navigationIcon="@drawable/ic_arrow_back_24"
+            app:navigationIconTint="@color/organizer_purple"
+            app:titleTextAppearance="@style/ScreenTitle.Organizer"
+            app:title="@string/send_notification" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <RadioGroup
         android:id="@+id/grp_target"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp">
+        android:layout_marginHorizontal="36dp">
         <RadioButton
             android:id="@+id/rb_waiting"
             android:checked="true"
@@ -51,13 +61,15 @@
         android:minLines="4"
         android:gravity="top|start"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="36dp"/>
 
     <Button
         android:id="@+id/btn_send"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
+        android:layout_marginHorizontal="36dp"
         android:text="@string/send_notification"
         style="@style/LotteryButton.Organizer" />
 

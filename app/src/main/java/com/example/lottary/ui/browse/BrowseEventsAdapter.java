@@ -117,7 +117,7 @@ class BrowseEventsAdapter extends ListAdapter<Event, BrowseEventsAdapter.VH> {
             super(v);
             root = (CardView) v;
             title = v.findViewById(R.id.tv_title);
-            location = v.findViewById(R.id.tv_city);
+            location = v.findViewById(R.id.tv_location);
             time = v.findViewById(R.id.tv_time);
             status = v.findViewById(R.id.tv_status);
             btnJoin = v.findViewById(R.id.btnJoin);

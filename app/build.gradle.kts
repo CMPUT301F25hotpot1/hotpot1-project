@@ -56,6 +56,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.activity:activity:1.9.3")
+    implementation(libs.play.services.location)
 
     // ===== CameraX =====
     val camerax = "1.3.4"
@@ -63,6 +64,10 @@ dependencies {
     implementation("androidx.camera:camera-camera2:$camerax")
     implementation("androidx.camera:camera-lifecycle:$camerax")
     implementation("androidx.camera:camera-view:$camerax")
+
+    // ===== Map Functionality =====
+    implementation("com.google.android.gms:play-services-maps:17.0.1")
+    implementation("com.google.android.gms:play-services-location:17.0.0")
 
     // ===== ML Kit =====
     implementation("com.google.mlkit:barcode-scanning:17.2.0")

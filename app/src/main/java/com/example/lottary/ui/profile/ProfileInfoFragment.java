@@ -10,7 +10,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import android.provider.Settings;
@@ -64,7 +63,7 @@ public class ProfileInfoFragment extends Fragment {
         adminIDList.add("2a03e2bac0988d0f");  // Yitong
         adminIDList.add("c8b0b8e87f4433fd");  // Mengxi
         adminIDList.add("ce9affac94d94f5e");  // Tianyi
-        adminIDList.add("8abccf496d141336");  // Han
+        adminIDList.add("1eac51db452383f6");  // Han
 
     }
 
@@ -98,7 +97,6 @@ public class ProfileInfoFragment extends Fragment {
 
         // ✅ Swap to Admin View — go straight to AdminEventsActivity
         adminBtn = view.findViewById(R.id.btn_swap_admin); // keep your existing id
-        adminBtn.setVisibility(INVISIBLE);
         // only show to selected admin device IDs
         if (adminBtn != null && adminIDList.contains(userDeviceID)) {
             adminBtn.setVisibility(VISIBLE);

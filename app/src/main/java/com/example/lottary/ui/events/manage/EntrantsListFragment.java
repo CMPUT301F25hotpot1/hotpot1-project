@@ -56,7 +56,7 @@ public class EntrantsListFragment extends Fragment {
             case 1: target = filter(all,"Chosen"); break;
             case 2: target = filter(all,"Signed Up"); break;
             case 3: target = filter(all,"Cancelled"); break;
-            default: target = all;
+            default: target = filter(all,"Waiting");
         }
         adapter.submit(target);
     }
@@ -64,6 +64,12 @@ public class EntrantsListFragment extends Fragment {
     private List<Row> filter(List<Row> src, String status){
         List<Row> out = new ArrayList<>(); for (Row r:src) if (r.status.equals(status)) out.add(r); return out;
     }
+
+    /**
+     * Convert a list from the database into a Java String list
+     * @param o: Data object to turn into a String list
+     * @return A String list of the user IDs
+     */
     private List<String> toList(Object o){ return (o instanceof List)? new ArrayList<>((List<String>)o) : new ArrayList<>(); }
 
     @Override public void onDestroyView() { if (reg!=null) reg.remove(); super.onDestroyView(); }
