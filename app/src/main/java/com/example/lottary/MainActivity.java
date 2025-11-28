@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        // ✅ ✅ ✅ 加这一句：进入 app 自动跳 Admin Dashboard
         startActivity(new Intent(this, AdminDashboardActivity.class));
     }
 }
