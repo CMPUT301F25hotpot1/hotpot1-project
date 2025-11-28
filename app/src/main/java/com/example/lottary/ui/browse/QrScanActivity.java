@@ -29,15 +29,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * QrScanActivity (now actually: "Choose event and show its QR code").
+ * QrScanActivity (现在实际作用是：选择一个活动并生成对应的二维码).
  *
  * Flow:
  * - When this activity is opened from Browse, it subscribes to Firestore and shows
  *   a list of events at the top.
- * - When the user taps an event, we generate a QR code from that event's id and
- *   render it into an ImageView.
- * - Another device can scan this QR code (the raw value is the event id) and
- *   then launch EventDetailsActivity with that id.
+ * - When the user taps an event, we generate a QR code whose *text content* is
+ *   "lottary://event/<eventId>".
+ * - Another device (either our in-app scanner or a generic QR app) can scan this
+ *   QR code. Our app declares a deep link for this URI so it can open
+ *   EventDetailsActivity for that event.
  * - A "Back" button at the bottom returns to the previous screen.
  */
 public class QrScanActivity extends AppCompatActivity {
@@ -95,14 +96,21 @@ public class QrScanActivity extends AppCompatActivity {
 
     /**
      * Called when the user taps an event row in the list.
-     * Generates a QR code for that event's id and updates the UI.
+     * Generates a QR code for that event.
+     *
+     * IMPORTANT:
+     * - The QR content is a deep-link style URI: "lottary://event/<eventId>".
+     * - This allows generic QR apps to emit an ACTION_VIEW intent which our
+     *   app can handle via an intent-filter on EventDetailsActivity.
      */
     private void onEventSelected(@NonNull Event e) {
         selectedTitle.setText("QR code for: " + e.getTitle());
 
-        // Encode ONLY the event id. The scanner on another device should treat this
-        // value as EventDetailsActivity.EXTRA_EVENT_ID.
-        String value = e.getId();
+        // 1) Get event id
+        String eventId = e.getId();
+        // 2) Encode as deep link text
+        String value = "lottary://event/" + eventId;
+
         Bitmap bmp = createQrBitmap(value, 800);
         qrImage.setImageBitmap(bmp);
     }
@@ -183,4 +191,3 @@ public class QrScanActivity extends AppCompatActivity {
         }
     }
 }
-

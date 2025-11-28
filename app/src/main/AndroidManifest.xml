@@ -2,10 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Network + Firebase -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Camera permission for QR code scanning -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- Declare that the app can use (but does not require) a camera -->
     <uses-feature
         android:name="android.hardware.camera.any"
         android:required="false" />
@@ -21,14 +25,59 @@
         android:theme="@style/Theme.Lottary"
         tools:targetApi="31">
 
-        <activity android:name="com.example.lottary.ui.browse.EventDetailsActivity" />
-        <activity android:name="com.example.lottary.ui.browse.QrScanActivity" />
+        <!--
+            EventDetailsActivity
+            - Shows details for a single event.
+            - Now also handles deep links of the form: lottary://event/<eventId>
+              so external QR apps / browsers can open this screen directly.
+        -->
+        <activity
+            android:name="com.example.lottary.ui.browse.EventDetailsActivity"
+            android:exported="true">
+
+            <!-- Deep link: lottary://event/<id> -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- URI example: lottary://event/abc123 -->
+                <data
+                    android:scheme="lottary"
+                    android:host="event" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            QrScanActivity
+            - "Generate Event QR Code": lets the user pick an event and shows
+              a QR code whose text is lottary://event/<eventId>.
+            - Internal only, no external intent-filters required.
+        -->
+        <activity
+            android:name="com.example.lottary.ui.browse.QrScanActivity"
+            android:exported="false" />
+
+        <!--
+            EventQrScannerActivity
+            - In-app camera scanner that reads the QR code and opens
+              EventDetailsActivity.
+        -->
+        <activity
+            android:name="com.example.lottary.ui.browse.EventQrScannerActivity"
+            android:exported="false" />
+
         <activity android:name="com.example.lottary.ui.notifications.NotificationsActivity" />
         <activity android:name="com.example.lottary.ui.browse.BrowseActivity" />
         <activity android:name="com.example.lottary.ui.profile.MyProfileActivity" />
         <activity android:name="com.example.lottary.ui.profile.CreateProfileActivity" />
         <activity android:name="com.example.lottary.ui.profile.EditProfileActivity" />
 
+        <!--
+            MyEventsActivity
+            - Launch activity for the app (bottom-nav "My Events" tab).
+        -->
         <activity
             android:name="com.example.lottary.ui.events.MyEventsActivity"
             android:exported="true">
@@ -76,3 +125,5 @@
 
     </application>
 </manifest>
+
+
