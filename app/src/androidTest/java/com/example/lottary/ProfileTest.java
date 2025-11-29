@@ -32,7 +32,7 @@ public class ProfileTest {
     public void testCreateProfile(){
         // Swap to profile & check if profile tab is displayed
         onView(withId(R.id.nav_profile)).perform(click());
-        onView(withId(R.id.activity_profile)).check(matches(isDisplayed()));
+        onView(withId(R.id.activity_my_profile)).check(matches(isDisplayed()));
 
         // Check if new profile fragment is displayed
         onView(withText("Welcome to EventLottery!")).check(matches(isDisplayed()));
@@ -49,7 +49,7 @@ public class ProfileTest {
         onView(withId(R.id.btn_create_profile)).perform(click());
 
         // Check if profile info is displayed correctly
-        onView(withId(R.id.activity_profile)).check(matches(isDisplayed()));
+        onView(withId(R.id.activity_my_profile)).check(matches(isDisplayed()));
         onView(withText("Han Ney")).check(matches(isDisplayed()));
         onView(withText("hanney@gmail.com")).check(matches(isDisplayed()));
         onView(withText("Not provided")).check(matches(isDisplayed()));
@@ -59,7 +59,7 @@ public class ProfileTest {
     public void testEditProfile(){
         // Swap to profile & check if profile tab is displayed
         onView(withId(R.id.nav_profile)).perform(click());
-        onView(withId(R.id.activity_profile)).check(matches(isDisplayed()));
+        onView(withId(R.id.activity_my_profile)).check(matches(isDisplayed()));
 
         // Check if profile info is displayed correctly
         onView(withText("Han Ney")).check(matches(isDisplayed()));
@@ -78,7 +78,7 @@ public class ProfileTest {
         onView(withId(R.id.btn_edit_profile)).perform(click());
 
         // Check if profile is updated correctly
-        onView(withId(R.id.activity_profile)).check(matches(isDisplayed()));
+        onView(withId(R.id.activity_my_profile)).check(matches(isDisplayed()));
         onView(withText("Han Nguyen")).check(matches(isDisplayed()));
         onView(withText("hann@gmail.com")).check(matches(isDisplayed()));
         onView(withText("8877447232")).check(matches(isDisplayed()));
@@ -87,7 +87,7 @@ public class ProfileTest {
     public void testDeleteProfile(){
         // Swap to profile & check if profile tab is displayed
         onView(withId(R.id.nav_profile)).perform(click());
-        onView(withId(R.id.activity_profile)).check(matches(isDisplayed()));
+        onView(withId(R.id.activity_my_profile)).check(matches(isDisplayed()));
 
         // Check if profile info is displayed correctly
         onView(withText("Han Nguyen")).check(matches(isDisplayed()));

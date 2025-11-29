@@ -40,7 +40,7 @@ import java.util.List;
  * @version 1.1
  * @see MyProfileActivity
  * @see EditProfileActivity
- * @see com.example.lottary.ui.admin.AdminDashboardActivity
+ * @see com.example.lottary.ui.admin.AdminEventsActivity
  */
 public class ProfileInfoFragment extends Fragment {
 

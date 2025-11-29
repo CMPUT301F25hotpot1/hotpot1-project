@@ -1,6 +1,7 @@
 package com.example.lottary.ui.profile;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -49,7 +50,7 @@ public class CreateProfileActivity extends AppCompatActivity
     private EditText etName, etEmail, etPhoneNum;
     private Button btnCreateProfile;
     private MaterialCheckBox cbIDConsent, cbIDLocation;
-    private Double latitude = 0.0, longitude = 0.0;
+    private Double latitude, longitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +127,14 @@ public class CreateProfileActivity extends AppCompatActivity
                 });
     }
 
+    /**
+     * Handle the result of requesting a new user to provide their location
+     * @param requestCode The request code passed when the app ask the user for location
+     * @param permissions The requested permissions. Never null.
+     * @param grantResults The grant results for the corresponding permissions
+     *     which is either {@link PackageManager#PERMISSION_GRANTED}
+     *     or {@link PackageManager#PERMISSION_DENIED}. Never null.
+     */
     @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 

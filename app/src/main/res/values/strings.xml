@@ -99,6 +99,7 @@
     <string name="error_no_id">Missing image id</string>
     <string name="delete_nothing">Nothing to delete</string>
     <string name="delete_failed_fmt">Delete failed: %1$s</string>
+    <string name="my_profile">My Profile</string>
 
 
 </resources>
