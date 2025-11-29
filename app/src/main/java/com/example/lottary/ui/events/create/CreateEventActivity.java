@@ -2,15 +2,21 @@ package com.example.lottary.ui.events.create;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,6 +24,8 @@ import com.example.lottary.R;
 import com.example.lottary.data.FirestoreEventRepository;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.Timestamp;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,33 +33,20 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * CreateEventActivity
- *
- * Purpose:
- * This activity allows users to create and submit a new event. It handles user input for
- * event details such as title, description, registration period, event time, capacity,
- * price, and location settings. The data is validated, formatted, and saved to Firebase
- * Firestore through the FirestoreEventRepository.
- *
- * Design Role:
- * - Acts as the “Create” screen in the event management flow.
- * - Connects UI input fields to a Firestore data model.
- * - Uses Android system dialogs (DatePickerDialog, TimePickerDialog) for consistent UX.
- *
- * Outstanding Issues / Notes:
- * - Poster upload is currently a placeholder (stub).
- * - Does not yet validate time/date relationships (e.g., start before end).
- * - Lacks error handling for missing network or Firebase failures beyond basic toast output.
- */
+
 public class CreateEventActivity extends AppCompatActivity {
 
     private MaterialToolbar topBar;
-    private EditText etTitle, etDesc, etStart, etEnd, etRegStart, etRegEnd, etCapacity, etPrice;
+    private EditText etTitle, etDesc, etEventDate,
+            etStart, etEnd, etRegStart, etRegEnd,
+            etCapacity, etPrice, etVenue, etCity;
     private LinearLayout boxUpload;
+    private ImageView imgPosterPreview;
+    private TextView tvUploadLabel;
     private Switch switchGeo;
     private Button btnCreate;
 
+    private final Calendar calEventDate = Calendar.getInstance();
     private final Calendar calStart = Calendar.getInstance();
     private final Calendar calEnd = Calendar.getInstance();
     private final Calendar calRegStart = Calendar.getInstance();
@@ -60,11 +55,16 @@ public class CreateEventActivity extends AppCompatActivity {
     private final SimpleDateFormat fmtTime = new SimpleDateFormat("h:mm a", Locale.getDefault());
     private final SimpleDateFormat fmtDate = new SimpleDateFormat("MM/dd/yyyy", Locale.getDefault());
 
+
+    private Uri posterUri = null;
+    private ActivityResultLauncher<String> pickImageLauncher;
+
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
 
         bindViews();
+        initImagePicker();
         wireTopBar();
         wirePickers();
         wireActions();
@@ -74,15 +74,34 @@ public class CreateEventActivity extends AppCompatActivity {
         topBar     = findViewById(R.id.top_app_bar);
         etTitle    = findViewById(R.id.et_title);
         etDesc     = findViewById(R.id.et_desc);
+        etEventDate= findViewById(R.id.et_event_start);
         etStart    = findViewById(R.id.et_start);
         etEnd      = findViewById(R.id.et_end);
         etRegStart = findViewById(R.id.et_reg_start);
         etRegEnd   = findViewById(R.id.et_reg_end);
         etCapacity = findViewById(R.id.et_capacity);
         etPrice    = findViewById(R.id.et_price);
+        etVenue    = findViewById(R.id.et_venue);
+        etCity     = findViewById(R.id.et_city);
         boxUpload  = findViewById(R.id.box_upload);
+        imgPosterPreview = findViewById(R.id.img_poster_preview);
+        tvUploadLabel    = findViewById(R.id.tv_upload_label);
         switchGeo  = findViewById(R.id.switch_geo);
         btnCreate  = findViewById(R.id.btn_create);
+    }
+
+    private void initImagePicker() {
+        pickImageLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        posterUri = uri;
+                        imgPosterPreview.setVisibility(View.VISIBLE);
+                        imgPosterPreview.setImageURI(uri);
+                        tvUploadLabel.setText("Poster selected");
+                    }
+                }
+        );
     }
 
     private void wireTopBar() {
@@ -90,16 +109,20 @@ public class CreateEventActivity extends AppCompatActivity {
     }
 
     private void wirePickers() {
+
+        etEventDate.setText(fmtDate.format(calEventDate.getTime()));
         etStart.setText(fmtTime.format(calStart.getTime()));
         etEnd.setText(fmtTime.format(calEnd.getTime()));
         etRegStart.setText(fmtDate.format(calRegStart.getTime()));
         etRegEnd.setText(fmtDate.format(calRegEnd.getTime()));
 
+        etEventDate.setFocusable(false);
         etStart.setFocusable(false);
         etEnd.setFocusable(false);
         etRegStart.setFocusable(false);
         etRegEnd.setFocusable(false);
 
+        etEventDate.setOnClickListener(v -> pickDate(etEventDate, calEventDate));
         etStart.setOnClickListener(v -> pickTime(etStart, calStart));
         etEnd.setOnClickListener(v -> pickTime(etEnd, calEnd));
         etRegStart.setOnClickListener(v -> pickDate(etRegStart, calRegStart));
@@ -107,7 +130,7 @@ public class CreateEventActivity extends AppCompatActivity {
     }
 
     private void wireActions() {
-        boxUpload.setOnClickListener(v -> Toast.makeText(this, "Upload Poster (stub)", Toast.LENGTH_SHORT).show());
+        boxUpload.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
         btnCreate.setOnClickListener(v -> saveEvent());
     }
 
@@ -147,26 +170,47 @@ public class CreateEventActivity extends AppCompatActivity {
         int capacity = parseIntOr(etCapacity.getText().toString().trim(), 0);
         double price = parseDoubleOr(etPrice.getText().toString().trim(), 0d);
 
-        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        String deviceId = Settings.Secure.getString(
+                getContentResolver(),
+                Settings.Secure.ANDROID_ID
+        );
         if (TextUtils.isEmpty(deviceId)) deviceId = "device_demo";
 
-        Calendar today = Calendar.getInstance();
+        Calendar startCal = Calendar.getInstance();
+        startCal.set(
+                calEventDate.get(Calendar.YEAR),
+                calEventDate.get(Calendar.MONTH),
+                calEventDate.get(Calendar.DAY_OF_MONTH),
+                calStart.get(Calendar.HOUR_OF_DAY),
+                calStart.get(Calendar.MINUTE),
+                0
+        );
 
-        Calendar startCal = (Calendar) calStart.clone();
-        startCal.set(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH));
-
-        Calendar endCal = (Calendar) calEnd.clone();
-        endCal.set(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH));
+        Calendar endCal = Calendar.getInstance();
+        endCal.set(
+                calEventDate.get(Calendar.YEAR),
+                calEventDate.get(Calendar.MONTH),
+                calEventDate.get(Calendar.DAY_OF_MONTH),
+                calEnd.get(Calendar.HOUR_OF_DAY),
+                calEnd.get(Calendar.MINUTE),
+                0
+        );
 
         Calendar regStartCal = (Calendar) calRegStart.clone();
-        regStartCal.set(Calendar.HOUR_OF_DAY, 0); regStartCal.set(Calendar.MINUTE, 0); regStartCal.set(Calendar.SECOND, 0);
+        regStartCal.set(Calendar.HOUR_OF_DAY, 0);
+        regStartCal.set(Calendar.MINUTE, 0);
+        regStartCal.set(Calendar.SECOND, 0);
 
         Calendar regEndCal = (Calendar) calRegEnd.clone();
-        regEndCal.set(Calendar.HOUR_OF_DAY, 0); regEndCal.set(Calendar.MINUTE, 0); regEndCal.set(Calendar.SECOND, 0);
+        regEndCal.set(Calendar.HOUR_OF_DAY, 0);
+        regEndCal.set(Calendar.MINUTE, 0);
+        regEndCal.set(Calendar.SECOND, 0);
 
         Map<String, Object> fields = new HashMap<>();
         fields.put("title", etTitle.getText().toString().trim());
         fields.put("description", etDesc.getText().toString().trim());
+        fields.put("venue", etVenue.getText().toString().trim());
+        fields.put("city", etCity.getText().toString().trim());
         fields.put("startTime", new Timestamp(startCal.getTime()));
         fields.put("endTime", new Timestamp(endCal.getTime()));
         fields.put("registerStart", new Timestamp(regStartCal.getTime()));
@@ -179,16 +223,55 @@ public class CreateEventActivity extends AppCompatActivity {
         fields.put("createdAt", Timestamp.now());
 
         btnCreate.setEnabled(false);
+
         FirestoreEventRepository.get()
                 .createEvent(fields)
                 .addOnSuccessListener(ref -> {
-                    Toast.makeText(this, "Created: " + ref.getId(), Toast.LENGTH_SHORT).show();
+                    String eventId = ref.getId();
+
+                    if (posterUri != null) {
+                        uploadPosterAndAttachToEvent(eventId);
+                    }
+
+                    Toast.makeText(this, "Created: " + eventId, Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Create failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,
+                            "Create failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
                     btnCreate.setEnabled(true);
                 });
+    }
+
+    private void uploadPosterAndAttachToEvent(String eventId) {
+        if (posterUri == null) return;
+
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        String fileName = eventId + "_" + System.currentTimeMillis() + ".jpg";
+        StorageReference ref = storage.getReference()
+                .child("event_posters")
+                .child(fileName);
+
+        ref.putFile(posterUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        ref.getDownloadUrl()
+                                .addOnSuccessListener(uri -> {
+                                    Map<String, Object> update = new HashMap<>();
+                                    update.put("posterUrl", uri.toString());
+                                    FirestoreEventRepository.get().updateEvent(eventId, update);
+                                })
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(this,
+                                                "Poster URL fetch failed: " + e.getMessage(),
+                                                Toast.LENGTH_SHORT).show()
+                                )
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "Poster upload failed: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show()
+                );
     }
 
     private boolean require(EditText et) {
@@ -200,6 +283,13 @@ public class CreateEventActivity extends AppCompatActivity {
         return true;
     }
 
-    private int parseIntOr(String s, int def) { try { return Integer.parseInt(s); } catch (Exception e) { return def; } }
-    private double parseDoubleOr(String s, double def) { try { return Double.parseDouble(s); } catch (Exception e) { return def; } }
+    private int parseIntOr(String s, int def) {
+        try { return Integer.parseInt(s); }
+        catch (Exception e) { return def; }
+    }
+
+    private double parseDoubleOr(String s, double def) {
+        try { return Double.parseDouble(s); }
+        catch (Exception e) { return def; }
+    }
 }

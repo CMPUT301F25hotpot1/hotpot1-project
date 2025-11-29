@@ -1,78 +1,157 @@
 package com.example.lottary.ui.events.manage;
 
 import android.os.Bundle;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.*;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreEventRepository;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Shows entrants filtered by bucket. Buckets: 0=All,1=Chosen,2=SignedUp,3=Cancelled.
- */
 public class EntrantsListFragment extends Fragment {
 
-    private static final String ARG_EVENT_ID = "event_id";
-    private static final String ARG_BUCKET = "bucket";
+    private static final String ARG_EVENT_ID  = "event_id";
+    private static final String ARG_TAB_INDEX = "tab_index";
 
-    public static EntrantsListFragment newInstance(String eventId, int bucket){
+    public static EntrantsListFragment newInstance(@NonNull String eventId, int tabIndex) {
+        Bundle b = new Bundle();
+        b.putString(ARG_EVENT_ID, eventId);
+        b.putInt(ARG_TAB_INDEX, tabIndex);
         EntrantsListFragment f = new EntrantsListFragment();
-        Bundle b = new Bundle(); b.putString(ARG_EVENT_ID, eventId); b.putInt(ARG_BUCKET, bucket);
-        f.setArguments(b); return f;
+        f.setArguments(b);
+        return f;
     }
 
-    private String eventId; private int bucket;
-    private ListenerRegistration reg; private EntrantsAdapter adapter;
+    private String eventId = "";
+    private int tabIndex = 0;
 
-    @Nullable @Override public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_entrants_list, container, false);
-        RecyclerView rv = root.findViewById(R.id.recycler_entrants);
-        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new EntrantsAdapter(); rv.setAdapter(adapter);
+    private RecyclerView recycler;
+    private EntrantsAdapter adapter;
+    private ListenerRegistration reg;
 
-        if (getArguments()!=null){ eventId = getArguments().getString(ARG_EVENT_ID); bucket = getArguments().getInt(ARG_BUCKET,0); }
-        reg = FirestoreEventRepository.get().listenEvent(eventId, this::bind);
-        return root;
-    }
-
-    private void bind(DocumentSnapshot d){
-        if (d==null || !d.exists()) { adapter.submit(Collections.emptyList()); return; }
-        List<String> chosen = toList(d.get("chosen")), signed = toList(d.get("signedUp")), cancelled = toList(d.get("cancelled")), waiting = toList(d.get("waitingList"));
-        List<Row> all = new ArrayList<>();
-        for (String id : waiting)  all.add(new Row(id, "Waiting"));
-        for (String id : chosen)   all.add(new Row(id, "Chosen"));
-        for (String id : signed)   all.add(new Row(id, "Signed Up"));
-        for (String id : cancelled)all.add(new Row(id, "Cancelled"));
-
-        List<Row> target;
-        switch (bucket){
-            case 1: target = filter(all,"Chosen"); break;
-            case 2: target = filter(all,"Signed Up"); break;
-            case 3: target = filter(all,"Cancelled"); break;
-            default: target = filter(all,"Waiting");
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle args = getArguments();
+        if (args != null) {
+            eventId  = args.getString(ARG_EVENT_ID, "");
+            tabIndex = args.getInt(ARG_TAB_INDEX, 0);
         }
-        adapter.submit(target);
     }
 
-    private List<Row> filter(List<Row> src, String status){
-        List<Row> out = new ArrayList<>(); for (Row r:src) if (r.status.equals(status)) out.add(r); return out;
+    @Nullable
+    @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
+        View v = inflater.inflate(R.layout.fragment_manage_entrants_list, container, false);
+        recycler = v.findViewById(R.id.recycler_entrants);
+        recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+        adapter = new EntrantsAdapter();
+        recycler.setAdapter(adapter);
+        return v;
     }
 
-    /**
-     * Convert a list from the database into a Java String list
-     * @param o: Data object to turn into a String list
-     * @return A String list of the user IDs
-     */
-    private List<String> toList(Object o){ return (o instanceof List)? new ArrayList<>((List<String>)o) : new ArrayList<>(); }
+    @Override
+    public void onStart() {
+        super.onStart();
+        attach();
+    }
 
-    @Override public void onDestroyView() { if (reg!=null) reg.remove(); super.onDestroyView(); }
+    @Override
+    public void onStop() {
+        super.onStop();
+        detach();
+    }
 
-    static class Row { final String id; final String status; Row(String id,String status){this.id=id; this.status=status;} }
+    private void attach() {
+        detach();
+        if (eventId == null || eventId.isEmpty()) return;
+
+        reg = FirestoreEventRepository.get()
+                .listenEvent(eventId, this::onEventChanged);
+    }
+
+    private void detach() {
+        if (reg != null) {
+            reg.remove();
+            reg = null;
+        }
+    }
+
+    private void onEventChanged(@Nullable DocumentSnapshot d) {
+        if (!isAdded()) return;
+
+        if (d == null || !d.exists()) {
+            adapter.submit(new ArrayList<>());
+            return;
+        }
+
+        List<String> waiting   = objToStringList(d.get("waitingList"));
+        List<String> chosen    = objToStringList(d.get("chosen"));
+        List<String> signed    = objToStringList(d.get("signedUp"));
+        List<String> cancelled = objToStringList(d.get("cancelled"));
+
+        List<EntrantsAdapter.Row> rows = new ArrayList<>();
+
+        switch (tabIndex) {
+            case 1: // Chosen
+                for (String id : chosen) {
+                    rows.add(new EntrantsAdapter.Row(id, "Chosen"));
+                }
+                break;
+
+            case 2: // Signed-Up
+                for (String id : signed) {
+                    rows.add(new EntrantsAdapter.Row(id, "Signed-Up"));
+                }
+                break;
+
+            case 3: // Cancelled
+                for (String id : cancelled) {
+                    rows.add(new EntrantsAdapter.Row(id, "Cancelled"));
+                }
+                break;
+
+            default: // All, grouped by status
+                for (String id : waiting) {
+                    rows.add(new EntrantsAdapter.Row(id, "Waiting"));
+                }
+                for (String id : chosen) {
+                    rows.add(new EntrantsAdapter.Row(id, "Chosen"));
+                }
+                for (String id : signed) {
+                    rows.add(new EntrantsAdapter.Row(id, "Signed-Up"));
+                }
+                for (String id : cancelled) {
+                    rows.add(new EntrantsAdapter.Row(id, "Cancelled"));
+                }
+                break;
+        }
+
+        adapter.submit(rows);
+    }
+
+    private static List<String> objToStringList(Object obj) {
+        List<String> out = new ArrayList<>();
+        if (obj instanceof List<?>) {
+            for (Object e : (List<?>) obj) {
+                if (e != null) out.add(e.toString());
+            }
+        }
+        return out;
+    }
 }

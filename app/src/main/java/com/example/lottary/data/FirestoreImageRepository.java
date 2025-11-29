@@ -1,8 +1,3 @@
-/**
- * Repository for loading, listening, and deleting image data.
- * Uses Firestore as the primary source and falls back to Firebase Storage when empty.
- * Includes helper APIs for deleting images by Firestore id, Storage name, or download URL.
- */
 package com.example.lottary.data;
 
 import android.net.Uri;
@@ -26,17 +21,16 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class FirestoreImageRepository {
 
-    /** Callback for realtime image updates */
     public interface ImagesListener {
         void onChanged(@Nullable List<Image> images, @Nullable Exception error);
     }
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    /** Listen for latest images; fallback to Storage if Firestore empty */
     public ListenerHandle listenLatest(ImagesListener listener) {
         Query q = db.collection("images")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
@@ -51,21 +45,18 @@ public class FirestoreImageRepository {
                     return;
                 }
 
-                // Firestore has data
                 if (value != null && !value.isEmpty()) {
                     List<Image> out = new ArrayList<>();
                     for (DocumentSnapshot d : value.getDocuments()) {
                         Image img = d.toObject(Image.class);
                         if (img != null) {
                             img.setId(d.getId());
-                            // Ensure createdAt exists
                             if (img.getCreatedAt() == null) img.setCreatedAt(Timestamp.now());
                             out.add(img);
                         }
                     }
                     listener.onChanged(out, null);
                 } else {
-                    // No Firestore data → try Storage
                     fallbackStorage(listener);
                 }
             }
@@ -74,7 +65,6 @@ public class FirestoreImageRepository {
         return new ListenerHandle(reg);
     }
 
-    /** Storage fallback: list files under images/ directory */
     private void fallbackStorage(ImagesListener listener) {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference dir = storage.getReference().child("images");
@@ -90,7 +80,6 @@ public class FirestoreImageRepository {
                     List<Image> result = new ArrayList<>();
                     List<Task<Uri>> tasks = new ArrayList<>();
 
-                    // Fetch download URLs for each file
                     for (StorageReference item : items) {
                         Task<Uri> t = item.getDownloadUrl()
                                 .addOnSuccessListener(uri -> {
@@ -105,7 +94,6 @@ public class FirestoreImageRepository {
                         tasks.add(t);
                     }
 
-                    // Wait for all download URL tasks to complete
                     Tasks.whenAllComplete(tasks)
                             .addOnCompleteListener(done -> listener.onChanged(result, null))
                             .addOnFailureListener(e -> listener.onChanged(null, e));
@@ -113,17 +101,14 @@ public class FirestoreImageRepository {
                 .addOnFailureListener(e -> listener.onChanged(null, e));
     }
 
-    /** Wrapper for unregistering Firestore listener */
     public static class ListenerHandle {
         private final ListenerRegistration reg;
         public ListenerHandle(@NonNull ListenerRegistration r) { this.reg = r; }
         public void remove() { if (reg != null) reg.remove(); }
     }
 
-    /** Callback for delete operations */
     public interface DeleteCallback { void onComplete(@Nullable Exception error); }
 
-    /** Delete Firestore document by id */
     public void deleteByFirestoreId(@NonNull String imageDocId, @NonNull DeleteCallback cb) {
         db.collection("images").document(imageDocId)
                 .delete()
@@ -131,7 +116,6 @@ public class FirestoreImageRepository {
                 .addOnFailureListener(cb::onComplete);
     }
 
-    /** Delete Storage file using file name under images/ */
     public void deleteByStorageName(@NonNull String fileName, @NonNull DeleteCallback cb) {
         FirebaseStorage.getInstance()
                 .getReference()
@@ -142,7 +126,6 @@ public class FirestoreImageRepository {
                 .addOnFailureListener(cb::onComplete);
     }
 
-    /** Delete Storage file using download URL */
     public void deleteByStorageUrl(@NonNull String downloadUrl, @NonNull DeleteCallback cb) {
         try {
             StorageReference ref =
@@ -155,5 +138,27 @@ public class FirestoreImageRepository {
         } catch (Exception e) {
             cb.onComplete(e);
         }
+    }
+
+    public Task<String> uploadPoster(@NonNull Uri imageUri) {
+        String filename = "posters/" + UUID.randomUUID().toString() + ".jpg";
+
+        StorageReference ref = FirebaseStorage.getInstance()
+                .getReference()
+                .child(filename);
+
+        return ref.putFile(imageUri)
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return ref.getDownloadUrl();
+                })
+                .continueWith(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        return task.getResult().toString();
+                    }
+                    throw task.getException();
+                });
     }
 }

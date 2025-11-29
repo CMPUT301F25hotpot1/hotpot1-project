@@ -26,26 +26,8 @@ import java.util.Set;
 /**
  * FirestoreEventRepository
  *
- * Purpose:
- * Central repository that manages all Firestore operations for event creation,
- * updates, participant actions, and real-time listeners. It serves as the data
- * access layer between Firestore and the app’s UI logic.
- *
- * Role / Pattern:
- * Implements the Repository pattern — abstracting Firestore CRUD, listener setup,
- * and transactional logic into reusable methods for both Entrant and Organizer flows.
- * Handles Firestore snapshot listeners, structured field updates, and transactional
- * operations for atomic changes.
- *
- * Outstanding Issues / Notes:
- * - Firestore operations are unguarded; network and permission errors are only logged.
- * - Uses simple List fields (waitingList, chosen, signedUp, cancelled); may need refactoring
- *   for scalability (e.g., subcollections or pagination).
- * - Time-based logic (registration window checks) is done externally — not enforced here.
- * - Notifications are created in drawWinnersAndNotify(), but delivery is not guaranteed.
+ * Central repository for all Firestore event operations.
  */
-
-
 public class FirestoreEventRepository {
 
     private static FirestoreEventRepository INSTANCE;
@@ -66,7 +48,10 @@ public class FirestoreEventRepository {
             @NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereEqualTo("creatorDeviceId", deviceId)
                 .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    if (err != null || snap == null) {
+                        l.onChanged(Collections.emptyList());
+                        return;
+                    }
                     l.onChanged(mapList(snap));
                 });
     }
@@ -74,7 +59,10 @@ public class FirestoreEventRepository {
     public ListenerRegistration listenRecentCreated(@NonNull EventsListener l) {
         return events.orderBy("createdAt").limit(50)
                 .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    if (err != null || snap == null) {
+                        l.onChanged(Collections.emptyList());
+                        return;
+                    }
                     l.onChanged(mapList(snap));
                 });
     }
@@ -82,7 +70,10 @@ public class FirestoreEventRepository {
     public ListenerRegistration listenJoined(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("waitingList", deviceId)
                 .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    if (err != null || snap == null) {
+                        l.onChanged(Collections.emptyList());
+                        return;
+                    }
                     l.onChanged(mapList(snap));
                 });
     }
@@ -90,7 +81,10 @@ public class FirestoreEventRepository {
     public ListenerRegistration listenChosen(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("chosen", deviceId)
                 .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    if (err != null || snap == null) {
+                        l.onChanged(Collections.emptyList());
+                        return;
+                    }
                     l.onChanged(mapList(snap));
                 });
     }
@@ -98,7 +92,10 @@ public class FirestoreEventRepository {
     public ListenerRegistration listenSigned(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("signedUp", deviceId)
                 .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    if (err != null || snap == null) {
+                        l.onChanged(Collections.emptyList());
+                        return;
+                    }
                     l.onChanged(mapList(snap));
                 });
     }
@@ -106,25 +103,38 @@ public class FirestoreEventRepository {
     public ListenerRegistration listenCancelled(@NonNull String deviceId, @NonNull EventsListener l) {
         return events.whereArrayContains("cancelled", deviceId)
                 .addSnapshotListener((snap, err) -> {
-                    if (err != null || snap == null) { l.onChanged(Collections.emptyList()); return; }
+                    if (err != null || snap == null) {
+                        l.onChanged(Collections.emptyList());
+                        return;
+                    }
                     l.onChanged(mapList(snap));
                 });
     }
 
     public ListenerRegistration listenEvent(@NonNull String eventId, @NonNull DocListener l) {
         return events.document(eventId)
-                .addSnapshotListener((snap, err) -> { if (snap != null) l.onChanged(snap); });
+                .addSnapshotListener((snap, err) -> {
+                    if (snap != null) {
+                        l.onChanged(snap);
+                    }
+                });
     }
+
+    // ---------- create / update ----------
 
     public Task<DocumentReference> createEvent(Map<String, Object> fields) {
         ensureArrays(fields, "waitingList", "chosen", "signedUp", "cancelled");
-        if (!fields.containsKey("createdAt")) fields.put("createdAt", Timestamp.now());
+        if (!fields.containsKey("createdAt")) {
+            fields.put("createdAt", Timestamp.now());
+        }
         return events.add(fields);
     }
 
     public Task<Void> updateEvent(@NonNull String eventId, Map<String, Object> fields) {
         return events.document(eventId).set(fields, SetOptions.merge());
     }
+
+    // ---------- draw winners ----------
 
     public Task<Void> drawWinners(@NonNull String eventId, int maxToDraw) {
         DocumentReference ref = events.document(eventId);
@@ -144,7 +154,9 @@ public class FirestoreEventRepository {
             int toDraw = maxToDraw <= 0 ? remaining : Math.min(remaining, maxToDraw);
 
             Set<String> taken = new HashSet<>();
-            taken.addAll(chosen); taken.addAll(signed); taken.addAll(cancel);
+            taken.addAll(chosen);
+            taken.addAll(signed);
+            taken.addAll(cancel);
 
             List<String> winners = LotterySampler.sampleWinners(
                     waiting, taken, toDraw, System.currentTimeMillis());
@@ -177,7 +189,9 @@ public class FirestoreEventRepository {
             int toDraw = Math.max(0, remaining);
 
             Set<String> taken = new HashSet<>();
-            taken.addAll(chosen); taken.addAll(signed); taken.addAll(cancel);
+            taken.addAll(chosen);
+            taken.addAll(signed);
+            taken.addAll(cancel);
 
             List<String> winners = LotterySampler.sampleWinners(
                     waiting, taken, toDraw, System.currentTimeMillis());
@@ -197,7 +211,9 @@ public class FirestoreEventRepository {
         }).continueWithTask(t -> {
             if (!t.isSuccessful()) {
                 Exception e = t.getException();
-                return Tasks.forException(e == null ? new RuntimeException("Transaction failed") : e);
+                return Tasks.forException(
+                        e == null ? new RuntimeException("Transaction failed") : e
+                );
             }
 
             DrawResult r = t.getResult();
@@ -227,16 +243,7 @@ public class FirestoreEventRepository {
         });
     }
 
-    private static List<String> strList(Object o) {
-        if (o instanceof List<?>) {
-            List<String> out = new ArrayList<>();
-            for (Object e : (List<?>) o) if (e != null) out.add(e.toString());
-            return out;
-        }
-        return new ArrayList<>();
-    }
-
-    private static String str(Object o){ return o == null ? "" : o.toString(); }
+    // ---------- entrant actions ----------
 
     public Task<Void> signUp(@NonNull String eventId, @NonNull String deviceId) {
         DocumentReference ref = events.document(eventId);
@@ -314,9 +321,9 @@ public class FirestoreEventRepository {
 
             boolean changed = false;
             if (!waiting.contains(deviceId)) { waiting.add(deviceId); changed = true; }
-            if (chosen.remove(deviceId)) changed = true;
-            if (signed.remove(deviceId)) changed = true;
-            if (cancel.remove(deviceId)) changed = true;
+            if (chosen.remove(deviceId))  changed = true;
+            if (signed.remove(deviceId))  changed = true;
+            if (cancel.remove(deviceId))  changed = true;
 
             if (changed) {
                 Map<String, Object> updates = new HashMap<>();
@@ -346,6 +353,8 @@ public class FirestoreEventRepository {
         });
     }
 
+    // ---------- CSV export ----------
+
     public static String buildCsvFromEvent(@NonNull DocumentSnapshot d) {
         StringBuilder sb = new StringBuilder();
         sb.append("status,entrantId\n");
@@ -357,8 +366,12 @@ public class FirestoreEventRepository {
 
     private static void appendRows(StringBuilder sb, String status, Object arr) {
         if (!(arr instanceof List)) return;
-        for (Object o : (List<?>) arr) sb.append(status).append(",").append(o).append("\n");
+        for (Object o : (List<?>) arr) {
+            sb.append(status).append(",").append(o).append("\n");
+        }
     }
+
+    // ---------- mapping helpers ----------
 
     private List<Event> mapList(QuerySnapshot snap) {
         if (snap == null || snap.isEmpty()) return Collections.emptyList();
@@ -367,6 +380,7 @@ public class FirestoreEventRepository {
         return list;
     }
 
+    /** 把 Firestore 文档映射成 Event，包含 posterUrl -> imageUrl */
     private Event map(DocumentSnapshot d) {
         String id    = d.getId();
         String title = safe(d.getString("title"));
@@ -388,16 +402,50 @@ public class FirestoreEventRepository {
         boolean geo = Boolean.TRUE.equals(d.getBoolean("geolocationEnabled"));
         String type = safe(d.getString("type"));
 
+        // 从 Firestore 读出 posterUrl，映射到 Event.imageUrl
+        String posterUrl = safe(d.getString("posterUrl"));
+
         return new Event(
-                id, title, city, venue, pretty, full,
-                startMs, regStartMs, regEndMs, geo, type
+                id,
+                title,
+                city,
+                venue,
+                pretty,
+                full,
+                startMs,
+                regStartMs,
+                regEndMs,
+                geo,
+                type,
+                posterUrl
         );
     }
 
-    private static String safe(String s) { return s == null ? "" : s; }
+    private static String safe(String s) {
+        return s == null ? "" : s;
+    }
 
     private static void ensureArrays(Map<String, Object> map, String... keys) {
-        for (String k : keys) if (!(map.get(k) instanceof List)) map.put(k, new ArrayList<String>());
+        for (String k : keys) {
+            if (!(map.get(k) instanceof List)) {
+                map.put(k, new ArrayList<String>());
+            }
+        }
+    }
+
+    private static List<String> strList(Object o) {
+        if (o instanceof List<?>) {
+            List<String> out = new ArrayList<>();
+            for (Object e : (List<?>) o) {
+                if (e != null) out.add(e.toString());
+            }
+            return out;
+        }
+        return new ArrayList<>();
+    }
+
+    private static String str(Object o) {
+        return o == null ? "" : o.toString();
     }
 
     private static class DrawResult {

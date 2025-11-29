@@ -31,20 +31,6 @@ import java.util.Locale;
  * Fragment that displays a list of events either created by the current device (organizer view)
  * or joined by the user (entrant view). It listens to Firestore for live updates, maintains an
  * in-memory list, and exposes a text filtering API used by the parent activity.
- *
- * Design Role:
- * - Acts as a reusable list screen for two modes, controlled by an argument flag.
- * - Owns the RecyclerView and its adapter, and applies client-side text filtering.
- * - Delegates navigation to edit/manage screens when list item actions are triggered.
- *
- * Data Flow:
- * - Retrieves ANDROID_ID as a lightweight device-scoped identifier.
- * - Subscribes to Firestore via FirestoreEventRepository and updates UI reactively.
- *
- * Outstanding Issues / Notes:
- * - Uses client-side filtering only; consider server-side search for large datasets.
- * - No paging; large lists may impact performance.
- * - Fallback device id "device_demo" is used when ANDROID_ID is unavailable.
  */
 public class EventsListFragment extends Fragment implements EventsAdapter.Listener {
 
@@ -75,7 +61,9 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_events_list, container, false);
         recyclerView = v.findViewById(R.id.recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -102,17 +90,22 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
     private void startListening() {
         if (reg != null) { reg.remove(); reg = null; }
 
-        String did = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        String did = Settings.Secure.getString(
+                requireContext().getContentResolver(),
+                Settings.Secure.ANDROID_ID
+        );
         if (did == null || did.isEmpty()) did = "device_demo";
 
         if (showCreated) {
             reg = FirestoreEventRepository.get().listenCreatedByDevice(did, items -> {
-                all.clear(); all.addAll(items);
+                all.clear();
+                all.addAll(items);
                 applyCurrentFilters();
             });
         } else {
             reg = FirestoreEventRepository.get().listenJoined(did, items -> {
-                all.clear(); all.addAll(items);
+                all.clear();
+                all.addAll(items);
                 applyCurrentFilters();
             });
         }
@@ -130,7 +123,8 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
         List<Event> out = new ArrayList<>();
         for (Event e : all) {
             if (!q.isEmpty()) {
-                String blob = (e.getTitle() + " " + e.getCity() + " " + e.getVenue()).toLowerCase(Locale.ROOT);
+                String blob = (e.getTitle() + " " + e.getCity() + " " + e.getVenue())
+                        .toLowerCase(Locale.ROOT);
                 if (!blob.contains(q)) continue;
             }
             out.add(e);
@@ -141,7 +135,8 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
     @Override
     public void onManage(@NonNull Event e) {
         Intent i = new Intent(requireContext(), ManageEventActivity.class);
-        i.putExtra(EditEventActivity.EXTRA_EVENT_ID, e.getId());
+        // ✅ 用 ManageEventActivity 自己定义的 EXTRA_EVENT_ID 传过去
+        i.putExtra(ManageEventActivity.EXTRA_EVENT_ID, e.getId());
         startActivity(i);
     }
 
