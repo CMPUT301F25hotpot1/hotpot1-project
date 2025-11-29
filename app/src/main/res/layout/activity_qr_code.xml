@@ -3,8 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal">
 
+    <!-- Top app bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,24 +22,29 @@
             app:navigationIcon="@drawable/ic_arrow_back_24"
             app:navigationIconTint="@color/organizer_purple"
             app:titleTextAppearance="@style/ScreenTitle.Organizer"
-            app:title= "@string/qr_code" />
+            app:title="@string/qr_code" />
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Center area: QR code image -->
     <ImageView
         android:id="@+id/qr_code_img"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:layout_margin="32dp"
+        android:adjustViewBounds="true"
         android:scaleType="fitCenter"
-        android:contentDescription="@string/app_name" />
+        android:contentDescription="@string/qr_code" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_export_qr_png"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:layout_gravity="bottom"
-            android:layout_margin="16dp"
-            android:text="Export as PNG"
-            style="@style/LotteryButton.Organizer" />
+    <!-- Bottom button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_export_qr_png"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:layout_margin="16dp"
+        android:text="Export as PNG"
+        style="@style/LotteryButton.Organizer" />
+
 </LinearLayout>
+
