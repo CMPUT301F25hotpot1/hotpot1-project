@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_profile"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.profile.MyProfileActivity">
+    android:layout_height="match_parent">
 
     <TextView
         android:id="@+id/profile_title"
@@ -31,7 +30,7 @@
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:menu="@menu/menu_bottom_nav"
         app:layout_constraintBottom_toBottomOf="parent"

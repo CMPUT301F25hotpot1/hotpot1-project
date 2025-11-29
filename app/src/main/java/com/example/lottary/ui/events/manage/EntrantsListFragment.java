@@ -17,14 +17,12 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class EntrantsListFragment extends Fragment {
 
-    private static final String ARG_EVENT_ID   = "event_id";
-    private static final String ARG_TAB_INDEX  = "tab_index";
+    private static final String ARG_EVENT_ID  = "event_id";
+    private static final String ARG_TAB_INDEX = "tab_index";
 
     public static EntrantsListFragment newInstance(@NonNull String eventId, int tabIndex) {
         Bundle b = new Bundle();
@@ -96,6 +94,7 @@ public class EntrantsListFragment extends Fragment {
 
     private void onEventChanged(@Nullable DocumentSnapshot d) {
         if (!isAdded()) return;
+
         if (d == null || !d.exists()) {
             adapter.submit(new ArrayList<>());
             return;
@@ -106,48 +105,41 @@ public class EntrantsListFragment extends Fragment {
         List<String> signed    = objToStringList(d.get("signedUp"));
         List<String> cancelled = objToStringList(d.get("cancelled"));
 
-        Set<String> allIds = new HashSet<>();
-        allIds.addAll(waiting);
-        allIds.addAll(chosen);
-        allIds.addAll(signed);
-        allIds.addAll(cancelled);
-
         List<EntrantsAdapter.Row> rows = new ArrayList<>();
 
-        for (String id : allIds) {
-            boolean inWaiting   = waiting.contains(id);
-            boolean inChosen    = chosen.contains(id);
-            boolean inSigned    = signed.contains(id);
-            boolean inCancelled = cancelled.contains(id);
+        switch (tabIndex) {
+            case 1: // Chosen
+                for (String id : chosen) {
+                    rows.add(new EntrantsAdapter.Row(id, "Chosen"));
+                }
+                break;
 
-            String status;
-            if (inCancelled) {
-                status = "Cancelled";
-            } else if (inSigned) {
-                status = "Signed-Up";
-            } else if (inChosen) {
-                status = "Chosen";
-            } else if (inWaiting) {
-                status = "Waiting";
-            } else {
-                continue;
-            }
+            case 2: // Signed-Up
+                for (String id : signed) {
+                    rows.add(new EntrantsAdapter.Row(id, "Signed-Up"));
+                }
+                break;
 
-            switch (tabIndex) {
-                case 1: // Chosen Entrants
-                    if (!inChosen) continue;
-                    break;
-                case 2: // Signed-Up Entrants
-                    if (!inSigned) continue;
-                    break;
-                case 3: // Cancelled Entrants
-                    if (!inCancelled) continue;
-                    break;
-                default:
-                    break;
-            }
+            case 3: // Cancelled
+                for (String id : cancelled) {
+                    rows.add(new EntrantsAdapter.Row(id, "Cancelled"));
+                }
+                break;
 
-            rows.add(new EntrantsAdapter.Row(id, status));
+            default: // All, grouped by status
+                for (String id : waiting) {
+                    rows.add(new EntrantsAdapter.Row(id, "Waiting"));
+                }
+                for (String id : chosen) {
+                    rows.add(new EntrantsAdapter.Row(id, "Chosen"));
+                }
+                for (String id : signed) {
+                    rows.add(new EntrantsAdapter.Row(id, "Signed-Up"));
+                }
+                for (String id : cancelled) {
+                    rows.add(new EntrantsAdapter.Row(id, "Cancelled"));
+                }
+                break;
         }
 
         adapter.submit(rows);

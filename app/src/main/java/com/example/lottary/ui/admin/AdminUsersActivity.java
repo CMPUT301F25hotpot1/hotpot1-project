@@ -68,10 +68,10 @@ public class AdminUsersActivity extends AppCompatActivity {
             @Override
             public void onRemoveUser(User u) {
                 new MaterialAlertDialogBuilder(AdminUsersActivity.this, R.style.LotteryDialog_Admin)
-                        .setTitle("Remove User")
+                        .setTitle(R.string.remove_user)
                         .setMessage("Are you sure that you want to remove this user?")
                         .setNeutralButton(R.string.cancel, null)
-                        .setPositiveButton("Delete", (d, w) ->
+                        .setPositiveButton(R.string.delete, (d, w) ->
                                 FirestoreUserRepository.get().deleteUser(u.getId()))
                         .show();
             }

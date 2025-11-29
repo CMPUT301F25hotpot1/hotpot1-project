@@ -9,7 +9,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.lottary.ui.admin.AdminDashboardActivity;  // ✅ 加这个 import
+import com.example.lottary.ui.admin.AdminDashboardActivity;  
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        // ✅ ✅ ✅ 加这一句：进入 app 自动跳 Admin Dashboard
         startActivity(new Intent(this, AdminDashboardActivity.class));
     }
 }

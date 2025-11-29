@@ -20,27 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * FirestoreUserRepository
- *
- * Purpose:
- * Repository for managing user-related data stored in Firestore.
- * Supports creating, updating, deleting, retrieving, and listening
- * to user documents in real time.
- *
- * Role / Pattern:
- * Implements the Repository pattern to abstract Firestore operations
- * for the “users” collection. Provides unified data access and mapping
- * between Firestore snapshots and User model objects.
- *
- * Outstanding Issues / Notes:
- * - User lookup and search rely on simple name field range queries;
- *   lacks indexing or case-insensitive handling.
- * - No error callback provided for failed Firestore operations.
- * - Uses client-side mapping; schema changes in Firestore may break parsing.
- * - Device ID is used as the document key — assumes one user per device.
- */
-
 public class FirestoreUserRepository {
 
     private static FirestoreUserRepository INSTANCE;
@@ -59,7 +38,6 @@ public class FirestoreUserRepository {
         if (!fields.containsKey("createdAt")) {
             fields.put("createdAt", Timestamp.now());
         }
-        // 文档 id 就是 deviceID
         return users.document(deviceID).set(fields);
     }
 
@@ -73,6 +51,10 @@ public class FirestoreUserRepository {
 
     public DocumentReference hasUser(@NonNull String deviceID) {
         return users.document(deviceID);
+    }
+
+    public DocumentSnapshot getUser(@NonNull String deviceID) {
+        return users.document(deviceID).get().getResult();
     }
 
     // ---------- listeners ----------
@@ -111,7 +93,6 @@ public class FirestoreUserRepository {
     }
 
     private User map(DocumentSnapshot d) {
-        // ✅ 把文档 id 当作 deviceId，这个和 events 里的 deviceId 一致
         String deviceID = d.getId();
         String name     = safe(d.getString("name"));
         String email    = safe(d.getString("email"));
@@ -129,7 +110,7 @@ public class FirestoreUserRepository {
         return s == null ? "" : s;
     }
 
-    // ---------- convenience APIs for lists / search ----------
+    // ---------- list & search APIs ----------
 
     public void getAllUsers(@NonNull UsersListener callback) {
         users.get().addOnSuccessListener(snap -> {
@@ -158,17 +139,12 @@ public class FirestoreUserRepository {
         deleteUser(userID);
     }
 
-    // ---------- 设备 ID -> 用户名 映射（给 ManageEvent 用） ----------
+    // ---------- device ID → user name mapping ----------
 
     public interface DeviceNameMapCallback {
         void onLoaded(@NonNull Map<String, String> deviceIdToName);
     }
 
-    /**
-     * 读取所有用户，生成一个 deviceId -> name 的 Map：
-     * - key:  user 文档的 id（即 deviceId）
-     * - value: "name" 字段；如果为空则退回 deviceId 本身
-     */
     public void getDeviceNameMap(@NonNull DeviceNameMapCallback cb) {
         users.get()
                 .addOnSuccessListener(snap -> {
@@ -186,7 +162,6 @@ public class FirestoreUserRepository {
                     cb.onLoaded(map);
                 })
                 .addOnFailureListener(e -> {
-                    // 失败就返回空 map，界面上会退回显示 deviceId
                     cb.onLoaded(new HashMap<>());
                 });
     }

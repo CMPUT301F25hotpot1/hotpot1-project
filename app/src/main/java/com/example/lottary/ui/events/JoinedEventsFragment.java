@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
 import com.example.lottary.data.FirestoreEventRepository;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
@@ -86,16 +87,16 @@ public class JoinedEventsFragment extends Fragment {
             }
             @Override public void onLeaveWaitlist(@NonNull Event e) {
                 if (!isAdded()) return;
-                new AlertDialog.Builder(requireContext())
-                        .setTitle("Leave Waiting List")
+                new MaterialAlertDialogBuilder(requireContext(), R.style.LotteryDialog_Entrant)
+                        .setTitle(R.string.leave_waiting_list)
                         .setMessage("Are you sure that you want to leave the waiting list of this event?")
-                        .setPositiveButton("Yes", (d, w) -> {
+                        .setPositiveButton(R.string.yes, (d, w) -> {
                             String did = safeDeviceId();
                             if (did == null) return;
                             FirestoreEventRepository.get().leaveWaitingList(e.getId(), did)
                                     .addOnCompleteListener(t -> reload());
                         })
-                        .setNegativeButton("No", null)
+                        .setNeutralButton(R.string.no, null)
                         .show();
             }
         });

@@ -76,7 +76,7 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
      */
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView title, city, time, venue, status;
+        TextView title, location, time, venue, status;
         Button removeBtn, viewImageBtn;
         ImageView eventImage;
 
@@ -89,7 +89,7 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
             super(itemView);
 
             title = itemView.findViewById(R.id.tv_title);
-            city = itemView.findViewById(R.id.tv_city);
+            location = itemView.findViewById(R.id.tv_location);
             time = itemView.findViewById(R.id.tv_time);
             venue = itemView.findViewById(R.id.tv_venue);
             status = itemView.findViewById(R.id.tv_status);
@@ -108,7 +108,16 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
 
             title.setText(e.getTitle());
             time.setText(e.getPrettyTime());
-            venue.setText(e.getVenue());
+
+            String placeText;
+            if (!e.getCity().isEmpty() && !e.getVenue().isEmpty()) {
+                placeText = e.getCity() + " · " + e.getVenue();
+            } else if (!e.getCity().isEmpty()) {
+                placeText = e.getCity();
+            } else {
+                placeText = e.getVenue();
+            }
+            location.setText(placeText);
 
             if (e.isFull()) {
                 status.setText("Full");

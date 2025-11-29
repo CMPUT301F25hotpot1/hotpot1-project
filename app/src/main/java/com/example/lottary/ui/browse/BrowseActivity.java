@@ -20,34 +20,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * Role / Purpose:
  * - The entry point of the "Browse" tab. Hosts a {@link BrowseListFragment} that shows a
  *   scrollable list of events and exposes top-level actions: free-text search, filter sheet,
- *   QR scan, and bottom navigation to other top destinations.
- *
- * Architectural Notes:
- * - View/Controller layer. Business/data logic (Firestore listeners, filtering) lives in
- *   {@link BrowseListFragment}. This activity only wires UI and forwards user intents.
- * - Pattern: single-activity-per-tab feel with a fragment container.
- *
- * UI Contract (required IDs in activity_browse.xml):
- * - R.id.container (FrameLayout hosting BrowseListFragment)
- * - R.id.input_search, R.id.btn_search
- * - R.id.btn_filter, R.id.btn_scan_qr
- * - R.id.bottomNav (BottomNavigationView with nav_browse / nav_my_events / nav_notifications / nav_profile)
- *
- * Navigation:
- * - MyEventsActivity, NotificationsActivity, MyProfileActivity via BottomNavigationView.
- * - QrScanActivity via explicit button.
- *
- * State:
- * - Keeps the last-applied {@link FilterOptions} in memory (not persisted across process death).
- * - Re-selects the "Browse" tab in onResume() to keep visual state consistent.
- *
- * Testing Tips:
- * - Use ActivityScenario to launch this activity.
- * - Espresso can assert toolbar/search/recycler visibility; list content comes from the fragment.
- *
- * Known Limitations / TODO:
- * - Filter options are not saved/restored on process death (could be moved to a ViewModel/SavedState).
- * - Search text is not persisted across configuration changes (delegate or save if needed).
+ *   QR tools (generate + scan), and bottom navigation to other top destinations.
  */
 public class BrowseActivity extends AppCompatActivity implements FilterBottomSheet.Listener {
 
@@ -63,52 +36,54 @@ public class BrowseActivity extends AppCompatActivity implements FilterBottomShe
         setContentView(R.layout.activity_browse); // Inflate the Browse screen layout.
 
         // Ensure a BrowseListFragment is present in the container.
-        // Reuse the existing instance after a configuration change; otherwise create one.
-        if (getSupportFragmentManager().findFragmentById(R.id.container) instanceof BrowseListFragment) {
-            list = (BrowseListFragment) getSupportFragmentManager().findFragmentById(R.id.container);
+        if (getSupportFragmentManager().findFragmentById(R.id.container)
+                instanceof BrowseListFragment) {
+            list = (BrowseListFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.container);
         } else {
             list = new BrowseListFragment();
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container, list)
-                    .commitNow(); // Commit synchronously so 'list' is immediately available.
+                    .commitNow();
         }
 
         // --- Search wiring ---
-        // On click, forward the normalized query to the fragment's filter API.
         EditText input = findViewById(R.id.input_search);
         Button btnSearch = findViewById(R.id.btn_search);
         btnSearch.setOnClickListener(v -> {
             String q = input.getText() == null ? "" : input.getText().toString();
-            // Treat null/blank as "no keyword" so the fragment shows all items.
             list.applyFilter(TextUtils.isEmpty(q) ? "" : q);
         });
 
         // --- Filter bottom sheet ---
-        // Open the sheet with the current options; results are delivered via onApply().
         findViewById(R.id.btn_filter).setOnClickListener(v ->
                 FilterBottomSheet.newInstance(opts, this)
                         .show(getSupportFragmentManager(), "filter")
         );
 
-        // --- QR Scan entry point ---
-        // Delegate to QrScanActivity for scanning event/location codes.
-        findViewById(R.id.btn_scan_qr).setOnClickListener(v ->
+        // --- QR tools entry points ---
+
+        // 1) Generate a QR code for an event (this is the page你刚刚已经做好的).
+        findViewById(R.id.btn_generate_qr).setOnClickListener(v ->
                 startActivity(new Intent(this, QrScanActivity.class)));
+
+        // 2) In-app scanner: open camera and scan a QR code to jump to EventDetailsActivity.
+        findViewById(R.id.btn_scan_event_qr).setOnClickListener(v ->
+                startActivity(new Intent(this, EventQrScannerActivity.class)));
 
         // --- Bottom navigation setup ---
         BottomNavigationView nav = findViewById(R.id.bottomNav);
-        nav.setSelectedItemId(R.id.nav_browse); // Highlight current destination.
+        nav.setSelectedItemId(R.id.nav_browse);
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_browse) {
-                return true; // Already here; consume the event.
+                return true;
             } else if (id == R.id.nav_my_events) {
-                // Bring an existing MyEventsActivity to front if present to avoid duplicates.
                 Intent i = new Intent(this, MyEventsActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                 startActivity(i);
-                overridePendingTransition(0, 0); // Seamless tab switch.
+                overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_notifications) {
                 Intent i = new Intent(this, NotificationsActivity.class);
@@ -120,14 +95,13 @@ public class BrowseActivity extends AppCompatActivity implements FilterBottomShe
                 startActivity(new Intent(this, MyProfileActivity.class));
                 return true;
             }
-            return false; // Not handled.
+            return false;
         });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Defensive re-selection in case user navigated away and came back.
         BottomNavigationView nav = findViewById(R.id.bottomNav);
         nav.setSelectedItemId(R.id.nav_browse);
     }
@@ -135,11 +109,7 @@ public class BrowseActivity extends AppCompatActivity implements FilterBottomShe
     /** Callback from {@link FilterBottomSheet}: user confirmed new options. */
     @Override
     public void onApply(FilterOptions o) {
-        // Cache for the next time the sheet opens and propagate to the fragment immediately.
         opts = o;
         if (list != null) list.applyOptions(o);
     }
 }
-
-
-
