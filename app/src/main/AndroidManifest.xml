@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Location permissions -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <!-- Network + Firebase -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -103,17 +106,17 @@
         <activity android:name="com.example.lottary.ui.admin.AdminProfileActivity" />
 
         <activity
-            android:name=".ui.admin.AdminImagesActivity"
+            android:name="com.example.lottary.ui.admin.AdminImagesActivity"
             android:exported="false"
             android:label="Images" />
 
         <activity
-            android:name=".ui.admin.ImageViewerActivity"
+            android:name="com.example.lottary.ui.admin.ImageViewerActivity"
             android:exported="false"
             android:label="Image" />
 
         <activity
-            android:name=".ui.admin.ImageDetailActivity"
+            android:name="com.example.lottary.ui.admin.ImageDetailActivity"
             android:exported="false"
             android:label="Image"
             android:windowSoftInputMode="adjustPan" />
@@ -123,6 +126,9 @@
             android:exported="false"
             android:label="Logs" />
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaS...." />
 
         <!-- 这段是新加的 FileProvider -->
         <provider
@@ -137,5 +143,3 @@
 
     </application>
 </manifest>
-
-
