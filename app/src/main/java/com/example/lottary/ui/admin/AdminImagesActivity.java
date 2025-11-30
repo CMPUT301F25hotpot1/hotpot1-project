@@ -1,19 +1,31 @@
 /**
  * Admin screen for managing all uploaded images.
- * Supports real-time Firestore updates, image grid display,
- * searching, sorting, long-press details, and bottom-nav switching.
+ * Uses AdminRepository images (built from events.posterUrl),
+ * supports real-time updates, searching, sorting.
+ *
+ * Tap an item to open ImageDetailActivity, where the admin
+ * can preview and delete the image. Long-press delete is
+ * no longer used.
  */
 package com.example.lottary.ui.admin;
 
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -23,11 +35,13 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
-import com.example.lottary.data.FirestoreImageRepository;
+import com.example.lottary.data.AdminRepository;
 import com.example.lottary.data.Image;
 import com.example.lottary.ui.admin.adapters.ImageGridAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,14 +59,22 @@ public class AdminImagesActivity extends AppCompatActivity {
     private ImageGridAdapter adapter;
     private String query = "";
 
-    private FirestoreImageRepository repo;
-    private FirestoreImageRepository.ListenerHandle handle;
+    private AdminRepository adminRepo;
 
-    // Handle result from detail screen
+    private enum SortMode {
+        TIME_DESC,
+        TITLE_ASC
+    }
+
+    private SortMode sortMode = SortMode.TIME_DESC;
+
+    // Used when opening ImageDetailActivity (tap item to delete there)
     private final ActivityResultLauncher<Intent> detailLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == ImageDetailActivity.RESULT_DELETED) {
-                    render(); // Refresh list after delete
+                    // AdminRepository listens to Firestore and will refresh images,
+                    // so here a local re-render is enough.
+                    render();
                 }
             });
 
@@ -61,7 +83,6 @@ public class AdminImagesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_images);
 
-        // UI refs
         rv = findViewById(R.id.admin_images_list);
         etSearch = findViewById(R.id.etSearchAdminImages);
         btnSearch = findViewById(R.id.btnSearchAdminImages);
@@ -69,97 +90,132 @@ public class AdminImagesActivity extends AppCompatActivity {
         progress = findViewById(R.id.progressAdminImages);
 
         setupBottomNav();
+        updateSortButtonLabel();
 
-        // Grid layout setup
+        // Grid + adapter
         rv.setLayoutManager(new GridLayoutManager(this, 3));
         rv.addItemDecoration(new SpacesItemDecoration(
                 getResources().getDimensionPixelSize(R.dimen.grid_gap)));
 
-        // Adapter setup
-        adapter = new ImageGridAdapter(img -> {
-            ImageViewerActivity.launch(
-                    this,
-                    img.getUrl(),
-                    img.getTitle(),
-                    img.getId()
-            );
-        });
+        // Tap item -> open ImageDetailActivity (preview + delete)
+        adapter = new ImageGridAdapter(this::launchDetail);
         adapter.enableStableIds(true);
-        adapter.setOnItemLongClick(this::launchDetail);
+
+        // Long-press delete from the grid is no longer used.
+        // adapter.setOnItemLongClick(this::showDeleteDialog);
+
         rv.setAdapter(adapter);
 
-        // Long-press detection
-        rv.addOnItemTouchListener(new LongPressOpener(rv, position -> {
-            if (position >= 0 && position < current.size()) {
-                launchDetail(current.get(position));
+        // Initial skeleton while waiting for data
+        showSkeleton(8);
+
+        // Search button
+        btnSearch.setOnClickListener(v -> doSearch());
+
+        // Keyboard search / enter
+        etSearch.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH
+                    || actionId == EditorInfo.IME_ACTION_DONE
+                    || (event != null
+                    && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                    && event.getAction() == KeyEvent.ACTION_DOWN)) {
+                doSearch();
+                return true;
             }
-        }));
+            return false;
+        });
 
-        // Show placeholder skeleton
-        showSkeleton(18);
+        // Smooth, live filtering as user types
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                query = s.toString().trim();
+                render();
+            }
+        });
 
-        // Search click
-        btnSearch.setOnClickListener(v -> {
+        // Sort popup (English)
+        btnSort.setOnClickListener(v -> {
+            CharSequence[] items = new CharSequence[]{
+                    "Sort by time (newest first)",
+                    "Sort by title (A–Z)"
+            };
+            new AlertDialog.Builder(this)
+                    .setTitle("Sort options")
+                    .setItems(items, (dialog, which) -> {
+                        if (which == 0) {
+                            sortMode = SortMode.TIME_DESC;
+                        } else {
+                            sortMode = SortMode.TITLE_ASC;
+                        }
+                        updateSortButtonLabel();
+                        render();
+                    })
+                    .show();
+        });
+
+        // Use AdminRepository images (rebuilt from events.posterUrl)
+        adminRepo = AdminRepository.get();
+        adminRepo.images().observe(this, images -> {
+            progress.setVisibility(View.GONE);
+            all.clear();
+            if (images != null) {
+                all.addAll(images);
+            }
             query = etSearch.getText().toString().trim();
             render();
         });
-
-        // Sort button
-        btnSort.setOnClickListener(v -> {
-            sortByLatest(current);
-            adapter.submitList(new ArrayList<>(current));
-        });
-
-        repo = new FirestoreImageRepository();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         progress.setVisibility(View.VISIBLE);
-
-        // Start Firestore realtime listener
-        handle = repo.listenLatest((images, error) -> {
-            progress.setVisibility(View.GONE);
-            all.clear();
-
-            if (error == null && images != null && !images.isEmpty()) {
-                all.addAll(images);
-                query = etSearch.getText().toString().trim();
-                render(); // Apply filter + sort
-            } else {
-                showSkeleton(18);
-            }
-        });
+        // Start listening for events; repository will rebuild images list.
+        adminRepo.startAdminEventsRealtime();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (handle != null) handle.remove(); // Stop Firestore listener
+        // Stop Firestore listener when leaving this screen.
+        adminRepo.stopAdminEventsRealtime();
     }
 
+    // Unified search trigger
+    private void doSearch() {
+        query = etSearch.getText().toString().trim();
+        render();
+    }
+
+    // Build current list from "all" using query + sortMode
     private void render() {
         current.clear();
 
-        // Search filter
         if (TextUtils.isEmpty(query)) {
             current.addAll(all);
         } else {
             String q = query.toLowerCase();
             for (Image img : all) {
                 String t = img.getTitle() == null ? "" : img.getTitle();
-                if (t.toLowerCase().contains(q)) current.add(img);
+                if (t.toLowerCase().contains(q)) {
+                    current.add(img);
+                }
             }
         }
 
-        // Sort newest first
-        sortByLatest(current);
+        if (sortMode == SortMode.TIME_DESC) {
+            sortByLatest(current);
+        } else {
+            sortByTitle(current);
+        }
 
-        // Update list
         adapter.submitList(new ArrayList<>(current));
     }
 
+    // Sort by createdAt (newest first)
     private static void sortByLatest(List<Image> list) {
         Collections.sort(list, (a, b) -> {
             long ta = a.getCreatedAt() == null ? 0 : a.getCreatedAt().getSeconds();
@@ -168,6 +224,25 @@ public class AdminImagesActivity extends AppCompatActivity {
         });
     }
 
+    // Sort by title A–Z
+    private static void sortByTitle(List<Image> list) {
+        Collections.sort(list, (a, b) -> {
+            String ta = a.getTitle() == null ? "" : a.getTitle();
+            String tb = b.getTitle() == null ? "" : b.getTitle();
+            return ta.compareToIgnoreCase(tb);
+        });
+    }
+
+    private void updateSortButtonLabel() {
+        if (btnSort == null) return;
+        if (sortMode == SortMode.TIME_DESC) {
+            btnSort.setText("Sort: Time");
+        } else {
+            btnSort.setText("Sort: Title");
+        }
+    }
+
+    // Skeleton placeholders
     private void showSkeleton(int count) {
         List<Image> skeleton = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -181,7 +256,7 @@ public class AdminImagesActivity extends AppCompatActivity {
         adapter.submitList(skeleton);
     }
 
-    // Bottom navigation setup
+    // Bottom navigation
     private void setupBottomNav() {
         BottomNavigationView nav = findViewById(R.id.bottomNavAdmin);
         nav.setSelectedItemId(R.id.nav_admin_images);
@@ -219,13 +294,13 @@ public class AdminImagesActivity extends AppCompatActivity {
         });
     }
 
-    // Grid spacing decoration
+    // Simple spacing decoration for the grid
     static class SpacesItemDecoration extends RecyclerView.ItemDecoration {
         private final int space;
         SpacesItemDecoration(int s) { space = s; }
 
         @Override
-        public void getItemOffsets(@NonNull android.graphics.Rect outRect,
+        public void getItemOffsets(@NonNull Rect outRect,
                                    @NonNull View view,
                                    @NonNull RecyclerView parent,
                                    @NonNull RecyclerView.State state) {
@@ -236,6 +311,7 @@ public class AdminImagesActivity extends AppCompatActivity {
         }
     }
 
+    // Open detail screen (preview + delete)
     private void launchDetail(Image img) {
         Intent i = new Intent(this, ImageDetailActivity.class);
         i.putExtra(ImageDetailActivity.EXTRA_IMAGE_ID, img.getId());
@@ -244,9 +320,68 @@ public class AdminImagesActivity extends AppCompatActivity {
         detailLauncher.launch(i);
     }
 
+    // --- The methods below are kept for reference but no longer used
+    // --- because delete is now done in ImageDetailActivity.
+
+    // Long-press delete confirmation (unused for now)
+    private void showDeleteDialog(Image img) {
+        new AlertDialog.Builder(this)
+                .setTitle("Remove image")
+                .setMessage("Remove poster for this event?\n\n" + img.getTitle())
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Remove", (dialog, which) -> deleteImagePoster(img))
+                .show();
+    }
+
+    // Remove poster: delete Storage file + clear events/{id}.posterUrl (unused)
+    private void deleteImagePoster(Image img) {
+        String eventId = img.getId();
+        String url = img.getUrl();
+
+        // Try to delete Storage file; ignore failures.
+        if (!TextUtils.isEmpty(url)) {
+            try {
+                FirebaseStorage.getInstance()
+                        .getReferenceFromUrl(url)
+                        .delete()
+                        .addOnFailureListener(e ->
+                                Log.w("AdminImages", "Storage delete failed (ignored)", e));
+            } catch (Exception e) {
+                Log.w("AdminImages", "Bad storage url (ignored): " + url, e);
+            }
+        }
+
+        // Clear posterUrl field in the corresponding event document.
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .update("posterUrl", "")
+                .addOnSuccessListener(unused -> {
+                    removeImageLocally(eventId);
+                    Toast.makeText(this, "Image removed", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to remove image", Toast.LENGTH_SHORT).show();
+                    Log.e("AdminImages", "Failed to update event posterUrl", e);
+                });
+    }
+
+    // Remove image from local lists (unused; kept for reference)
+    private void removeImageLocally(String eventId) {
+        List<Image> newAll = new ArrayList<>();
+        for (Image img : all) {
+            if (!eventId.equals(img.getId())) {
+                newAll.add(img);
+            }
+        }
+        all.clear();
+        all.addAll(newAll);
+        render();
+    }
+
     interface OnLongPressPositionListener { void onLongPress(int position); }
 
-    // Detects long-press gestures on grid items
+    // Gesture helper for long-press on RecyclerView (unused for now)
     static class LongPressOpener extends RecyclerView.SimpleOnItemTouchListener {
         private final GestureDetector detector;
         private final RecyclerView recyclerView;
@@ -268,13 +403,15 @@ public class AdminImagesActivity extends AppCompatActivity {
 
                         @Override
                         public boolean onDown(MotionEvent e) {
-                            return true; // Must return true to receive long-press
+                            // Must return true to receive long-press events.
+                            return true;
                         }
                     });
         }
 
         @Override
-        public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+        public boolean onInterceptTouchEvent(@NonNull RecyclerView rv,
+                                             @NonNull MotionEvent e) {
             detector.onTouchEvent(e);
             return false;
         }

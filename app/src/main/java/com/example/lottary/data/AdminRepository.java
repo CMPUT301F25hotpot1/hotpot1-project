@@ -47,13 +47,20 @@ public class AdminRepository {
 
     private AdminRepository() {}
 
+    // ---------------------------------------------------------------------
+    // Events section: original logic
+    // ---------------------------------------------------------------------
+
     // Raw Firestore event list
     private List<Event> allEvents = new ArrayList<>();
 
     // Filtered list exposed to UI
     private final MutableLiveData<List<Event>> eventsLive =
             new MutableLiveData<>(new ArrayList<>());
-    public LiveData<List<Event>> events() { return eventsLive; }
+
+    public LiveData<List<Event>> events() {
+        return eventsLive;
+    }
 
     // Search / filter state
     private String searchQuery = "";
@@ -83,7 +90,8 @@ public class AdminRepository {
     // Receive new Firestore data
     public void setEventsFromFirestore(List<Event> items) {
         allEvents = new ArrayList<>(items);
-        applyFilters();
+        applyFilters();            // refresh events LiveData
+        rebuildImagesFromEvents(); // keep images LiveData in sync
     }
 
     // Update search query
@@ -125,5 +133,105 @@ public class AdminRepository {
         if (event == null) return;
         allEvents.remove(event);
         applyFilters();
+        // Also remove the corresponding image from the images list
+        removeImageForEvent(event);
+    }
+
+    // ---------------------------------------------------------------------
+    // Images section: derived from events.imageUrl, used by Admin Images screen
+    // ---------------------------------------------------------------------
+
+    // All images (unfiltered)
+    private List<Image> allImages = new ArrayList<>();
+
+    // Filtered image list exposed to UI
+    private final MutableLiveData<List<Image>> imagesLive =
+            new MutableLiveData<>(new ArrayList<>());
+
+    public LiveData<List<Image>> images() {
+        return imagesLive;
+    }
+
+    // Search query for the images screen
+    private String imageSearchQuery = "";
+
+    /**
+     * Rebuild the image list from the current allEvents:
+     * - For each Event that has an imageUrl, create an Image object.
+     * - Image.id = Event.id, Image.title = Event.title, Image.url = Event.imageUrl.
+     */
+    private void rebuildImagesFromEvents() {
+        List<Image> rebuilt = new ArrayList<>();
+
+        for (Event e : allEvents) {
+            // Use the existing imageUrl field from Event
+            String url = e.getImageUrl();
+            if (url == null || url.trim().isEmpty()) {
+                continue; // skip events without an image
+            }
+
+            Image img = new Image();
+            img.setId(e.getId());
+            img.setUrl(url);
+            img.setTitle(e.getTitle());
+            // If you later add createdAt on Event, you can also set it here:
+            // img.setCreatedAt(e.getCreatedAt());
+
+            rebuilt.add(img);
+        }
+
+        allImages = rebuilt;
+        applyImageFilters();
+    }
+
+    /**
+     * Search entry point for the Admin Images screen
+     * (called from the Activity).
+     */
+    public void searchImages(String query) {
+        imageSearchQuery = (query == null ? "" : query.trim());
+        applyImageFilters();
+    }
+
+    /**
+     * Apply filtering on allImages based on imageSearchQuery
+     * and update the images LiveData.
+     */
+    private void applyImageFilters() {
+        List<Image> result = new ArrayList<>();
+
+        String q = imageSearchQuery.toLowerCase();
+
+        for (Image img : allImages) {
+            String title = img.getTitle();
+            boolean matchesSearch =
+                    q.isEmpty() ||
+                            (title != null && title.toLowerCase().contains(q));
+
+            if (matchesSearch) {
+                result.add(img);
+            }
+        }
+
+        imagesLive.postValue(result);
+    }
+
+    /**
+     * When an Event is locally removed, remove the corresponding Image as well
+     * so that the images list stays consistent.
+     */
+    private void removeImageForEvent(Event event) {
+        if (event == null) return;
+        String eventId = event.getId();
+        if (eventId == null) return;
+
+        List<Image> remaining = new ArrayList<>();
+        for (Image img : allImages) {
+            if (!eventId.equals(img.getId())) {
+                remaining.add(img);
+            }
+        }
+        allImages = remaining;
+        applyImageFilters();
     }
 }
