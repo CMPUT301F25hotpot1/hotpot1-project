@@ -17,7 +17,7 @@ import java.util.List;
  *  Reads notification log entries from the "notifications" collection.
  *
  * Expected document fields (new schema written by FirestoreEventRepository):
- *  - recipientId : device/user id
+ *  - recipientId : device/user id   (== ANDROID_ID used in NotificationsActivity)
  *  - eventId     : related event id
  *  - eventTitle  : event title to display
  *  - organizerId : who sent it
@@ -43,10 +43,18 @@ public class FirestoreNotificationRepository {
         void onChanged(List<NotificationLog> list);
     }
 
+    /**
+     * Loads all notifications for the given recipient id.
+     *
+     * IMPORTANT:
+     * 这里的查询逻辑和 NotificationsActivity.startListening() 保持一致，
+     * 只用 whereEqualTo("recipientId", uid) + limit(200)，不再使用 orderBy("sentAt")，
+     * 这样就不需要 Firestore 的复合索引，也能拿到和 User 端相同的结果。
+     */
     public void getLogsForUser(String uid, @NonNull LogsListener callback) {
         db.collection("notifications")
                 .whereEqualTo("recipientId", uid)
-                .orderBy("sentAt")
+                .limit(200)
                 .get()
                 .addOnSuccessListener(snap -> callback.onChanged(mapList(snap)));
     }
@@ -54,7 +62,9 @@ public class FirestoreNotificationRepository {
     private List<NotificationLog> mapList(QuerySnapshot snap) {
         List<NotificationLog> list = new ArrayList<>();
         if (snap == null) return list;
-        for (DocumentSnapshot d : snap.getDocuments()) list.add(map(d));
+        for (DocumentSnapshot d : snap.getDocuments()) {
+            list.add(map(d));
+        }
         return list;
     }
 
@@ -83,4 +93,3 @@ public class FirestoreNotificationRepository {
         );
     }
 }
-

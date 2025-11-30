@@ -100,6 +100,7 @@
         <activity android:name="com.example.lottary.ui.events.manage.QrCodeActivity" />
         <activity android:name="com.example.lottary.ui.events.manage.MapActivity" />
 
+        <!-- Admin section -->
         <activity android:name="com.example.lottary.ui.admin.AdminDashboardActivity" />
         <activity android:name="com.example.lottary.ui.admin.AdminEventsActivity" />
         <activity android:name="com.example.lottary.ui.admin.AdminUsersActivity" />
@@ -127,11 +128,17 @@
             android:exported="false"
             android:label="Logs" />
 
+        <!-- ✅ 新加的：Admin 查看某个用户的 Notification 日志页面 -->
+        <activity
+            android:name="com.example.lottary.ui.admin.UserNotificationLogsActivity"
+            android:exported="false"
+            android:label="User Notifications" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaS...." />
 
-        <!-- 这段是新加的 FileProvider -->
+        <!-- FileProvider，用于图片共享等 -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

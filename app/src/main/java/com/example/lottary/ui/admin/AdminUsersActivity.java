@@ -60,8 +60,10 @@ public class AdminUsersActivity extends AppCompatActivity {
         adapter = new AdminUsersAdapter(new AdminUsersAdapter.UserClickListener() {
             @Override
             public void onViewLogs(User u) {
-                Intent i = new Intent(AdminUsersActivity.this, NotificationLogsActivity.class);
-                i.putExtra("deviceID", u.getId());
+                // *** 修改：点左边按钮 -> 打开我们新建的 UserNotificationLogsActivity ***
+                Intent i = new Intent(AdminUsersActivity.this, UserNotificationLogsActivity.class);
+                i.putExtra(UserNotificationLogsActivity.EXTRA_USER_ID, u.getId());
+                i.putExtra(UserNotificationLogsActivity.EXTRA_USER_NAME, u.getName());
                 startActivity(i);
             }
 
