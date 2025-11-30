@@ -15,9 +15,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.lottary.R;
 import com.bumptech.glide.Glide;
+import com.example.lottary.data.GlideApp;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class ImageDetailActivity extends AppCompatActivity {
 

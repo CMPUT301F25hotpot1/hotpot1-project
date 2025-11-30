@@ -63,7 +63,7 @@ public class ProfileInfoFragment extends Fragment {
         adminIDList.add("2a03e2bac0988d0f");  // Yitong
         adminIDList.add("c8b0b8e87f4433fd");  // Mengxi
         adminIDList.add("ce9affac94d94f5e");  // Tianyi
-        adminIDList.add("1eac51db452383f6");  // Han
+        adminIDList.add("8abccf496d141336");  // Han
 
     }
 

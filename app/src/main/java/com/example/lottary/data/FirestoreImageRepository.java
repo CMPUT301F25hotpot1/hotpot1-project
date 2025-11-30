@@ -25,6 +25,13 @@ import java.util.UUID;
 
 public class FirestoreImageRepository {
 
+    private static FirestoreImageRepository INSTANCE;
+
+    public static FirestoreImageRepository get() {
+        if (INSTANCE == null) INSTANCE = new FirestoreImageRepository();
+        return INSTANCE;
+    }
+
     public interface ImagesListener {
         void onChanged(@Nullable List<Image> images, @Nullable Exception error);
     }
@@ -119,7 +126,7 @@ public class FirestoreImageRepository {
     public void deleteByStorageName(@NonNull String fileName, @NonNull DeleteCallback cb) {
         FirebaseStorage.getInstance()
                 .getReference()
-                .child("images")
+                .child("event_posters")
                 .child(fileName)
                 .delete()
                 .addOnSuccessListener(unused -> cb.onComplete(null))
@@ -139,13 +146,13 @@ public class FirestoreImageRepository {
             cb.onComplete(e);
         }
     }
-
-    public Task<String> uploadPoster(@NonNull Uri imageUri) {
-        String filename = "posters/" + UUID.randomUUID().toString() + ".jpg";
+    public Task<String> uploadPoster(@NonNull Uri imageUri, String eventId) {
+        String fileName = eventId + "_" + System.currentTimeMillis() + ".jpg";
 
         StorageReference ref = FirebaseStorage.getInstance()
                 .getReference()
-                .child(filename);
+                .child("event_posters")
+                .child(fileName);
 
         return ref.putFile(imageUri)
                 .continueWithTask(task -> {

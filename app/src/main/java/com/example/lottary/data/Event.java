@@ -57,6 +57,7 @@ public class Event {
             boolean geolocationEnabled, String type,
             String status
     ) {
+
         this(id, title, city, venue, prettyStartTime, full,
                 startTimeMs, registerStartMs, registerEndMs,
                 geolocationEnabled, type,
