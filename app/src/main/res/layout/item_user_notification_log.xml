@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <!-- 左边小图标（先用系统的 info，你之后可以换成自己项目里的 ic_info） -->
+    <ImageView
+        android:id="@+id/imageStatusIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:contentDescription="Status Icon"
+        android:src="@android:drawable/ic_dialog_info"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textNotificationTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Coding Workshop"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageStatusIcon"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/textNotificationRecipient"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginStart="16dp"
+        android:text="to John Doe"
+        android:textSize="14sp"
+        android:textStyle="italic"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintTop_toBottomOf="@id/textNotificationTitle"
+        app:layout_constraintStart_toEndOf="@id/imageStatusIcon"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/textNotificationMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="16dp"
+        android:text="Your message preview here..."
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/textNotificationRecipient"
+        app:layout_constraintStart_toEndOf="@id/imageStatusIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
