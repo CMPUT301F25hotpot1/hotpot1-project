@@ -1,11 +1,11 @@
-/**
- * Model representing a single notification log entry.
- * Contains metadata about the message, recipient, and timestamp.
- */
 package com.example.lottary.data;
 
 import com.google.firebase.Timestamp;
 
+/**
+ * Model representing a single notification log entry.
+ * Contains metadata about the message, recipient, and timestamp.
+ */
 public class NotificationLog {
 
     private final String id;
@@ -35,6 +35,7 @@ public class NotificationLog {
 
     /** Returns a readable string form of the timestamp */
     public String getPrettyTime() {
-        return timestamp.toDate().toString();
+        return timestamp == null ? "" : timestamp.toDate().toString();
     }
 }
+

@@ -26,7 +26,23 @@ import java.util.Set;
 /**
  * FirestoreEventRepository
  *
- * Central repository for all Firestore event operations.
+ * Purpose:
+ * Central repository that manages all Firestore operations for event creation,
+ * updates, participant actions, and real-time listeners. It serves as the data
+ * access layer between Firestore and the app’s UI logic.
+ *
+ * Role / Pattern:
+ * Implements the Repository pattern — abstracting Firestore CRUD, listener setup,
+ * and transactional logic into reusable methods for both Entrant and Organizer flows.
+ * Handles Firestore snapshot listeners, structured field updates, and transactional
+ * operations for atomic changes.
+ *
+ * Outstanding Issues / Notes:
+ * - Firestore operations are unguarded; network and permission errors are only logged.
+ * - Uses simple List fields (waitingList, chosen, signedUp, cancelled); may need refactoring
+ *   for scalability (e.g., subcollections or pagination).
+ * - Time-based logic (registration window checks) is done externally — not enforced here.
+ * - Notifications are created in drawWinnersAndNotify(), but delivery is not guaranteed.
  */
 public class FirestoreEventRepository {
 
@@ -114,19 +130,15 @@ public class FirestoreEventRepository {
     public ListenerRegistration listenEvent(@NonNull String eventId, @NonNull DocListener l) {
         return events.document(eventId)
                 .addSnapshotListener((snap, err) -> {
-                    if (snap != null) {
-                        l.onChanged(snap);
-                    }
+                    if (snap != null) l.onChanged(snap);
                 });
     }
 
-    // ---------- create / update ----------
+    // ---------- basic CRUD ----------
 
     public Task<DocumentReference> createEvent(Map<String, Object> fields) {
         ensureArrays(fields, "waitingList", "chosen", "signedUp", "cancelled");
-        if (!fields.containsKey("createdAt")) {
-            fields.put("createdAt", Timestamp.now());
-        }
+        if (!fields.containsKey("createdAt")) fields.put("createdAt", Timestamp.now());
         return events.add(fields);
     }
 
@@ -134,7 +146,7 @@ public class FirestoreEventRepository {
         return events.document(eventId).set(fields, SetOptions.merge());
     }
 
-    // ---------- draw winners ----------
+    // ---------- lottery drawing ----------
 
     public Task<Void> drawWinners(@NonNull String eventId, int maxToDraw) {
         DocumentReference ref = events.document(eventId);
@@ -159,7 +171,8 @@ public class FirestoreEventRepository {
             taken.addAll(cancel);
 
             List<String> winners = LotterySampler.sampleWinners(
-                    waiting, taken, toDraw, System.currentTimeMillis());
+                    waiting, taken, toDraw, System.currentTimeMillis()
+            );
 
             if (!winners.isEmpty()) {
                 List<String> newChosen = new ArrayList<>(chosen);
@@ -170,12 +183,19 @@ public class FirestoreEventRepository {
         });
     }
 
+    /**
+     * Draws winners AND writes notification documents.
+     *
+     * - Winners get type = "selected" + custom (or default) congratulation message.
+     * - Eligible non-selected entrants from this draw get type = "not_selected"
+     *   and a gentle "you remain on the waiting list" message.
+     */
     public Task<Void> drawWinnersAndNotify(@NonNull String eventId, String message) {
         DocumentReference ref = events.document(eventId);
 
         return db.runTransaction(tr -> {
             DocumentSnapshot d = tr.get(ref);
-            if (!d.exists()) return new DrawResult(); // 空
+            if (!d.exists()) return new DrawResult(); // empty result
 
             List<String> waiting = strList(d.get("waitingList"));
             List<String> chosen  = strList(d.get("chosen"));
@@ -193,8 +213,10 @@ public class FirestoreEventRepository {
             taken.addAll(signed);
             taken.addAll(cancel);
 
+            // Winners: randomly sampled from waiting list, excluding "taken".
             List<String> winners = LotterySampler.sampleWinners(
-                    waiting, taken, toDraw, System.currentTimeMillis());
+                    waiting, taken, toDraw, System.currentTimeMillis()
+            );
 
             if (!winners.isEmpty()) {
                 List<String> newChosen = new ArrayList<>(chosen);
@@ -202,8 +224,20 @@ public class FirestoreEventRepository {
                 tr.update(ref, "chosen", newChosen);
             }
 
+            // Losers for THIS draw = everyone who was eligible but not selected now.
+            List<String> losers = new ArrayList<>();
+            if (toDraw > 0 && !waiting.isEmpty()) {
+                Set<String> eligible = new HashSet<>();
+                for (String id : waiting) {
+                    if (!taken.contains(id)) eligible.add(id);
+                }
+                eligible.removeAll(winners);
+                losers.addAll(eligible);
+            }
+
             DrawResult res = new DrawResult();
             res.winners = winners;
+            res.losers  = losers;
             res.organizerId = str(d.get("creatorDeviceId"));
             res.eventTitle  = str(d.get("title"));
             res.eventId     = eventId;
@@ -217,33 +251,71 @@ public class FirestoreEventRepository {
             }
 
             DrawResult r = t.getResult();
-            if (r == null || r.winners == null || r.winners.isEmpty()) {
+            if (r == null) return Tasks.forResult(null);
+
+            boolean hasWinners = r.winners != null && !r.winners.isEmpty();
+            boolean hasLosers  = r.losers  != null && !r.losers.isEmpty();
+            if (!hasWinners && !hasLosers) {
                 return Tasks.forResult(null);
             }
 
-            String finalMsg = (message == null || message.trim().isEmpty())
+            String winMsg = (message == null || message.trim().isEmpty())
                     ? "Congratulations! You are selected. Please sign up to secure your spot."
                     : message.trim();
+            String loseMsg =
+                    "You were not selected in this draw. " +
+                            "You remain on the waiting list and may still be chosen if more spots open.";
 
             WriteBatch batch = db.batch();
             CollectionReference notifs = db.collection("notifications");
+            Timestamp now = Timestamp.now();
 
-            for (String rid : r.winners) {
-                Map<String, Object> doc = new HashMap<>();
-                doc.put("recipientId", rid);
-                doc.put("eventId", r.eventId);
-                doc.put("eventTitle", r.eventTitle);
-                doc.put("organizerId", r.organizerId);
-                doc.put("type", "selected");
-                doc.put("message", finalMsg);
-                doc.put("sentAt", Timestamp.now());
-                batch.set(notifs.document(), doc);
+            if (hasWinners) {
+                for (String rid : r.winners) {
+                    Map<String, Object> doc = new HashMap<>();
+                    doc.put("recipientId", rid);
+                    doc.put("eventId", r.eventId);
+                    doc.put("eventTitle", r.eventTitle);
+                    doc.put("organizerId", r.organizerId);
+                    doc.put("type", "selected");
+                    doc.put("message", winMsg);
+                    doc.put("sentAt", now);
+                    batch.set(notifs.document(), doc);
+                }
             }
+
+            if (hasLosers) {
+                for (String rid : r.losers) {
+                    Map<String, Object> doc = new HashMap<>();
+                    doc.put("recipientId", rid);
+                    doc.put("eventId", r.eventId);
+                    doc.put("eventTitle", r.eventTitle);
+                    doc.put("organizerId", r.organizerId);
+                    doc.put("type", "not_selected");
+                    doc.put("message", loseMsg);
+                    doc.put("sentAt", now);
+                    batch.set(notifs.document(), doc);
+                }
+            }
+
             return batch.commit();
         });
     }
 
-    // ---------- entrant actions ----------
+    // ---------- helper list/string ----------
+
+    private static List<String> strList(Object o) {
+        if (o instanceof List<?>) {
+            List<String> out = new ArrayList<>();
+            for (Object e : (List<?>) o) if (e != null) out.add(e.toString());
+            return out;
+        }
+        return new ArrayList<>();
+    }
+
+    private static String str(Object o){ return o == null ? "" : o.toString(); }
+
+    // ---------- participant actions ----------
 
     public Task<Void> signUp(@NonNull String eventId, @NonNull String deviceId) {
         DocumentReference ref = events.document(eventId);
@@ -321,9 +393,9 @@ public class FirestoreEventRepository {
 
             boolean changed = false;
             if (!waiting.contains(deviceId)) { waiting.add(deviceId); changed = true; }
-            if (chosen.remove(deviceId))  changed = true;
-            if (signed.remove(deviceId))  changed = true;
-            if (cancel.remove(deviceId))  changed = true;
+            if (chosen.remove(deviceId)) changed = true;
+            if (signed.remove(deviceId)) changed = true;
+            if (cancel.remove(deviceId)) changed = true;
 
             if (changed) {
                 Map<String, Object> updates = new HashMap<>();
@@ -366,12 +438,10 @@ public class FirestoreEventRepository {
 
     private static void appendRows(StringBuilder sb, String status, Object arr) {
         if (!(arr instanceof List)) return;
-        for (Object o : (List<?>) arr) {
-            sb.append(status).append(",").append(o).append("\n");
-        }
+        for (Object o : (List<?>) arr) sb.append(status).append(",").append(o).append("\n");
     }
 
-    // ---------- mapping helpers ----------
+    // ---------- mapping to Event model ----------
 
     private List<Event> mapList(QuerySnapshot snap) {
         if (snap == null || snap.isEmpty()) return Collections.emptyList();
@@ -380,7 +450,6 @@ public class FirestoreEventRepository {
         return list;
     }
 
-    /** 把 Firestore 文档映射成 Event，包含 posterUrl -> imageUrl */
     private Event map(DocumentSnapshot d) {
         String id    = d.getId();
         String title = safe(d.getString("title"));
@@ -402,58 +471,31 @@ public class FirestoreEventRepository {
         boolean geo = Boolean.TRUE.equals(d.getBoolean("geolocationEnabled"));
         String type = safe(d.getString("type"));
 
-        // 从 Firestore 读出 posterUrl，映射到 Event.imageUrl
-        String posterUrl = safe(d.getString("posterUrl"));
-
         return new Event(
-                id,
-                title,
-                city,
-                venue,
-                pretty,
-                full,
-                startMs,
-                regStartMs,
-                regEndMs,
-                geo,
-                type,
-                posterUrl
+                id, title, city, venue, pretty, full,
+                startMs, regStartMs, regEndMs, geo, type
         );
     }
 
-    private static String safe(String s) {
-        return s == null ? "" : s;
-    }
+    private static String safe(String s) { return s == null ? "" : s; }
 
     private static void ensureArrays(Map<String, Object> map, String... keys) {
         for (String k : keys) {
-            if (!(map.get(k) instanceof List)) {
-                map.put(k, new ArrayList<String>());
-            }
+            if (!(map.get(k) instanceof List)) map.put(k, new ArrayList<String>());
         }
     }
 
-    private static List<String> strList(Object o) {
-        if (o instanceof List<?>) {
-            List<String> out = new ArrayList<>();
-            for (Object e : (List<?>) o) {
-                if (e != null) out.add(e.toString());
-            }
-            return out;
-        }
-        return new ArrayList<>();
-    }
-
-    private static String str(Object o) {
-        return o == null ? "" : o.toString();
-    }
+    // ---------- draw result helper ----------
 
     private static class DrawResult {
         List<String> winners = new ArrayList<>();
+        List<String> losers  = new ArrayList<>();
         String organizerId = "";
         String eventTitle  = "";
         String eventId     = "";
     }
+
+    // ---------- deletion ----------
 
     public Task<Void> deleteEventById(String eventId) {
         return events.document(eventId).delete();

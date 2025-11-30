@@ -1,127 +1,30 @@
 package com.example.lottary.ui.events.manage;
 
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+/** Tiny adapter for entrants; avatar is placeholder circle, bell icon is not interactive for now. */
 public class EntrantsAdapter extends RecyclerView.Adapter<EntrantsAdapter.VH> {
+    private final List<EntrantsListFragment.Row> items = new ArrayList<>();
+    public void submit(List<EntrantsListFragment.Row> list){ items.clear(); items.addAll(list); notifyDataSetChanged(); }
 
-    public static class Row {
-        public final String deviceId;
-        public final String status;
-
-        public Row(@NonNull String deviceId, @NonNull String status) {
-            this.deviceId = deviceId;
-            this.status = status;
-        }
+    @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int v){ return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_entrant, p,false)); }
+    @Override public void onBindViewHolder(@NonNull VH h, int pos){
+        EntrantsListFragment.Row r = items.get(pos);
+        h.name.setText(r.id); h.status.setText(r.status);
     }
-
-    private final List<Row> items = new ArrayList<>();
-
-    private final Map<String, String> nameCache = new HashMap<>();
-
-
-    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    public void submit(List<Row> rows) {
-        items.clear();
-        nameCache.clear();
-        if (rows != null) items.addAll(rows);
-        notifyDataSetChanged();
-    }
-
-    @NonNull
-    @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_entrant, parent, false);
-        return new VH(v);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull VH holder, int position) {
-        Row row = items.get(position);
-
-
-        holder.txtName.setText(row.deviceId);
-        holder.txtStatus.setText(row.status);
-
-        holder.btnViewLogs.setVisibility(View.GONE);
-        holder.btnCancel.setVisibility(View.GONE);
-
-
-        String cached = nameCache.get(row.deviceId);
-        if (!TextUtils.isEmpty(cached)) {
-            holder.txtName.setText(cached);
-            return;
-        }
-
-
-        db.collection("users")
-                .whereEqualTo("userDeviceId", row.deviceId)
-                .limit(1)
-                .get()
-                .addOnSuccessListener((QuerySnapshot qs) -> {
-                    if (qs == null || qs.isEmpty()) return;
-
-                    DocumentSnapshot snap = qs.getDocuments().get(0);
-                    String name = snap.getString("name");
-                    if (TextUtils.isEmpty(name)) {
-                        name = snap.getString("fullName");
-                    }
-                    if (TextUtils.isEmpty(name)) {
-                        name = snap.getString("username");
-                    }
-
-                    if (TextUtils.isEmpty(name)) {
-                        return;
-                    }
-
-                    nameCache.put(row.deviceId, name);
-
-
-                    int adapterPos = holder.getBindingAdapterPosition();
-                    if (adapterPos == RecyclerView.NO_POSITION) return;
-                    Row current = items.get(adapterPos);
-                    if (row.deviceId.equals(current.deviceId)) {
-                        holder.txtName.setText(name);
-                    }
-                });
-    }
-
-    @Override
-    public int getItemCount() {
-        return items.size();
-    }
+    @Override public int getItemCount(){ return items.size(); }
 
     static class VH extends RecyclerView.ViewHolder {
-        final TextView txtName;
-        final TextView txtStatus;
-        final ImageView btnViewLogs;
-        final ImageView btnCancel;
-
-        VH(@NonNull View itemView) {
-            super(itemView);
-            txtName     = itemView.findViewById(R.id.txt_name);
-            txtStatus   = itemView.findViewById(R.id.txt_status);
-            btnViewLogs = itemView.findViewById(R.id.btn_view_logs);
-            btnCancel   = itemView.findViewById(R.id.btn_cancel);
-        }
+        final TextView name, status; final ImageView bell;
+        VH(@NonNull View v){ super(v); name=v.findViewById(R.id.txt_name); status=v.findViewById(R.id.txt_status); bell=v.findViewById(R.id.img_bell); }
     }
 }

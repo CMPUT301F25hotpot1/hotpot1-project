@@ -16,9 +16,29 @@ import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+/**
+ * FirestoreUserRepository
+ *
+ * Purpose:
+ * Repository for managing user-related data stored in Firestore.
+ * Supports creating, updating, deleting, retrieving, and listening
+ * to user documents in real time.
+ *
+ * Role / Pattern:
+ * Implements the Repository pattern to abstract Firestore operations
+ * for the “users” collection. Provides unified data access and mapping
+ * between Firestore snapshots and User model objects.
+ *
+ * Outstanding Issues / Notes:
+ * - User lookup and search rely on simple name field range queries;
+ *   lacks indexing or case-insensitive handling.
+ * - No error callback provided for failed Firestore operations.
+ * - Uses client-side mapping; schema changes in Firestore may break parsing.
+ * - Device ID is used as the document key — assumes one user per device.
+ */
 
 public class FirestoreUserRepository {
 
@@ -32,12 +52,9 @@ public class FirestoreUserRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final CollectionReference users = db.collection("users");
 
-    // ---------- basic CRUD ----------
-
     public Task<Void> createUser(String deviceID, Map<String, Object> fields) {
-        if (!fields.containsKey("createdAt")) {
+        if (!fields.containsKey("createdAt"))
             fields.put("createdAt", Timestamp.now());
-        }
         return users.document(deviceID).set(fields);
     }
 
@@ -56,8 +73,6 @@ public class FirestoreUserRepository {
     public DocumentSnapshot getUser(@NonNull String deviceID) {
         return users.document(deviceID).get().getResult();
     }
-
-    // ---------- listeners ----------
 
     public interface UsersListener { void onChanged(@NonNull List<User> items); }
     public interface DocListener    { void onChanged(DocumentSnapshot doc); }
@@ -83,8 +98,6 @@ public class FirestoreUserRepository {
                 });
     }
 
-    // ---------- mapping helpers ----------
-
     private List<User> mapList(QuerySnapshot snap) {
         if (snap == null || snap.isEmpty()) return Collections.emptyList();
         List<User> list = new ArrayList<>();
@@ -93,7 +106,7 @@ public class FirestoreUserRepository {
     }
 
     private User map(DocumentSnapshot d) {
-        String deviceID = d.getId();
+        String deviceID = safe(d.getString("userDeviceId"));
         String name     = safe(d.getString("name"));
         String email    = safe(d.getString("email"));
         String phone    = safe(d.getString("phoneNumber"));
@@ -109,8 +122,6 @@ public class FirestoreUserRepository {
     private static String safe(String s) {
         return s == null ? "" : s;
     }
-
-    // ---------- list & search APIs ----------
 
     public void getAllUsers(@NonNull UsersListener callback) {
         users.get().addOnSuccessListener(snap -> {
@@ -137,32 +148,5 @@ public class FirestoreUserRepository {
 
     public void removeUser(@NonNull String userID) {
         deleteUser(userID);
-    }
-
-    // ---------- device ID → user name mapping ----------
-
-    public interface DeviceNameMapCallback {
-        void onLoaded(@NonNull Map<String, String> deviceIdToName);
-    }
-
-    public void getDeviceNameMap(@NonNull DeviceNameMapCallback cb) {
-        users.get()
-                .addOnSuccessListener(snap -> {
-                    Map<String, String> map = new HashMap<>();
-                    if (snap != null) {
-                        for (DocumentSnapshot d : snap.getDocuments()) {
-                            String deviceId = d.getId();
-                            String name = safe(d.getString("name"));
-                            if (name.isEmpty()) {
-                                name = deviceId;
-                            }
-                            map.put(deviceId, name);
-                        }
-                    }
-                    cb.onLoaded(map);
-                })
-                .addOnFailureListener(e -> {
-                    cb.onLoaded(new HashMap<>());
-                });
     }
 }

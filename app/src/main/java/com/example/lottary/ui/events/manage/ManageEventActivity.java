@@ -1,7 +1,6 @@
 package com.example.lottary.ui.events.manage;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -12,7 +11,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -27,10 +25,6 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 
 public class ManageEventActivity extends AppCompatActivity {
@@ -46,8 +40,7 @@ public class ManageEventActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private Button btnDraw, btnNotify, btnExport, btnQr, btnMap;
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_event);
 
@@ -74,31 +67,18 @@ public class ManageEventActivity extends AppCompatActivity {
         if (topBar != null) topBar.setNavigationOnClickListener(v -> finish());
 
         viewPager.setAdapter(new FragmentStateAdapter(this) {
-            @NonNull
-            @Override
-            public Fragment createFragment(int position) {
+            @NonNull @Override public Fragment createFragment(int position) {
                 return EntrantsListFragment.newInstance(eventId, position);
             }
-
-            @Override
-            public int getItemCount() {
-                return 4;
-            }
+            @Override public int getItemCount() { return 4; }
         });
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, pos) -> {
             switch (pos) {
-                case 0:
-                    tab.setText("All Entrants");
-                    break;
-                case 1:
-                    tab.setText("Chosen Entrants");
-                    break;
-                case 2:
-                    tab.setText("Signed-Up Entrants");
-                    break;
-                default:
-                    tab.setText("Cancelled Entrants");
+                case 0: tab.setText("All Entrants"); break;
+                case 1: tab.setText("Chosen Entrants"); break;
+                case 2: tab.setText("Signed-Up Entrants"); break;
+                default: tab.setText("Cancelled Entrants");
             }
         }).attach();
 
@@ -135,13 +115,9 @@ public class ManageEventActivity extends AppCompatActivity {
                 startIfExists("com.example.lottary.ui.events.manage.MapActivity"));
     }
 
-    @Override
-    protected void onDestroy() {
+    @Override protected void onDestroy() {
         super.onDestroy();
-        if (reg != null) {
-            reg.remove();
-            reg = null;
-        }
+        if (reg != null) { reg.remove(); reg = null; }
     }
 
     private void bindEventHeader(@Nullable DocumentSnapshot d) {
@@ -149,7 +125,7 @@ public class ManageEventActivity extends AppCompatActivity {
 
         String title = val(d.get("title"));
         if (txtTitle != null) txtTitle.setText(TextUtils.isEmpty(title) ? "Manage Event" : title);
-        if (topBar != null) topBar.setSubtitle(TextUtils.isEmpty(title) ? "Manage Event" : title);
+        if (topBar != null)  topBar.setSubtitle(TextUtils.isEmpty(title) ? "Manage Event" : title);
 
         Timestamp ts = d.getTimestamp("startTime");
         if (ts != null && txtTitle != null) {
@@ -159,45 +135,13 @@ public class ManageEventActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * 从 Firestore 文档构建 CSV，并写入 cache/exports/entrants.csv，再通过 FileProvider 分享文件。
-     */
     private void shareCsvFromDoc(@NonNull DocumentSnapshot d) {
-        if (!d.exists()) {
-            toast("Event not found");
-            return;
-        }
-
         String csv = FirestoreEventRepository.buildCsvFromEvent(d);
-
-        try {
-            File dir = new File(getCacheDir(), "exports");
-            if (!dir.exists() && !dir.mkdirs()) {
-                toast("Failed to create export directory");
-                return;
-            }
-
-            File file = new File(dir, "entrants.csv");
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                fos.write(csv.getBytes(StandardCharsets.UTF_8));
-            }
-
-            Uri uri = FileProvider.getUriForFile(
-                    this,
-                    getPackageName() + ".fileprovider",
-                    file
-            );
-
-            Intent send = new Intent(Intent.ACTION_SEND);
-            send.setType("text/csv");
-            send.putExtra(Intent.EXTRA_STREAM, uri);
-            send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            startActivity(Intent.createChooser(send, "Export CSV"));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            toast("Failed to create CSV file");
-        }
+        Intent send = new Intent(Intent.ACTION_SEND);
+        send.setType("text/csv");
+        send.putExtra(Intent.EXTRA_TEXT, csv);
+        send.putExtra(Intent.EXTRA_TITLE, "entrants.csv");
+        startActivity(Intent.createChooser(send, "Export CSV"));
     }
 
     private void startIfExists(@NonNull String fqcn) {
@@ -211,11 +155,8 @@ public class ManageEventActivity extends AppCompatActivity {
         }
     }
 
-    private static String val(Object o) {
-        return o == null ? "" : o.toString();
-    }
-
-    private void toast(String s) {
+    private static String val(Object o){ return o == null ? "" : o.toString(); }
+    private void toast(String s){
         Toast t = Toast.makeText(this, s, Toast.LENGTH_SHORT);
         t.setGravity(Gravity.CENTER, 0, 0);
         t.show();
