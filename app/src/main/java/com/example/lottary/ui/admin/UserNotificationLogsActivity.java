@@ -21,9 +21,23 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.List;
 
+/**
+ * Admin screen that shows the notification log for a single user.
+ *
+ * <p>This activity is opened from {@link AdminUsersActivity} when
+ * the admin taps the "view logs" button on a user row. It displays
+ * all documents from the {@code notifications} collection whose
+ * {@code recipientId} matches the selected user's device id.</p>
+ *
+ * <p>The UI reuses the existing admin bottom navigation bar, but
+ * the logical "section" is considered to be the Users tab.</p>
+ */
 public class UserNotificationLogsActivity extends AppCompatActivity {
 
+    /** Intent extra: selected user's id (device id / recipientId). */
     public static final String EXTRA_USER_ID = "extra_user_id";
+
+    /** Intent extra: selected user's display name (for subtitle only). */
     public static final String EXTRA_USER_NAME = "extra_user_name";
 
     private RecyclerView recyclerView;
@@ -37,11 +51,13 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_notification_logs);
 
+        // Read user id + name passed from AdminUsersActivity.
         Intent intent = getIntent();
         userId = intent.getStringExtra(EXTRA_USER_ID);
         userName = intent.getStringExtra(EXTRA_USER_NAME);
 
         if (userId == null || userId.isEmpty()) {
+            // Without a target user there is nothing to show.
             Toast.makeText(this, "No user specified", Toast.LENGTH_SHORT).show();
             finish();
             return;
@@ -53,6 +69,10 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
         loadLogsForUser();
     }
 
+    /**
+     * Configures the custom top bar: back arrow, title, and subtitle.
+     * Subtitle shows either the user's name or a generic label.
+     */
     private void setupTopBar() {
         ImageButton backButton = findViewById(R.id.btnBack);
         TextView titleTextView = findViewById(R.id.textTitle);
@@ -74,6 +94,10 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Sets up the RecyclerView and attaches the adapter that renders
+     * {@link NotificationLog} rows.
+     */
     private void setupRecyclerView() {
         recyclerView = findViewById(R.id.recyclerUserNotificationLogs);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -81,8 +105,13 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * Wires the admin bottom navigation so the admin can move between
+     * Events, Users, Images, and Profile screens.
+     */
     private void setupBottomNav() {
         BottomNavigationView nav = findViewById(R.id.bottom_nav);
+        // This screen logically belongs to the Users section.
         nav.setSelectedItemId(R.id.nav_admin_users);
 
         nav.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
@@ -91,7 +120,8 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
                 int id = item.getItemId();
 
                 if (id == R.id.nav_admin_events) {
-                    startActivity(new Intent(UserNotificationLogsActivity.this, AdminEventsActivity.class)
+                    startActivity(new Intent(UserNotificationLogsActivity.this,
+                            AdminEventsActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                     overridePendingTransition(0, 0);
                     finish();
@@ -99,7 +129,8 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
                 }
 
                 if (id == R.id.nav_admin_users) {
-                    startActivity(new Intent(UserNotificationLogsActivity.this, AdminUsersActivity.class)
+                    startActivity(new Intent(UserNotificationLogsActivity.this,
+                            AdminUsersActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                     overridePendingTransition(0, 0);
                     finish();
@@ -107,7 +138,8 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
                 }
 
                 if (id == R.id.nav_admin_images) {
-                    startActivity(new Intent(UserNotificationLogsActivity.this, AdminImagesActivity.class)
+                    startActivity(new Intent(UserNotificationLogsActivity.this,
+                            AdminImagesActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                     overridePendingTransition(0, 0);
                     finish();
@@ -115,7 +147,8 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
                 }
 
                 if (id == R.id.nav_admin_profile) {
-                    startActivity(new Intent(UserNotificationLogsActivity.this, AdminProfileActivity.class)
+                    startActivity(new Intent(UserNotificationLogsActivity.this,
+                            AdminProfileActivity.class)
                             .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                     overridePendingTransition(0, 0);
                     finish();
@@ -127,6 +160,10 @@ public class UserNotificationLogsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Reads notifications for the selected user from Firestore via
+     * {@link FirestoreNotificationRepository} and submits them to the adapter.
+     */
     private void loadLogsForUser() {
         FirestoreNotificationRepository.get()
                 .getLogsForUser(userId, new FirestoreNotificationRepository.LogsListener() {
