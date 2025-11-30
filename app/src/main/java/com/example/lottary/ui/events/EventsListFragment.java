@@ -26,11 +26,14 @@ import java.util.Locale;
 
 /**
  * EventsListFragment
- *
- * Purpose:
  * Fragment that displays a list of events either created by the current device (organizer view)
  * or joined by the user (entrant view). It listens to Firestore for live updates, maintains an
  * in-memory list, and exposes a text filtering API used by the parent activity.
+ *
+ * Outstanding Issues / Notes:
+ * - Uses client-side filtering only; consider server-side search for large datasets.
+ * - No paging; large lists may impact performance.
+ * - Fallback device id "device_demo" is used when ANDROID_ID is unavailable.
  */
 public class EventsListFragment extends Fragment implements EventsAdapter.Listener {
 

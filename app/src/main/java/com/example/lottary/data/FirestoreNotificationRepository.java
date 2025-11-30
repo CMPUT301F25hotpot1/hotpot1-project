@@ -2,32 +2,32 @@ package com.example.lottary.data;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  * FirestoreNotificationRepository
  *
  * Purpose:
- * Handles Firestore access for retrieving user-specific notification logs.
- * Provides simple one-time queries for all notifications received by a given user.
+ *  Reads notification log entries from the "notifications" collection.
  *
- * Role / Pattern:
- * Implements a singleton repository focused on Firestore “notifications” collection.
- * Responsible for mapping Firestore documents into NotificationLog model objects
- * and delivering the result via callback to the UI layer.
+ * Expected document fields (new schema written by FirestoreEventRepository):
+ *  - recipientId : device/user id
+ *  - eventId     : related event id
+ *  - eventTitle  : event title to display
+ *  - organizerId : who sent it
+ *  - type        : "selected" / "not_selected" / ...
+ *  - message     : body text
+ *  - sentAt      : Timestamp
  *
- * Outstanding Issues / Notes:
- * - Query uses field name “recipientID”; ensure it matches actual Firestore schema
- *   (case-sensitive mismatch will return no results).
- * - Fetch is one-time only (no real-time listener implemented).
- * - No pagination or error handling for large result sets.
- * - Timestamps are assumed to be stored as Firestore Timestamp objects.
+ * Legacy compatibility:
+ *  - title/timestamp fields are still read as fallback for older docs.
  */
-
 public class FirestoreNotificationRepository {
 
     private static FirestoreNotificationRepository INSTANCE;
@@ -45,25 +45,42 @@ public class FirestoreNotificationRepository {
 
     public void getLogsForUser(String uid, @NonNull LogsListener callback) {
         db.collection("notifications")
-                .whereEqualTo("recipientID", uid)
-                .orderBy("timestamp")
+                .whereEqualTo("recipientId", uid)
+                .orderBy("sentAt")
                 .get()
                 .addOnSuccessListener(snap -> callback.onChanged(mapList(snap)));
     }
 
     private List<NotificationLog> mapList(QuerySnapshot snap) {
         List<NotificationLog> list = new ArrayList<>();
+        if (snap == null) return list;
         for (DocumentSnapshot d : snap.getDocuments()) list.add(map(d));
         return list;
     }
 
     private NotificationLog map(DocumentSnapshot d) {
+        String id = d.getId();
+
+        String title = d.getString("eventTitle");
+        if (title == null || title.isEmpty()) {
+            title = d.getString("title"); // fallback for older docs
+        }
+
+        String recipientName = d.getString("recipientName");
+        String message = d.getString("message");
+
+        Timestamp ts = d.getTimestamp("sentAt");
+        if (ts == null) {
+            ts = d.getTimestamp("timestamp"); // fallback for older docs
+        }
+
         return new NotificationLog(
-                d.getId(),
-                d.getString("title"),
-                d.getString("recipientName"),
-                d.getString("message"),
-                d.getTimestamp("timestamp")
+                id,
+                title,
+                recipientName,
+                message,
+                ts
         );
     }
 }
+

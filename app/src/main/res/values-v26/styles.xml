@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <style name="LotteryButton" parent="Widget.Material3.Button">
-        <item name="android:textAppearance">@style/LotteryButtonText</item>
-        <item name="cornerRadius">8dp</item>
-        <item name="android:paddingHorizontal">12dp</item>
-    </style>
-</resources>
