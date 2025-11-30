@@ -20,6 +20,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * FirestoreUserRepository
+ *
+ * Purpose:
+ * Repository for managing user-related data stored in Firestore.
+ * Supports creating, updating, deleting, retrieving, and listening
+ * to user documents in real time.
+ *
+ * Role / Pattern:
+ * Implements the Repository pattern to abstract Firestore operations
+ * for the “users” collection. Provides unified data access and mapping
+ * between Firestore snapshots and User model objects.
+ *
+ * Outstanding Issues / Notes:
+ * - User lookup and search rely on simple name field range queries;
+ *   lacks indexing or case-insensitive handling.
+ * - No error callback provided for failed Firestore operations.
+ * - Uses client-side mapping; schema changes in Firestore may break parsing.
+ * - Device ID is used as the document key — assumes one user per device.
+ */
 public class FirestoreUserRepository {
 
     private static FirestoreUserRepository INSTANCE;

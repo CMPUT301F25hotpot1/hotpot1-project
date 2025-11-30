@@ -2,6 +2,7 @@ package com.example.lottary.ui.browse;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,21 +36,12 @@ import java.util.Locale;
 /**
  * EventDetailsActivity
  *
- * Role / Purpose:
- * - Displays a single event's details (title/venue/date/description/status/capacity/waitlist).
- * - Subscribes to Firestore for live updates of the event document and reflects changes in UI.
- * - Allows user to join the waiting list after acknowledging the lottery policy.
+ * Displays a single event's details and lets the user join the waiting list
+ * (after acknowledging lottery policy).
  *
- * Lifecycle / Ownership:
- * - A Firestore listener is registered in {@link #onCreate(Bundle)} and removed in {@link #onDestroy()}.
- * - UI is updated on the main thread from Firestore callbacks.
- *
- * Navigation Contract:
- * - Requires an event id passed via {@link #EXTRA_EVENT_ID}.
- *
- * Known Limitations:
- * - No image loading logic for {@link #ivPoster}; this can be added later if posters are available.
- * - The policy dialog does not persist user preference ("don't ask again"); it's session based.
+ * Can be opened by:
+ *  - explicit intent with EXTRA_EVENT_ID, or
+ *  - deep-link URI such as lottary://event/{eventId}.
  */
 public class EventDetailsActivity extends AppCompatActivity {
 
@@ -66,6 +59,37 @@ public class EventDetailsActivity extends AppCompatActivity {
     private MaterialButton btnJoin;
     private ImageButton btnClose;
 
+    /** Build a deep-link payload string to be embedded into a QR code. */
+    @NonNull
+    public static String buildDeepLinkPayload(@NonNull String eventId) {
+        // simple custom scheme: lottary://event/<id>
+        return "lottary://event/" + eventId;
+    }
+
+    /** Parse an event id from either a deep-link URL or a bare id string. */
+    @Nullable
+    public static String parseEventIdFromPayload(@Nullable String payload) {
+        if (payload == null || payload.isEmpty()) return null;
+
+        try {
+            Uri uri = Uri.parse(payload);
+            if (uri.getScheme() != null) {
+                // Our custom scheme: lottary://event/<id>
+                if ("lottary".equalsIgnoreCase(uri.getScheme())) {
+                    String last = uri.getLastPathSegment();
+                    return (last == null || last.isEmpty()) ? null : last;
+                }
+                // HTTPS or other schemes: take last path segment as id.
+                String last = uri.getLastPathSegment();
+                if (last != null && !last.isEmpty()) return last;
+            }
+        } catch (Exception ignore) {
+            // fall through and treat as raw id
+        }
+        // payload is not a URI, treat it as a raw event id.
+        return payload;
+    }
+
     /**
      * Convenience method to build an intent targeting this activity.
      * @param ctx      context used to create the intent.
@@ -81,9 +105,22 @@ public class EventDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_details);
 
-        // Read the required event id; if missing, close gracefully.
+        // 1) Try to read explicit extra.
         eventId = getIntent().getStringExtra(EXTRA_EVENT_ID);
-        if (TextUtils.isEmpty(eventId)) { finish(); return; }
+
+        // 2) If missing, try to parse from deep-link URI.
+        if (TextUtils.isEmpty(eventId)) {
+            Uri data = getIntent().getData();
+            if (data != null) {
+                eventId = parseEventIdFromPayload(data.toString());
+            }
+        }
+
+        if (TextUtils.isEmpty(eventId)) {
+            Toast.makeText(this, "Missing event id", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // View lookups.
         ivPoster      = findViewById(R.id.iv_poster);
@@ -113,7 +150,10 @@ public class EventDetailsActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         // Avoid leaking the Firestore listener when the activity is destroyed.
-        if (reg != null) { reg.remove(); reg = null; }
+        if (reg != null) {
+            reg.remove();
+            reg = null;
+        }
     }
 
     /**
@@ -160,7 +200,8 @@ public class EventDetailsActivity extends AppCompatActivity {
         // Bind simple fields.
         if (tvTitle != null) tvTitle.setText(title);
         if (tvVenue != null) tvVenue.setText(venue);
-        if (tvCityDate != null) tvCityDate.setText(city + (TextUtils.isEmpty(pretty) ? "" : (", " + pretty)));
+        if (tvCityDate != null) tvCityDate.setText(
+                city + (TextUtils.isEmpty(pretty) ? "" : (", " + pretty)));
         if (tvDescription != null) tvDescription.setText(desc);
 
         // Status label + color based on derived flags.
@@ -235,11 +276,9 @@ public class EventDetailsActivity extends AppCompatActivity {
         root.setPadding(pad, pad, pad, pad);
 
         android.widget.TextView tv = new android.widget.TextView(this);
-        tv.setText("Lottery Rules & Guidelines\n\n" +
-                "• Entrant must be at least 18 years old.\n" +
-                "• Entrant must be nearby this location.\n" +
-                "• Declining after being selected may impact future lotteries.\n" +
-                "• Please don’t join if you hate RNG!");
+        android.widget.TextView titleView = new android.widget.TextView(this);
+        titleView.setText(R.string.lottery_rules_and_guidelines);
+        tv.setText(R.string.lottery_policy);
         root.addView(tv);
 
         final android.widget.CheckBox cb = new android.widget.CheckBox(this);
@@ -284,7 +323,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                 );
     }
 
-    // ---------- helpers ----------
+    // -------------- helpers --------------
 
     /**
      * Parse an Integer from diverse number representations.

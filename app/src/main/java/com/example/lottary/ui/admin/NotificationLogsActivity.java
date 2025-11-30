@@ -60,19 +60,22 @@ public class NotificationLogsActivity extends AppCompatActivity {
             }
 
             if (id == R.id.nav_admin_users) {
-                startActivity(new Intent(this, AdminUsersActivity.class));
+                startActivity(new Intent(this, AdminUsersActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0,0);
                 return true;
             }
 
             if (id == R.id.nav_admin_images) {
-                startActivity(new Intent(this, AdminImagesActivity.class));
+                startActivity(new Intent(this, AdminImagesActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0,0);
                 return true;
             }
 
             if (id == R.id.nav_admin_profile) {
-                startActivity(new Intent(this, AdminDashboardActivity.class));
+                startActivity(new Intent(this, AdminProfileActivity.class)
+                        .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                 overridePendingTransition(0,0);
                 return true;
             }

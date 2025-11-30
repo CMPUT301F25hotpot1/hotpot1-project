@@ -64,6 +64,12 @@
     <string name="welcome_new_users">Welcome to EventLottery!</string>
     <string name="instructions_new_user">It seems like no profile is linked to this device.\nCreate a profile to join event waitlists,\ncreate events, and more.</string>
 
+    <string name="lottery_policy">
+        • Winners are selected randomly from the waiting list.\n
+        • If selected entrants decline or do not sign up, we may draw again from the remaining waiting list.\n
+        • Entrant should meet the age and location requirements of the organizer.\n
+        • Please only join if you are genuinely interested in attending.
+    </string>
     <!-- User Actions-->
     <string name="create_event">Create Event</string>
     <string name="edit_event">Edit Event</string>
@@ -100,6 +106,7 @@
     <string name="delete_nothing">Nothing to delete</string>
     <string name="delete_failed_fmt">Delete failed: %1$s</string>
     <string name="my_profile">My Profile</string>
+    <string name="lottery_rules_and_guidelines"><![CDATA[Lottery Rules & Guidelines]]></string>
 
 
 </resources>

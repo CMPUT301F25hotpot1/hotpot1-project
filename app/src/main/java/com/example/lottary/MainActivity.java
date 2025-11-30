@@ -9,7 +9,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.example.lottary.ui.admin.AdminDashboardActivity;  
+import com.example.lottary.ui.admin.AdminEventsActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,6 +24,6 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        startActivity(new Intent(this, AdminDashboardActivity.class));
+        startActivity(new Intent(this, AdminEventsActivity.class));
     }
 }

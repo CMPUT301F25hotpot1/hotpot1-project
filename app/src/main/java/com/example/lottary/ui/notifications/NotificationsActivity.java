@@ -405,17 +405,23 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             }
 
             if (id == R.id.nav_my_events) {
-                startActivity(new Intent(this, MyEventsActivity.class));
+                Intent i = new Intent(this, MyEventsActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
             } else if (id == R.id.nav_browse) {
-                startActivity(new Intent(this, BrowseActivity.class));
+                Intent i = new Intent(this, BrowseActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
             } else if (id == R.id.nav_profile) {
-                startActivity(new Intent(this, MyProfileActivity.class));
+                Intent i = new Intent(this, MyProfileActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(i);
                 overridePendingTransition(0, 0);
                 finish();
                 return true;
