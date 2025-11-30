@@ -45,11 +45,15 @@ import java.util.Locale;
  */
 public class EventDetailsActivity extends AppCompatActivity {
 
+    /** Intent extra key for the event id to display. */
     public static final String EXTRA_EVENT_ID = "event_id";
 
+    /** Active Firestore listener registration; must be removed to avoid leaks. */
     private ListenerRegistration reg;
+    /** Current event id extracted from the intent. */
     private String eventId;
 
+    // views
     private ImageView ivPoster;
     private TextView tvTitle, tvVenue, tvCityDate, tvDescription, tvStatus, tvCapacity, tvWaitlist;
     private MaterialButton btnJoin;
@@ -86,6 +90,12 @@ public class EventDetailsActivity extends AppCompatActivity {
         return payload;
     }
 
+    /**
+     * Convenience method to build an intent targeting this activity.
+     * @param ctx      context used to create the intent.
+     * @param eventId  Firestore document id of the event to display.
+     * @return an intent with {@link #EXTRA_EVENT_ID} set.
+     */
     public static Intent makeIntent(Context ctx, String eventId) {
         return new Intent(ctx, EventDetailsActivity.class).putExtra(EXTRA_EVENT_ID, eventId);
     }
@@ -112,6 +122,7 @@ public class EventDetailsActivity extends AppCompatActivity {
             return;
         }
 
+        // View lookups.
         ivPoster      = findViewById(R.id.iv_poster);
         tvTitle       = findViewById(R.id.tv_title);
         tvVenue       = findViewById(R.id.tv_venue);
@@ -123,22 +134,35 @@ public class EventDetailsActivity extends AppCompatActivity {
         btnJoin       = findViewById(R.id.btn_join);
         btnClose      = findViewById(R.id.btnClose);
 
+        // Long descriptions should scroll inside their TextView.
         if (tvDescription != null) tvDescription.setMovementMethod(new ScrollingMovementMethod());
+        // Close/back button simply finishes the activity.
         if (btnClose != null) btnClose.setOnClickListener(v -> finish());
 
+        // Start listening to the event document for live updates.
         reg = FirestoreEventRepository.get().listenEvent(eventId, this::bindDoc);
+
+        // Joining requires acknowledging the policy first.
         btnJoin.setOnClickListener(v -> showPolicyThenJoin());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Avoid leaking the Firestore listener when the activity is destroyed.
         if (reg != null) {
             reg.remove();
             reg = null;
         }
     }
 
+    /**
+     * Bind a Firestore document snapshot to the UI.
+     * - Computes derived UI state (ended/full/open).
+     * - Formats date/time and counts.
+     * - Enables/disables the "Join" button accordingly.
+     * @param d the event document snapshot (may be null or non-existent).
+     */
     private void bindDoc(DocumentSnapshot d) {
         if (d == null || !d.exists()) {
             Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
@@ -155,27 +179,32 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         boolean fullField = Boolean.TRUE.equals(d.getBoolean("full"));
 
+        // Parse event start time and format a human-readable string.
         Timestamp tsStart = d.getTimestamp("startTime");
         long startMs = tsStart == null ? 0L : tsStart.toDate().getTime();
         String pretty = tsStart == null ? "" :
                 DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.getDefault())
                         .format(tsStart.toDate());
 
+        // Counts for waitlist/capacity logic.
         List<String> waiting = strList(d.get("waitingList"));
         List<String> signed  = strList(d.get("signedUp"));
         int waitingCount = waiting.size();
         int signedCount  = signed.size();
 
+        // Derived flags.
         boolean ended = startMs > 0 && startMs < System.currentTimeMillis();
         boolean fullByCap = capacity > 0 && signedCount >= capacity;
         boolean isOpen = !ended && !fullByCap && !fullField;
 
+        // Bind simple fields.
         if (tvTitle != null) tvTitle.setText(title);
         if (tvVenue != null) tvVenue.setText(venue);
         if (tvCityDate != null) tvCityDate.setText(
                 city + (TextUtils.isEmpty(pretty) ? "" : (", " + pretty)));
         if (tvDescription != null) tvDescription.setText(desc);
 
+        // Status label + color based on derived flags.
         if (tvStatus != null) {
             if (ended) {
                 tvStatus.setText("Ended");
@@ -189,6 +218,7 @@ public class EventDetailsActivity extends AppCompatActivity {
             }
         }
 
+        // Capacity and waitlist counts.
         if (tvCapacity != null) {
             tvCapacity.setText(capacity > 0 ? (capacity + " slots") : "No capacity limit");
         }
@@ -196,9 +226,14 @@ public class EventDetailsActivity extends AppCompatActivity {
             tvWaitlist.setText(waitingCount + " on waiting list");
         }
 
+        // Only open events can be joined.
         btnJoin.setEnabled(isOpen);
     }
 
+    /**
+     * Show the policy dialog before joining the waitlist.
+     * If the dialog layout is missing expected views, falls back to a simple inline dialog.
+     */
     private void showPolicyThenJoin() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_lottery_policy, null, false);
 
@@ -210,12 +245,14 @@ public class EventDetailsActivity extends AppCompatActivity {
         MaterialButton   btnYes = view.findViewById(R.id.btn_yes);
         MaterialButton   btnNo  = view.findViewById(R.id.btn_no);
 
+        // Defensive: if any key view is missing, show a minimal policy dialog instead.
         if (cb == null || btnYes == null || btnNo == null) {
             dialog.dismiss();
             buildSimplePolicyDialog().show();
             return;
         }
 
+        // Require user acknowledgement before enabling "Yes".
         btnYes.setEnabled(false);
         cb.setOnCheckedChangeListener((buttonView, isChecked) -> btnYes.setEnabled(isChecked));
 
@@ -228,6 +265,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    /**
+     * Builds a minimal policy dialog entirely in code as a fallback.
+     * The positive button remains disabled until the checkbox is ticked.
+     */
     private AlertDialog buildSimplePolicyDialog() {
         final android.widget.LinearLayout root = new android.widget.LinearLayout(this);
         root.setOrientation(android.widget.LinearLayout.VERTICAL);
@@ -235,14 +276,9 @@ public class EventDetailsActivity extends AppCompatActivity {
         root.setPadding(pad, pad, pad, pad);
 
         android.widget.TextView tv = new android.widget.TextView(this);
-        tv.setText(
-                "Lottery Rules & Guidelines\n\n" +
-                        "• Winners are selected randomly from the waiting list.\n" +
-                        "• If selected entrants decline or do not sign up, we may draw again " +
-                        "  from the remaining waiting list.\n" +
-                        "• Entrant should meet the age and location requirements of the organizer.\n" +
-                        "• Please only join if you are genuinely interested in attending."
-        );
+        android.widget.TextView titleView = new android.widget.TextView(this);
+        titleView.setText(R.string.lottery_rules_and_guidelines);
+        tv.setText(R.string.lottery_policy);
         root.addView(tv);
 
         final android.widget.CheckBox cb = new android.widget.CheckBox(this);
@@ -255,6 +291,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                 .setPositiveButton("Join Waiting List", null)
                 .create();
 
+        // Wire enabling logic after the dialog is shown (buttons are created then).
         dlg.setOnShowListener(d -> {
             dlg.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
             cb.setOnCheckedChangeListener((buttonView, isChecked) ->
@@ -267,6 +304,13 @@ public class EventDetailsActivity extends AppCompatActivity {
         return dlg;
     }
 
+    /**
+     * Join the event's waiting list.
+     * Implementation details:
+     * - Uses ANDROID_ID as a lightweight unique device/user identifier for demo purposes.
+     * - Delegates Firestore write to {@link FirestoreEventRepository#joinWaitingList(String, String)}.
+     * - Shows user feedback via Toast on success/failure.
+     */
     private void doJoin() {
         String did = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         if (TextUtils.isEmpty(did)) did = "device_demo";
@@ -281,13 +325,23 @@ public class EventDetailsActivity extends AppCompatActivity {
 
     // -------------- helpers --------------
 
+    /**
+     * Parse an Integer from diverse number representations.
+     * @param o value from Firestore (Number or String).
+     * @return boxed integer or null if not parseable.
+     */
     private static Integer getInt(Object o) {
         if (o instanceof Number) return ((Number) o).intValue();
         try { return o == null ? null : Integer.parseInt(o.toString()); } catch (Exception ignore) { return null; }
     }
 
+    /** Null-safe string; returns empty string when input is null. */
     private static String safe(String s){ return s == null ? "" : s; }
 
+    /**
+     * Convert an arbitrary Firestore field to a list of strings.
+     * Accepts {@code List<?>} and stringifies each element.
+     */
     @SuppressWarnings("unchecked")
     private static List<String> strList(Object o) {
         if (o instanceof List<?>) {
@@ -298,6 +352,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         return new ArrayList<>();
     }
 
+    /**
+     * Returns the first non-empty string among a and b (null-safe).
+     * @param a primary string
+     * @param b fallback string
+     */
     private static String firstNonEmpty(String a, String b){
         return !TextUtils.isEmpty(a) ? a : (b == null ? "" : b);
     }

@@ -13,7 +13,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Lottery Rules &amp; Guidelines"
+        android:text="@string/lottery_rules_and_guidelines"
         android:textColor="@color/entrant_teal"
         android:textSize="20sp"
         android:fontFamily="@font/inter"
@@ -22,8 +22,15 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/lottery_policy" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="By joining, you agree to the lottery rules and deadlines."
-        android:layout_marginTop="8dp"/>
+        style="@style/ItemTitle"/>
 
     <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/cb_dont_ask"
