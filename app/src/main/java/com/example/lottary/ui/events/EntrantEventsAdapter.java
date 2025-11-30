@@ -4,14 +4,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
+import com.example.lottary.data.GlideApp;
 import com.example.lottary.ui.events.JoinedEventsFragment.EntrantRow;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +76,7 @@ public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdap
 
         String placeText;
         if (!e.getCity().isEmpty() && !e.getVenue().isEmpty()) {
-            placeText = e.getCity() + " · " + e.getVenue();
+            placeText = e.getVenue() + " · " + e.getCity();
         } else if (!e.getCity().isEmpty()) {
             placeText = e.getCity();
         } else {
@@ -80,6 +86,25 @@ public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdap
 
         h.status.setVisibility(View.VISIBLE);
         h.status.setText(row.status);
+
+        // TODO: Add selected and not selected color option
+        int color = ContextCompat.getColor(
+                h.status.getContext(),
+                e.isFull() ? R.color.full_red : R.color.open_green
+        );
+        h.status.setTextColor(color);
+
+        // Set poster if one is available
+        String posterUrl = e.getImageUrl();
+        if (!posterUrl.isEmpty()) {
+            // Reference to event poster in Cloud Storage
+            StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(posterUrl);
+            // Download directly from StorageReference using Glide
+            // (See MyAppGlideModule for Loader registration)
+            GlideApp.with(h.root.getContext())
+                    .load(storageReference)
+                    .into(h.poster);
+        } else h.poster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
         h.btnSignUp.setVisibility(row.showSignUp ? View.VISIBLE : View.GONE);
         h.btnDecline.setVisibility(row.showDecline ? View.VISIBLE : View.GONE);
@@ -93,14 +118,18 @@ public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdap
     @Override public int getItemCount() { return items.size(); }
 
     static class VH extends RecyclerView.ViewHolder {
+        CardView root;
         TextView title, time, place, status;
         Button btnSignUp, btnDecline, btnLeave;
+        ImageView poster;
         VH(@NonNull View v) {
             super(v);
+            root = (CardView) v;
             title = v.findViewById(R.id.tv_title);
             time  = v.findViewById(R.id.tv_time);
             place = v.findViewById(R.id.tv_location);
             status = v.findViewById(R.id.tv_status);
+            poster = v.findViewById(R.id.img);
             btnSignUp = v.findViewById(R.id.btn_sign_up);
             btnDecline = v.findViewById(R.id.btn_decline);
             btnLeave = v.findViewById(R.id.btn_leave_waiting);

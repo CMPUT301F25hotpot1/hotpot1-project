@@ -120,7 +120,7 @@ public class FirestoreEventRepository {
                 });
     }
 
-    // ---------- create / update ----------
+    // ---------- create / update / delete ----------
 
     public Task<DocumentReference> createEvent(Map<String, Object> fields) {
         ensureArrays(fields, "waitingList", "chosen", "signedUp", "cancelled");
@@ -133,6 +133,11 @@ public class FirestoreEventRepository {
     public Task<Void> updateEvent(@NonNull String eventId, Map<String, Object> fields) {
         return events.document(eventId).set(fields, SetOptions.merge());
     }
+
+    public Task<Void> deleteEventById(String eventId) {
+        return events.document(eventId).delete();
+    }
+
 
     // ---------- draw winners ----------
 
@@ -417,6 +422,7 @@ public class FirestoreEventRepository {
                 regEndMs,
                 geo,
                 type,
+                full ? "Full" : "Open",
                 posterUrl
         );
     }
@@ -453,9 +459,5 @@ public class FirestoreEventRepository {
         String organizerId = "";
         String eventTitle  = "";
         String eventId     = "";
-    }
-
-    public Task<Void> deleteEventById(String eventId) {
-        return events.document(eventId).delete();
     }
 }

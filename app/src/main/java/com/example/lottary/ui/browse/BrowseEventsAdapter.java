@@ -4,6 +4,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,6 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
+import com.example.lottary.data.GlideApp;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 /**
  * RecyclerView adapter for the "Browse" list.
@@ -86,7 +90,7 @@ class BrowseEventsAdapter extends ListAdapter<Event, BrowseEventsAdapter.VH> {
 
         // Basic textual fields.
         h.title.setText(e.getTitle());
-        h.location.setText(e.getCity() + ", " + e.getVenue());
+        h.location.setText(e.getVenue() + ", " + e.getCity());
         h.time.setText(e.getPrettyStartTime());
 
         // Status label + color (red for "Full", green for "Open").
@@ -96,6 +100,19 @@ class BrowseEventsAdapter extends ListAdapter<Event, BrowseEventsAdapter.VH> {
                 e.isFull() ? R.color.full_red : R.color.open_green
         );
         h.status.setTextColor(color);
+
+        // Set poster if one is available
+        String posterUrl = e.getImageUrl();
+        if (!posterUrl.isEmpty()) {
+            // Reference to event poster in Cloud Storage
+            StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(posterUrl);
+            // Download directly from StorageReference using Glide
+            // (See MyAppGlideModule for Loader registration)
+            GlideApp.with(h.root.getContext())
+                    .load(storageReference)
+                    .into(h.poster);
+        } else
+            h.poster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
         // Disable the join button for full events to prevent invalid actions.
         h.btnJoin.setEnabled(!e.isFull());
@@ -113,14 +130,17 @@ class BrowseEventsAdapter extends ListAdapter<Event, BrowseEventsAdapter.VH> {
         CardView root;
         TextView title, location, time, status;
         Button btnJoin;
+        ImageView poster;
         VH(@NonNull View v) {
             super(v);
             root = (CardView) v;
             title = v.findViewById(R.id.tv_title);
             location = v.findViewById(R.id.tv_location);
             time = v.findViewById(R.id.tv_time);
+            poster = v.findViewById(R.id.iv_poster);
             status = v.findViewById(R.id.tv_status);
             btnJoin = v.findViewById(R.id.btnJoin);
+            poster = v.findViewById(R.id.img);
         }
     }
 

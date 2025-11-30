@@ -17,6 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
+import com.example.lottary.data.GlideApp;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 /**
  * Adapter used by the Admin Events screen to render a list of Event objects.
@@ -127,14 +130,22 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
                 status.setTextColor(Color.parseColor("#008A00"));
             }
 
+            // Set poster if one is available
+            String posterUrl = e.getImageUrl();
+            if (!posterUrl.isEmpty()) {
+                // Reference to event poster in Cloud Storage
+                StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(posterUrl);
+                // Download directly from StorageReference using Glide
+                // (See MyAppGlideModule for Loader registration)
+                GlideApp.with(itemView.getContext())
+                        .load(storageReference)
+                        .into(eventImage);
+            } else eventImage.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
             removeBtn.setOnClickListener(v -> removeClick.onRemove(e));
 
-            Glide.with(itemView.getContext())
-                    .load(e.getImageUrl())
-                    .into(eventImage);
-
-            eventImage.setOnClickListener(v -> showImagePreview(e.getImageUrl()));
-            viewImageBtn.setOnClickListener(v -> showImagePreview(e.getImageUrl()));
+            eventImage.setOnClickListener(v -> showImagePreview(posterUrl));
+            viewImageBtn.setOnClickListener(v -> showImagePreview(posterUrl));
         }
 
         /**

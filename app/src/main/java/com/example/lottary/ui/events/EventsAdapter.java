@@ -1,16 +1,23 @@
 package com.example.lottary.ui.events;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lottary.R;
 import com.example.lottary.data.Event;
+import com.example.lottary.data.GlideApp;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,9 +70,34 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
+        // Bind the Event at the requested position.
         Event e = items.get(position);
-        h.txtTitle.setText(e.getTitle());
-        h.txtTime.setText(e.getPrettyStartTime());
+
+        // Basic textual fields.
+        h.title.setText(e.getTitle());
+        h.location.setText(e.getVenue() + ", " + e.getCity());
+        h.time.setText(e.getPrettyStartTime());
+
+        // Status label + color (red for "Full", green for "Open").
+        // TODO: Add ended color option
+        h.status.setText(e.isFull() ? "Full" : "Open");
+        int color = ContextCompat.getColor(
+                h.status.getContext(),
+                e.isFull() ? R.color.full_red : R.color.open_green
+        );
+        h.status.setTextColor(color);
+
+        // Set poster if one is available
+        String posterUrl = e.getImageUrl();
+        if (!posterUrl.isEmpty()) {
+            // Reference to event poster in Cloud Storage
+            StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(posterUrl);
+            // Download directly from StorageReference using Glide
+            // (See MyAppGlideModule for Loader registration)
+            GlideApp.with(h.root.getContext())
+                    .load(storageReference)
+                    .into(h.poster);
+        } else h.poster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
         h.btnManage.setOnClickListener(v -> {
             if (listener != null) listener.onManage(e);
@@ -73,6 +105,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
         h.btnEdit.setOnClickListener(v -> {
             if (listener != null) listener.onEdit(e);
         });
+        // h.root.setOnClickListener(v -> listener.onEventClick(e));
     }
 
     @Override
@@ -81,13 +114,19 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtTitle, txtTime;
+        CardView root;
+        TextView title, time, location, status;
         Button btnManage, btnEdit;
+        ImageView poster;
 
         ViewHolder(@NonNull View v) {
             super(v);
-            txtTitle = v.findViewById(R.id.tv_title);
-            txtTime = v.findViewById(R.id.tv_time);
+            root = (CardView) v;
+            title = v.findViewById(R.id.tv_title);
+            location = v.findViewById(R.id.tv_location);
+            time = v.findViewById(R.id.tv_time);
+            status = v.findViewById(R.id.tv_status);
+            poster = v.findViewById(R.id.img);
             btnManage = v.findViewById(R.id.btn_manage);
             btnEdit = v.findViewById(R.id.btn_edit);
         }

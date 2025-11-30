@@ -337,8 +337,8 @@
                     android:layout_width="72dp"
                     android:layout_height="72dp"
                     android:scaleType="centerCrop"
-                    android:visibility="gone"
-                    android:contentDescription="@string/app_name" />
+                    android:contentDescription="@string/app_name"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:id="@+id/tv_upload_label"

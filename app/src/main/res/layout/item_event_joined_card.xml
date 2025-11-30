@@ -62,7 +62,7 @@
             android:background="#EDEDED"
             android:contentDescription="@string/event_poster"
             android:src="@drawable/ic_event"
-            android:scaleType="centerInside"
+            android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_status"/>
 
