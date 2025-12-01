@@ -106,7 +106,7 @@ public class UserNotificationLogsAdapter
         }
 
         // Simple status icon; could later be customized by log type.
-        holder.statusIcon.setImageResource(android.R.drawable.ic_dialog_info);
+        holder.statusIcon.setImageResource(R.drawable.ic_info_black_24dp);
     }
 
     @Override
