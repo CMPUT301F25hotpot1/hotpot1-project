@@ -109,7 +109,7 @@
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${MAPS_API_KEY}" />
+            android:value="current_key"/>
         <activity
             android:name=".ui.events.manage.MapActivity"
             android:exported="true">
