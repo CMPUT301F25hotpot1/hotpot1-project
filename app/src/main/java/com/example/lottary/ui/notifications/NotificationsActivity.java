@@ -14,7 +14,9 @@
  * - Client-side sorting assumes that "sentAt" is present and consistent.
  */
 
+
 package com.example.lottary.ui.notifications;
+
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,11 +27,13 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreEventRepository;
@@ -38,6 +42,7 @@ import com.example.lottary.ui.events.MyEventsActivity;
 import com.example.lottary.ui.profile.MyProfileActivity;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar; // << added
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -45,12 +50,14 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 /**
  * Activity that shows a list of notifications for the current device.
@@ -61,14 +68,17 @@ import java.util.Map;
  */
 public class NotificationsActivity extends AppCompatActivity implements NotificationsAdapter.Listener {
 
+
     private RecyclerView recycler;
     private ProgressBar loading;
     private NotificationsAdapter adapter;
     private ListenerRegistration reg;
     private String deviceId;
 
+
     /** Latest raw notifications fetched from Firestore before opt-out filtering. */
     private final List<NotificationItem> latest = new ArrayList<>();
+
 
     /**
      * Sets up the toolbar, RecyclerView, adapter, and bottom navigation.
@@ -78,7 +88,10 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        NotifyPrefs.setAllOptedOut(this, false);
+
+        // REMOVE: do not force opt-in on every launch
+        // NotifyPrefs.setAllOptedOut(this, false);
+
 
         // Use device id as a lightweight identity for notifications.
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -86,10 +99,12 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             deviceId = "device_demo";
         }
 
+
         // Configure top app bar.
         MaterialToolbar top = findViewById(R.id.top_app_bar);
         top.setTitle(getString(R.string.notifications));
         top.setNavigationOnClickListener(v -> finish());
+
 
         // Configure loading indicator and list.
         loading = findViewById(R.id.loading);
@@ -98,9 +113,11 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         adapter = new NotificationsAdapter(this);
         recycler.setAdapter(adapter);
 
+
         // Configure bottom navigation.
         wireBottomNav();
     }
+
 
     /**
      * Starts listening for Firestore updates when the activity becomes visible.
@@ -110,6 +127,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         super.onStart();
         startListening();
     }
+
 
     /**
      * Stops listening to Firestore updates when the activity is no longer visible.
@@ -123,6 +141,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         }
     }
 
+
     /**
      * Subscribes to the "notifications" collection for this device and keeps
      * the {@link #latest} list in sync.
@@ -134,17 +153,20 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         loading.setVisibility(View.VISIBLE);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+
         // Remove any previous listener to avoid leaking registrations.
         if (reg != null) {
             reg.remove();
             reg = null;
         }
 
+
         reg = db.collection("notifications")
                 .whereEqualTo("recipientId", deviceId)
                 .limit(200)
                 .addSnapshotListener((snap, err) -> {
                     loading.setVisibility(View.GONE);
+
 
                     if (err != null) {
                         // On error, show empty state and surface a message.
@@ -161,9 +183,11 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                         return;
                     }
 
+
                     // Map raw documents into model objects.
                     latest.clear();
                     latest.addAll(mapList(snap));
+
 
                     // Sort newest first based on sentAtMs.
                     Collections.sort(latest, new Comparator<NotificationItem>() {
@@ -173,10 +197,12 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                         }
                     });
 
+
                     // Apply opt-out preferences before showing to the user.
                     submitWithOptOutFilter();
                 });
     }
+
 
     /**
      * Maps a Firestore {@link QuerySnapshot} to a list of {@link NotificationItem}.
@@ -198,10 +224,12 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             Timestamp ts = d.getTimestamp("sentAt");
             long when = ts == null ? 0L : ts.toDate().getTime();
 
+
             out.add(new NotificationItem(id, evId, grp, type, msg, when, evTi, org));
         }
         return out;
     }
+
 
     /**
      * Converts a potentially null object to a non-null string.
@@ -210,16 +238,31 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         return o == null ? "" : o.toString();
     }
 
+
     /**
      * Applies opt-out preferences from {@link NotifyPrefs} to the latest list
      * and submits the filtered result to the adapter.
+     *
+     * If globally muted, show a Snackbar offering a one-tap Opt-in.
      */
     private void submitWithOptOutFilter() {
         // Global opt-out hides all notifications from the inbox.
         if (NotifyPrefs.isAllOptedOut(this)) {
             adapter.submit(new ArrayList<>());
+
+
+            // Offer an in-page Opt-in so the user isn't "locked out".
+            if (recycler != null) {
+                Snackbar.make(recycler, "All notifications muted", Snackbar.LENGTH_LONG)
+                        .setAction("Opt-in", v -> {
+                            NotifyPrefs.setAllOptedOut(this, false);
+                            submitWithOptOutFilter();
+                        })
+                        .show();
+            }
             return;
         }
+
 
         List<NotificationItem> filtered = new ArrayList<>();
         for (NotificationItem n : latest) {
@@ -233,6 +276,8 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         }
         adapter.submit(filtered);
     }
+
+
 
 
     /**
@@ -251,6 +296,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             return;
         }
 
+
         FirestoreEventRepository.get()
                 .signUp(item.eventId, deviceId)
                 .addOnSuccessListener(v -> {
@@ -267,6 +313,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                         ).show());
     }
 
+
     /**
      * Handles the "Decline" action for a selected notification.
      *
@@ -280,6 +327,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             Toast.makeText(this, "Missing eventId", Toast.LENGTH_SHORT).show();
             return;
         }
+
 
         FirestoreEventRepository.get()
                 .decline(item.eventId, deviceId)
@@ -295,6 +343,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                         ).show());
     }
 
+
     /**
      * Displays the overflow menu for a notification row and handles opt-in/opt-out
      * and reset actions for notification preferences.
@@ -307,10 +356,12 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         PopupMenu pm = new PopupMenu(this, anchor);
         pm.getMenuInflater().inflate(R.menu.menu_notifications_overflow, pm.getMenu());
 
+
         // Toggle visibility of global opt-out / opt-in based on current state.
         boolean allMuted = NotifyPrefs.isAllOptedOut(this);
         pm.getMenu().findItem(R.id.action_optout_all).setVisible(!allMuted);
         pm.getMenu().findItem(R.id.action_optin_all).setVisible(allMuted);
+
 
         // Configure organizer specific options.
         MenuItem outOrg = pm.getMenu().findItem(R.id.action_optout_org);
@@ -324,6 +375,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             outOrg.setVisible(!orgMuted);
             inOrg.setVisible(orgMuted);
         }
+
 
         pm.setOnMenuItemClickListener(mi -> {
             int id = mi.getItemId();
@@ -365,8 +417,10 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
             return false;
         });
 
+
         pm.show();
     }
+
 
     /**
      * Marks the notification as read in Firestore and records an "actedAt" timestamp.
@@ -376,15 +430,18 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     private void markNotificationRead(@NonNull String notifId) {
         if (notifId.isEmpty()) return;
 
+
         Map<String, Object> up = new HashMap<>();
         up.put("read", true);
         up.put("actedAt", Timestamp.now());
+
 
         FirebaseFirestore.getInstance()
                 .collection("notifications")
                 .document(notifId)
                 .set(up, SetOptions.merge());
     }
+
 
     /**
      * Wires up the bottom navigation bar to switch between main sections
@@ -394,15 +451,19 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         BottomNavigationView nav = findViewById(R.id.bottomNav);
         if (nav == null) return;
 
+
         nav.setSelectedItemId(R.id.nav_notifications);
+
 
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
 
             if (id == R.id.nav_notifications) {
                 // Already on this screen.
                 return true;
             }
+
 
             if (id == R.id.nav_my_events) {
                 Intent i = new Intent(this, MyEventsActivity.class);
@@ -426,6 +487,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                 finish();
                 return true;
             }
+
 
             return false;
         });
