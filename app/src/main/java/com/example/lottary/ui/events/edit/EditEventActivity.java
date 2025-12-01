@@ -52,6 +52,7 @@ import java.util.Map;
  *
  * Outstanding Issues / TODOs:
  * - No cross-field validation for date/time consistency.
+ * - Cannot edit venue & city
  * - Limited error handling; network/rules failures are surfaced via Toast and logcat only.
  * - ProgressDialog is legacy; consider replacing with a non-blocking in-UI indicator.
  */
@@ -105,6 +106,9 @@ public class EditEventActivity extends AppCompatActivity {
         FirestoreEventRepository.get().listenEvent(eventId, this::populate);
     }
 
+    /**
+     * Bind views to their respective XML design
+     */
     private void bindViews() {
         topBar     = findViewById(R.id.top_app_bar);
         etTitle    = findViewById(R.id.et_title);
@@ -125,6 +129,9 @@ public class EditEventActivity extends AppCompatActivity {
         btnEdit    = findViewById(R.id.btn_edit);
     }
 
+    /**
+     * Handle the case of choosing an image to replace
+     */
     private void initImagePicker() {
         pickImageLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
@@ -139,6 +146,10 @@ public class EditEventActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Populate the event data onto appropriate fields
+     * @param d event document from the data base to populate from
+     */
     private void populate(DocumentSnapshot d) {
         if (d == null || !d.exists()) return;
 
@@ -174,10 +185,19 @@ public class EditEventActivity extends AppCompatActivity {
         else imgPosterPreview.setVisibility(View.GONE);
     }
 
+    /**
+     * Null string handler
+     * @param et field to populate empty string to
+     * @param ts time stamp
+     * @param fmt time format convention to display
+     */
     private void setTextOrEmpty(EditText et, Timestamp ts, DateFormat fmt) {
         et.setText(ts == null ? "" : fmt.format(ts.toDate()));
     }
 
+    /**
+     * Setup calendar pickers and listeners to their respective fields
+     */
     private void wirePickers() {
 
         etEventDate.setText(fmtDate.format(calEventDate.getTime()));
@@ -199,6 +219,11 @@ public class EditEventActivity extends AppCompatActivity {
         etRegEnd.setOnClickListener(v -> pickDate(etRegEnd, calRegEnd));
     }
 
+    /**
+     * Handling date-picking cases
+     * @param target the view to return the date values being pick
+     * @param cal The calendar picker associated with the view
+     */
     private void pickTime(EditText target, Calendar cal) {
         new TimePickerDialog(
                 this,
@@ -214,6 +239,11 @@ public class EditEventActivity extends AppCompatActivity {
         ).show();
     }
 
+    /**
+     * Handling date-picking cases
+     * @param target the view to return the date values being pick
+     * @param cal The calendar picker associated with the view
+     */
     private void pickDate(EditText target, Calendar cal) {
         new DatePickerDialog(
                 this,
@@ -229,6 +259,9 @@ public class EditEventActivity extends AppCompatActivity {
         ).show();
     }
 
+    /**
+     * Update event using the provided info to the database
+     */
     private void saveChanges() {
         if (TextUtils.isEmpty(etTitle.getText().toString().trim())) {
             etTitle.setError("Required"); etTitle.requestFocus(); return;
@@ -317,6 +350,10 @@ public class EditEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Handling the case where user wants to change to a different poster
+     * @param eventId the event id to upload the poster for
+     */
     private void editPosterAndAttachToEvent(String eventId) {
         if (posterUri == null) return;
 
@@ -351,7 +388,24 @@ public class EditEventActivity extends AppCompatActivity {
                 );
     }
 
+    /**
+     * Convert a value from database to int
+     * @param s number on the database
+     * @return an int of the value
+     */
     private static int parseInt(String s) { try { return Integer.parseInt(s); } catch (Exception e) { return 0; } }
+
+    /**
+     * Convert a value from database to double
+     * @param s number on the database
+     * @return a double of the value
+     */
     private static double parseDouble(String s) { try { return Double.parseDouble(s); } catch (Exception e) { return 0d; } }
+
+    /**
+     * Null string handler.
+     * @param v - a String to transform
+     * @return an empty String if parameter is null, if not return the original String.
+     */
     private static String n(String v){ return v == null ? "" : v; }
 }

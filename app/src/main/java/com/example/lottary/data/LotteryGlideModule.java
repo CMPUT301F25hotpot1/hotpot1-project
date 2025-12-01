@@ -14,6 +14,11 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.InputStream;
 
+/**
+ * A class needed to display photos from the database using Glide
+ * @see <a href="https://firebaseopensource.com/projects/firebase/firebaseui-android/storage/readme">
+ *     Using Firebase UI to display images from Firebase Storage</a>
+ */
 @GlideModule
 public class LotteryGlideModule extends AppGlideModule {
 
@@ -25,6 +30,12 @@ public class LotteryGlideModule extends AppGlideModule {
         builder.setMemoryCache(new LruResourceCache(calculator.getMemoryCacheSize()));
     }
 
+    /**
+     * Enable handling of storage references
+     * @param context An Application {@link android.content.Context}.
+     * @param glide The Glide singleton that is in the process of being initialized.
+     * @param registry An {@link com.bumptech.glide.Registry} to use to register components.
+     */
     @Override
     public void registerComponents(Context context, Glide glide, Registry registry) {
         // Register FirebaseImageLoader to handle StorageReference

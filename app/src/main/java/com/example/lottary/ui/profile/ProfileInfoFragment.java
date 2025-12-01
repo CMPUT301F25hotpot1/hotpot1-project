@@ -38,10 +38,13 @@ import java.util.List;
  * A {@link Fragment} subclass that displays user information & options to edit profile, delete profile
  * and swap to Admin View (conditional)
  * @author Han Nguyen, Mengxi Zhang (for admin button config) & Tianyi Zhang (for populate() and n())
- * @version 1.1
+ * @version 1.2
  * @see MyProfileActivity
  * @see EditProfileActivity
  * @see com.example.lottary.ui.admin.AdminEventsActivity
+ *
+ * Outstanding Issues / Notes:
+ * Assigned admins are hard-coded and won't persist if the admin decides to change their device
  */
 public class ProfileInfoFragment extends Fragment {
 
@@ -85,7 +88,6 @@ public class ProfileInfoFragment extends Fragment {
         infoPhoneNum = view.findViewById(R.id.user_phone_num);
 
         // fetch info and populate data
-        // fetchInfo(userDeviceID);
         FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
 
         // set button listeners
@@ -115,7 +117,6 @@ public class ProfileInfoFragment extends Fragment {
     public void onResume() {
         super.onResume();
         FirestoreUserRepository.get().listenUser(userDeviceID, this::populate);
-        // fetchInfo(userDeviceID);
     }
 
     /**
@@ -136,28 +137,6 @@ public class ProfileInfoFragment extends Fragment {
         else {
             infoPhoneNum.setText(phoneNum);
         }
-    }
-
-    /**
-     * Fetch a single user document from the database and populate user information on the screen.
-     * If there is no document the user info will be empty.
-     * @param deviceID - the current device ID of the user
-     */
-    private void fetchInfo(String deviceID) {
-        DocumentReference docRef = FirestoreUserRepository.get().hasUser(deviceID);
-        docRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                // if device id is in the database, user is new
-                if (document.exists()) {
-                    populate(document);
-                } else {
-                    Log.i("EmptyDocument", "Failed with: ", task.getException());
-                }
-            } else {
-                Log.i("TaskFailed", "Failed with: ", task.getException());
-            }
-        });
     }
 
     /**
