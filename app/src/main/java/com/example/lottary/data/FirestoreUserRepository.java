@@ -73,10 +73,6 @@ public class FirestoreUserRepository {
         return users.document(deviceID);
     }
 
-    public DocumentSnapshot getUser(@NonNull String deviceID) {
-        return users.document(deviceID).get().getResult();
-    }
-
     // ---------- listeners ----------
 
     public interface UsersListener { void onChanged(@NonNull List<User> items); }

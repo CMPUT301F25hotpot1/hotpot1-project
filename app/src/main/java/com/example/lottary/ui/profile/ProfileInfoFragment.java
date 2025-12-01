@@ -25,6 +25,7 @@ import com.example.lottary.R;
 import com.example.lottary.data.FirestoreUserRepository;
 import com.example.lottary.ui.admin.AdminEventsActivity;
 import com.example.lottary.ui.admin.AdminUsersActivity;
+import com.example.lottary.ui.browse.BrowseActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.DocumentReference;
@@ -173,9 +174,11 @@ public class ProfileInfoFragment extends Fragment {
                     FirestoreUserRepository.get().deleteUser(userDeviceID)
                             .addOnSuccessListener(ref -> {
                                 Toast.makeText(context, "Profile deleted", Toast.LENGTH_SHORT).show();
-                                Bundle mode = new Bundle();
-                                mode.putString("bundleKey", "New User");
-                                getParentFragmentManager().setFragmentResult("requestKey", mode);
+                                Intent intent = new Intent(context, BrowseActivity.class);
+                                intent.putExtra("new_user", true);
+                                startActivity(intent);
+                                // finish current to avoid back-stack/lifecycle weirdness
+                                requireActivity().finish();
                             })
                             .addOnFailureListener(e -> {
                                 Toast.makeText(context, "Deletion failed: " + e.getMessage(), Toast.LENGTH_LONG).show();

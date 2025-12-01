@@ -96,10 +96,10 @@ public class ProfileTest {
 
         // Check if delete profile dialog appears
         onView(withId(R.id.btn_delete_profile)).perform(click());
-        onView(withId(R.id.dialog_user_delete_profile)).check(matches(isDisplayed()));
+        onView(withText("Are you sure that you want to delete your profile?")).check(matches(isDisplayed()));
 
         // Don't delete
-        onView(withId(R.id.btn_no)).perform(click());
+        onView(withText("No")).perform(click());
 
         // Check if profile info is re_displayed again
         onView(withText("Han Nguyen")).check(matches(isDisplayed()));
@@ -107,10 +107,10 @@ public class ProfileTest {
         onView(withText("8877447232")).check(matches(isDisplayed()));
 
         // Delete profile
-        onView(withId(R.id.btn_delete_profile)).perform(click());
-        onView(withId(R.id.btn_yes)).perform(click());
+        onView(withText("Are you sure that you want to delete your profile?")).check(matches(isDisplayed()));
+        onView(withText("Yes")).perform(click());
 
         // Check if new profile fragment is displayed
-        onView(withText("Welcome to EventLottery!")).check(matches(isDisplayed()));
+        onView(withText("Latest Events")).check(matches(isDisplayed()));
     }
 }

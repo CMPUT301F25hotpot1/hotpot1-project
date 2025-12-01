@@ -13,27 +13,32 @@
         android:layout_height="wrap_content"
         android:text="@string/filter_event_type"
         style="@style/ItemTitle"
-        android:layout_marginTop="15dp"/>
+        android:layout_marginTop="15dp"
+        android:visibility="gone"/>
     <CheckBox
         android:id="@+id/cb_sports"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sports" />
+        android:text="@string/filter_sports"
+        android:visibility="gone"/>
     <CheckBox
         android:id="@+id/cb_music"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Music" />
+        android:text="@string/filter_music"
+        android:visibility="gone"/>
     <CheckBox
         android:id="@+id/cb_arts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Arts &amp; Crafts" />
+        android:text="@string/filter_arts"
+        android:visibility="gone"/>
     <CheckBox
         android:id="@+id/cb_market"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Market" />
+        android:text="@string/filter_market"
+        android:visibility="gone"/>
 
     <!-- Date Preferences-->
     <TextView
@@ -73,7 +78,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
-        android:text="Geolocation near me" />
+        android:text="Geolocation enabled events only" />
 
     <!-- Buttons-->
     <LinearLayout

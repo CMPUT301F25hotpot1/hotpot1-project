@@ -1,7 +1,6 @@
 package com.example.lottary.ui.profile;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -42,7 +41,6 @@ public class CreateProfileActivity extends AppCompatActivity
 
     /**
      * Request code for location permission request.
-     *
      * @see #onRequestPermissionsResult(int, String[], int[])
      */
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
@@ -51,7 +49,7 @@ public class CreateProfileActivity extends AppCompatActivity
     private EditText etName, etEmail, etPhoneNum;
     private Button btnCreateProfile;
     private MaterialCheckBox cbIDConsent, cbIDLocation;
-    private Double latitude, longitude;
+    private Double latitude = 0.0, longitude = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +73,7 @@ public class CreateProfileActivity extends AppCompatActivity
         cbIDLocation.setOnCheckedChangeListener((b, isChecked) -> {
             // ask for user permission to get location when location checkbox is checked
             if (cbIDLocation.isChecked()) {
-                String[] permissionList = {Manifest.permission.ACCESS_COARSE_LOCATION};
+                String[] permissionList = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
                 ActivityCompat.requestPermissions(this, permissionList, LOCATION_PERMISSION_REQUEST_CODE);
             }
         });
@@ -92,11 +90,6 @@ public class CreateProfileActivity extends AppCompatActivity
         else if (!(cbIDConsent.isChecked())) {
             cbIDConsent.setError("Required");
             cbIDConsent.requestFocus();
-            return;
-        }
-        else if (!(cbIDLocation.isChecked())) {
-            cbIDLocation.setError("Required");
-            cbIDLocation.requestFocus();
             return;
         }
 
@@ -136,11 +129,13 @@ public class CreateProfileActivity extends AppCompatActivity
      *     which is either {@link PackageManager#PERMISSION_GRANTED}
      *     or {@link PackageManager#PERMISSION_DENIED}. Never null.
      */
-    @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         // If allowed, get the last known location. If not, it will be set to 0 by default;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                || (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
             fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
                 // Record coordinators of user's last known location.
                 if (location != null) {
@@ -149,6 +144,9 @@ public class CreateProfileActivity extends AppCompatActivity
                     Toast.makeText(this, "Location temporarily recorded.", Toast.LENGTH_SHORT).show();
                 }
             });
+        } else {
+            latitude = null;
+            longitude = null;
         }
     }
 

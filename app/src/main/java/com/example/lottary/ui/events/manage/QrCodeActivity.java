@@ -62,9 +62,8 @@ public class QrCodeActivity extends AppCompatActivity {
         // Optional: show "QR • <title>" based on Firestore document
         reg = FirestoreEventRepository.get().listenEvent(eventId, d -> {
             String t = d != null ? d.getString("title") : null;
-            if (t != null && !t.isEmpty()) {
-                top.setTitle("QR • " + t);
-            }
+            top.setTitle(R.string.qr_code);
+            if (t != null && !t.isEmpty()) top.setSubtitle(t);
         });
 
         // -------- 3. Setup views --------

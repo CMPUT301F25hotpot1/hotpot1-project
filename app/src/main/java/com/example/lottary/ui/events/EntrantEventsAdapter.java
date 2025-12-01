@@ -104,6 +104,7 @@ public class EntrantEventsAdapter extends RecyclerView.Adapter<EntrantEventsAdap
             GlideApp.with(h.root.getContext())
                     .load(storageReference)
                     .into(h.poster);
+            h.poster.setScaleType(ImageView.ScaleType.CENTER_CROP);
         } else h.poster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
         h.btnSignUp.setVisibility(row.showSignUp ? View.VISIBLE : View.GONE);

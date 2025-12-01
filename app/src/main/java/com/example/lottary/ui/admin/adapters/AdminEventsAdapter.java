@@ -140,6 +140,7 @@ public class AdminEventsAdapter extends ListAdapter<Event, AdminEventsAdapter.Vi
                 GlideApp.with(itemView.getContext())
                         .load(storageReference)
                         .into(eventImage);
+                eventImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
             } else eventImage.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
             removeBtn.setOnClickListener(v -> removeClick.onRemove(e));

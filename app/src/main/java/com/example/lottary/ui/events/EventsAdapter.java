@@ -97,6 +97,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
             GlideApp.with(h.root.getContext())
                     .load(storageReference)
                     .into(h.poster);
+            h.poster.setScaleType(ImageView.ScaleType.CENTER_CROP);
         } else h.poster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
         h.btnManage.setOnClickListener(v -> {
