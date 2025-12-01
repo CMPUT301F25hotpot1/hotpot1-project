@@ -385,7 +385,6 @@ public class FirestoreEventRepository {
         return list;
     }
 
-    /** 把 Firestore 文档映射成 Event，包含 posterUrl -> imageUrl */
     private Event map(DocumentSnapshot d) {
         String id    = d.getId();
         String title = safe(d.getString("title"));

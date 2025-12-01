@@ -144,13 +144,11 @@
             android:exported="false"
             android:label="Logs" />
 
-        <!-- ✅ 新加的：Admin 查看某个用户的 Notification 日志页面 -->
         <activity
             android:name="com.example.lottary.ui.admin.UserNotificationLogsActivity"
             android:exported="false"
             android:label="User Notifications" />
 
-        <!-- FileProvider，用于图片共享等 -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

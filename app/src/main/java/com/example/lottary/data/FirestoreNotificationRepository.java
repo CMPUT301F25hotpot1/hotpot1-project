@@ -43,14 +43,6 @@ public class FirestoreNotificationRepository {
         void onChanged(List<NotificationLog> list);
     }
 
-    /**
-     * Loads all notifications for the given recipient id.
-     *
-     * IMPORTANT:
-     * 这里的查询逻辑和 NotificationsActivity.startListening() 保持一致，
-     * 只用 whereEqualTo("recipientId", uid) + limit(200)，不再使用 orderBy("sentAt")，
-     * 这样就不需要 Firestore 的复合索引，也能拿到和 User 端相同的结果。
-     */
     public void getLogsForUser(String uid, @NonNull LogsListener callback) {
         db.collection("notifications")
                 .whereEqualTo("recipientId", uid)

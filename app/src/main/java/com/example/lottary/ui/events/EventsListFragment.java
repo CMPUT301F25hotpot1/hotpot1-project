@@ -138,7 +138,6 @@ public class EventsListFragment extends Fragment implements EventsAdapter.Listen
     @Override
     public void onManage(@NonNull Event e) {
         Intent i = new Intent(requireContext(), ManageEventActivity.class);
-        // ✅ 用 ManageEventActivity 自己定义的 EXTRA_EVENT_ID 传过去
         i.putExtra(ManageEventActivity.EXTRA_EVENT_ID, e.getId());
         startActivity(i);
     }
