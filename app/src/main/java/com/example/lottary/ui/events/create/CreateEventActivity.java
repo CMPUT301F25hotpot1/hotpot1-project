@@ -33,7 +33,24 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-
+/**
+ * CreateEventActivity
+ *
+ * Purpose:
+ * Screen for creating. It allows the user to add event attributes (title, description,
+ * city, venue, relevant dates, capacity, price, poster, and geolocation flag),
+ * and submits a new event back to Firestore.
+ *
+ * Design Role:
+ * - "Create” part of the CRUD flow for events.
+ * - Uses FirestoreEventRepository to listen to a single event and to push creations.
+ * - Displays a modal ProgressDialog while saving and disables the create button to avoid duplicates.
+ *
+ * Outstanding Issues / TODOs:
+ * - No cross-field validation for date/time consistency.
+ * - Limited error handling; network/rules failures are surfaced via Toast and logcat only.
+ * - ProgressDialog is legacy; consider replacing with a non-blocking in-UI indicator.
+ */
 public class CreateEventActivity extends AppCompatActivity {
 
     private MaterialToolbar topBar;
@@ -70,6 +87,9 @@ public class CreateEventActivity extends AppCompatActivity {
         wireActions();
     }
 
+    /**
+     * Bind views to their respective XML design
+     */
     private void bindViews() {
         topBar     = findViewById(R.id.top_app_bar);
         etTitle    = findViewById(R.id.et_title);
@@ -90,6 +110,9 @@ public class CreateEventActivity extends AppCompatActivity {
         btnCreate  = findViewById(R.id.btn_create);
     }
 
+    /**
+     * Handle the case of choosing an image to upload
+     */
     private void initImagePicker() {
         pickImageLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
@@ -104,10 +127,16 @@ public class CreateEventActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Set click listeners to top bar
+     */
     private void wireTopBar() {
         topBar.setNavigationOnClickListener(v -> finish());
     }
 
+    /**
+     * Setup calendar pickers and listeners to their respective fields
+     */
     private void wirePickers() {
 
         etEventDate.setText(fmtDate.format(calEventDate.getTime()));
@@ -129,11 +158,19 @@ public class CreateEventActivity extends AppCompatActivity {
         etRegEnd.setOnClickListener(v -> pickDate(etRegEnd, calRegEnd));
     }
 
+    /**
+     * Set click listeners to major actions (upload image and submit created event
+     */
     private void wireActions() {
         boxUpload.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
         btnCreate.setOnClickListener(v -> saveEvent());
     }
 
+    /**
+     * Handling date-picking cases
+     * @param target the view to return the date values being pick
+     * @param cal The calendar picker associated with the view
+     */
     private void pickTime(EditText target, Calendar cal) {
         new TimePickerDialog(
                 this,
@@ -149,6 +186,11 @@ public class CreateEventActivity extends AppCompatActivity {
         ).show();
     }
 
+    /**
+     * Handling date-picking cases
+     * @param target the view to return the date values being pick
+     * @param cal The calendar picker associated with the view
+     */
     private void pickDate(EditText target, Calendar cal) {
         new DatePickerDialog(
                 this,
@@ -164,6 +206,9 @@ public class CreateEventActivity extends AppCompatActivity {
         ).show();
     }
 
+    /**
+     * Create and save event using the provided info to the database
+     */
     private void saveEvent() {
         if (!require(etTitle)) return;
 
@@ -244,6 +289,10 @@ public class CreateEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Handling the case where user wants to upload a poster
+     * @param eventId the event id to upload the poster for
+     */
     private void uploadPosterAndAttachToEvent(String eventId) {
         if (posterUri == null) return;
 
@@ -274,6 +323,10 @@ public class CreateEventActivity extends AppCompatActivity {
                 );
     }
 
+    /**
+     * Forces the user to provide input on the given field
+     * @param et - the EditText field that requires a String input
+     */
     private boolean require(EditText et) {
         if (TextUtils.isEmpty(et.getText().toString().trim())) {
             et.setError("Required");
@@ -283,11 +336,23 @@ public class CreateEventActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Convert a value from database to int
+     * @param s number on the database
+     * @param def default value to return to if an error occur
+     * @return
+     */
     private int parseIntOr(String s, int def) {
         try { return Integer.parseInt(s); }
         catch (Exception e) { return def; }
     }
 
+    /**
+     * Convert a value from database to double
+     * @param s number on the database
+     * @param def default value to return to if an error occur
+     * @return
+     */
     private double parseDoubleOr(String s, double def) {
         try { return Double.parseDouble(s); }
         catch (Exception e) { return def; }

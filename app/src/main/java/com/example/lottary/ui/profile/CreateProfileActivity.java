@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * A {@link AppCompatActivity} subclass that allow user to create their profile information.
  * @author Han Nguyen, Tianyi Zhang (for base code of saveProfile(), require()), Google Developers & GeekForGeeks
- * @version 2.0
+ * @version 2.1
  * @see MyProfileActivity
  * @see NewProfileFragment
  * @see <a href="https://www.geeksforgeeks.org/android/how-to-get-user-location-in-android"/>GeekForGeeks's Tutorial on Getting User Location</a>
