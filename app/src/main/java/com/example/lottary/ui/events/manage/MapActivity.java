@@ -14,6 +14,7 @@ import com.example.lottary.data.FirestoreEventRepository;
 import com.example.lottary.data.FirestoreUserRepository;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -23,20 +24,35 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 
 import java.util.ArrayList;
 import java.util.List;
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 /**
  * A {@link AppCompatActivity} subclass that let the organizer sees approximate locations of the people who joined the event
- * @author Han Nguyen, Tianyi Zhang, Google Developers
+ * The code was adapted from Google LLC's Example on Display Maps and Custom Map Pins
+ * @author Han Nguyen, Tianyi Zhang, Google LLC
  * @version 2.0
  * @see ManageEventActivity
  * @see com.example.lottary.ui.profile.CreateProfileActivity
- * @see <a href="https://developers.google.com/maps/documentation/android-sdk/examples/my-location?_gl=1*1d0qewx*_up*MQ..*_ga*MTYxNjI3NTgzMi4xNzY0MjQxOTA4*_ga_SM8HXJ53K2*czE3NjQyNDE5MDgkbzEkZzAkdDE3NjQyNDE5MDgkajYwJGwwJGgw*_ga_NRWSTWS78N*czE3NjQyNDE5MDgkbzEkZzEkdDE3NjQyNDE5MjckajQxJGwwJGgw#maps_android_sample_my_location-java"/>
- * Google Developers's Example on Display Maps and Custom Map Pins</a>
+ * @see <a href="https://developers.google.com/maps/documentation/android-sdk/map-with-marker"/>Google LLC's Example on Display Maps and Custom Map Pins</a>
+ * @see <a href="https://github.com/googlemaps-samples/android-samples/blob/main/ApiDemos/project/java-app/src/main/java/com/example/mapdemo/UiSettingsDemoActivity.java"/>Google LLC's Example on Map Interaction Features</a>
  */
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private String eventId;
     private List<LocationRow> allLocationsList = new ArrayList<>();
+    private UiSettings mUiSettings;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +70,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         // Create the map and add markers when map is ready
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_view);
         if (mapFragment == null) Toast.makeText(this, "Cannot display map.", Toast.LENGTH_LONG).show();
-        else mapFragment.getMapAsync(this);
+        else {
+            mapFragment.getMapAsync(this);
+        }
     }
 
 
@@ -141,6 +159,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 // .position(venueMarker)
                 // .title(allLocationsList.get(0).getName()));
         // googleMap.moveCamera(CameraUpdateFactory.newLatLng(venueMarker));
+
+        mUiSettings = googleMap.getUiSettings();
+        mUiSettings.setZoomControlsEnabled(true);
 
         // create custom markers for users who have valid information
         for (int i = 0; i < allLocationsList.size(); i++) {

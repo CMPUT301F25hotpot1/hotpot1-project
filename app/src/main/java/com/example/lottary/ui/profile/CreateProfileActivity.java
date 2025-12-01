@@ -34,7 +34,8 @@ import java.util.Map;
  * @see MyProfileActivity
  * @see NewProfileFragment
  * @see <a href="https://www.geeksforgeeks.org/android/how-to-get-user-location-in-android"/>GeekForGeeks's Tutorial on Getting User Location</a>
- * @see <a href="https://developers.google.com/maps/documentation/android-sdk/examples/my-location?_gl=1*1d0qewx*_up*MQ..*_ga*MTYxNjI3NTgzMi4xNzY0MjQxOTA4*_ga_SM8HXJ53K2*czE3NjQyNDE5MDgkbzEkZzAkdDE3NjQyNDE5MDgkajYwJGwwJGgw*_ga_NRWSTWS78N*czE3NjQyNDE5MDgkbzEkZzEkdDE3NjQyNDE5MjckajQxJGwwJGgw#maps_android_sample_my_location-java"/>Google Developers's Example on Getting Location Permission</a>
+ * @see <a href="https://developers.google.com/maps/documentation/android-sdk/examples/my-location?_gl=1*iqf98g*_up*MQ..*_ga*MjkyNTIyNjYuMTc2NDU1MTc3Nw..*_ga_SM8HXJ53K2*czE3NjQ1NTE3NzYkbzEkZzAkdDE3NjQ1NTE3NzYkajYwJGwwJGgw*_ga_NRWSTWS78N*czE3NjQ1NTE3NzckbzEkZzAkdDE3NjQ1NTE3NzckajYwJGwwJGgw"/>
+ * Google LLC's Example on Getting Location Permission</a>
  */
 public class CreateProfileActivity extends AppCompatActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
