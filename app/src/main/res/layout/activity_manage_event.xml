@@ -16,7 +16,7 @@
         app:navigationIconTint="@color/organizer_purple"
         app:titleTextAppearance="@style/ScreenTitle.Organizer"
         app:title="@string/manage_event"
-        app:subtitle="Event Name" />
+        app:subtitle="@string/event_title" />
 
     <LinearLayout
         android:orientation="vertical"

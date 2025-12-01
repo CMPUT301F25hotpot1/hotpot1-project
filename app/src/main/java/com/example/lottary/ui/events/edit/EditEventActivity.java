@@ -148,9 +148,9 @@ public class EditEventActivity extends AppCompatActivity {
         etVenue.setText(n(d.getString("venue")));
 
         DateFormat dfDate  = DateFormat.getDateInstance(DateFormat.SHORT);
-        DateFormat dfDateTime = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
-        setTextOrEmpty(etStart, d.getTimestamp("startTime"), dfDateTime);
-        setTextOrEmpty(etEnd,   d.getTimestamp("endTime"),   dfDateTime);
+        DateFormat dfTime = DateFormat.getTimeInstance(DateFormat.SHORT);
+        setTextOrEmpty(etStart, d.getTimestamp("startTime"), dfTime);
+        setTextOrEmpty(etEnd,   d.getTimestamp("endTime"),   dfTime);
         setTextOrEmpty(etEventDate, d.getTimestamp("startTime"), dfDate);
         setTextOrEmpty(etRegStart, d.getTimestamp("registerStart"), dfDate);
         setTextOrEmpty(etRegEnd,   d.getTimestamp("registerEnd"),   dfDate);

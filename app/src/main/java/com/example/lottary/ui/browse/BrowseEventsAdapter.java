@@ -111,6 +111,7 @@ class BrowseEventsAdapter extends ListAdapter<Event, BrowseEventsAdapter.VH> {
             GlideApp.with(h.root.getContext())
                     .load(storageReference)
                     .into(h.poster);
+            h.poster.setScaleType(ImageView.ScaleType.CENTER_CROP);
         } else
             h.poster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
