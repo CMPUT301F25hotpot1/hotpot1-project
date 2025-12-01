@@ -1,14 +1,28 @@
 /**
  * Detail screen for a single uploaded image.
- * Shows a full preview and allows deleting the image that is attached
- * to an Event (via the event's posterUrl field).
+ *
+ * High-level purpose:
+ * - Shows a full preview of an uploaded image (poster).
+ * - Displays the image title in the description bar.
+ * - Lets the admin close this screen with an "X" button.
+ * - Lets the admin delete the image from the `images` collection.
+ * - When deleting, also finds all `events` whose `posterUrl` equals this
+ *   image's URL and clears their `posterUrl` field (so no event still points
+ *   to a non-existent poster).
+ *
+ * This activity only handles UI and Firestore side-effects for a single image.
+ * It reports back to the calling Activity via RESULT_DELETED so the caller
+ * can refresh or remove this item from its own list if needed.
  */
 package com.example.lottary.ui.admin;
 
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -18,43 +32,60 @@ import com.bumptech.glide.Glide;
 import com.example.lottary.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+import com.google.firebase.firestore.WriteBatch;
 
-/**
- * Shows a single image in full size and lets the admin delete it.
- * Deletion means:
- *  1) Clear the corresponding Event's posterUrl field in Firestore.
- *  2) Best-effort delete of the underlying Firebase Storage object.
- */
+import java.util.HashMap;
+import java.util.Map;
+
 public class ImageDetailActivity extends AppCompatActivity {
 
-    public static final String EXTRA_IMAGE_ID = "extra_image_id";       // here: eventId
-    public static final String EXTRA_IMAGE_URL = "extra_image_url";
+    // --------- Intent extras ---------
+    // Keys used by the caller to pass the image's basic information.
+    public static final String EXTRA_IMAGE_ID    = "extra_image_id";
+    public static final String EXTRA_IMAGE_URL   = "extra_image_url";
     public static final String EXTRA_IMAGE_TITLE = "extra_image_title";
 
+    // --------- Result code ---------
+    // Returned to the caller when this image has been deleted successfully.
     public static final int RESULT_DELETED = 1001;
 
-    private String imageId;      // actually the eventId
+    // --------- Fields for this image ---------
+    // Local copies of the image metadata for this screen.
+    private String imageId;
     private String imageUrl;
     private String imageTitle;
 
-    // Collection that holds events with a posterUrl field
+    // --------- Firestore collections ---------
+    // Collection names used in all Firestore operations.
+    private static final String COLLECTION_IMAGES = "images";
     private static final String COLLECTION_EVENTS = "events";
-    private static final String FIELD_POSTER_URL   = "posterUrl";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_detail);
 
-        // Retrieve image info from Intent
-        imageId = getIntent().getStringExtra(EXTRA_IMAGE_ID);
-        imageUrl = getIntent().getStringExtra(EXTRA_IMAGE_URL);
+        // ----- Retrieve extras -----
+        // Pull the image metadata from the Intent that started this Activity.
+        imageId    = getIntent().getStringExtra(EXTRA_IMAGE_ID);
+        imageUrl   = getIntent().getStringExtra(EXTRA_IMAGE_URL);
         imageTitle = getIntent().getStringExtra(EXTRA_IMAGE_TITLE);
 
-        // Load preview
+        // ----- Description bar: show poster name -----
+        // The text bar at the top shows the human-readable name of this image.
+        TextView tvTitle = findViewById(R.id.tv_title);
+        if (imageTitle != null && !imageTitle.trim().isEmpty()) {
+            tvTitle.setText(imageTitle);
+        } else {
+            // If there is no title, fall back to a generic hint.
+            tvTitle.setText(R.string.hint_desc);
+        }
+
+        // ----- Preview image -----
+        // Display the actual image content in the large preview area.
         ImageView iv = findViewById(R.id.ivPreview);
         Glide.with(this)
                 .load(imageUrl == null || imageUrl.isEmpty() ? null : imageUrl)
@@ -62,25 +93,44 @@ public class ImageDetailActivity extends AppCompatActivity {
                 .error(R.drawable.placeholder_square)
                 .into(iv);
 
-        // Delete button
+        // ----- Top-right close "X" -----
+        // Simple close action: finishes this Activity without any side effects.
+        ImageButton btnClose = findViewById(R.id.btnClose);
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> finish());
+        }
+
+        // ----- Delete button: confirmation dialog -----
+        // When the admin taps "Remove Image", show a confirm dialog first.
         MaterialButton btnDelete = findViewById(R.id.btnDeleteImage);
         btnDelete.setOnClickListener(v ->
-                new MaterialAlertDialogBuilder(this, R.style.LotteryDialog_Admin)
+                new MaterialAlertDialogBuilder(ImageDetailActivity.this,
+                        R.style.LotteryDialog_Admin)
                         .setTitle(R.string.remove_image)
                         .setMessage(R.string.remove_image_confirm)
+                        // User cancelled: just close the detail screen.
+                        .setNeutralButton(R.string.no, (dialog, which) -> {
+                            dialog.dismiss();
+                            finish();
+                        })
+                        // User confirmed: proceed with Firestore deletion & cleanup.
                         .setPositiveButton(R.string.yes,
-                                (DialogInterface d, int which) -> doDelete())
-                        .setNeutralButton(R.string.no,
-                                (d, which) -> d.dismiss())
+                                (DialogInterface d, int w) -> doDelete())
+                        // Treat dialog cancellation as cancelling the delete and leaving the screen.
+                        .setOnCancelListener(dialog -> finish())
                         .show()
         );
     }
 
     /**
-     * Main delete flow:
-     * 1) Clear the posterUrl on the Event document.
-     * 2) Try to delete the corresponding Firebase Storage object.
-     * 3) Finish this Activity and notify caller.
+     * Performs the actual deletion workflow:
+     * 1) Query the `events` collection for all documents whose `posterUrl`
+     *    matches this image's URL.
+     * 2) For each matching event, clear its `posterUrl` field (set to "") so
+     *    no event still references this deleted poster.
+     * 3) Delete this image document from the `images` collection.
+     * 4) Commit everything in a single WriteBatch so either all succeed or all fail.
+     * 5) On success, show a toast and return RESULT_DELETED to the caller.
      */
     private void doDelete() {
         if (imageId == null || imageId.isEmpty()) {
@@ -90,61 +140,57 @@ public class ImageDetailActivity extends AppCompatActivity {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Step 1: clear posterUrl on the Event document.
+        // Step 1: find all events that currently use this image as their poster.
         db.collection(COLLECTION_EVENTS)
-                .document(imageId)
-                .update(FIELD_POSTER_URL, null)  // or "" if you prefer empty string
-                .addOnSuccessListener(unused -> {
-                    // Step 2: best-effort delete from Storage.
-                    deleteFromStorageAndFinish();
+                .whereEqualTo("posterUrl", imageUrl)   // ⚠️ 用 posterUrl 关联
+                .get()
+                .addOnSuccessListener(snap -> {
+
+                    // Prepare a batch so updates + delete happen together.
+                    WriteBatch batch = db.batch();
+
+                    // Step 2: for each event, clear its posterUrl field.
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        DocumentReference ref = doc.getReference();
+
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("posterUrl", "");  // or null if you prefer
+
+                        batch.update(ref, updates);
+                    }
+
+                    // Step 3: delete the image document from the images collection.
+                    DocumentReference imageRef =
+                            db.collection(COLLECTION_IMAGES).document(imageId);
+                    batch.delete(imageRef);
+
+                    // Step 4: commit the batch (all updates + image delete).
+                    batch.commit()
+                            .addOnSuccessListener(unused -> {
+                                // Notify the user and the caller that deletion succeeded.
+                                Toast.makeText(this,
+                                        R.string.image_deleted,
+                                        Toast.LENGTH_SHORT).show();
+
+                                // Step 5: send back the deleted imageId as a result.
+                                Intent data = new Intent()
+                                        .putExtra(EXTRA_IMAGE_ID, imageId);
+                                setResult(RESULT_DELETED, data);
+
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                // Batch failed: let the user know.
+                                Toast.makeText(this,
+                                        R.string.delete_failed,
+                                        Toast.LENGTH_SHORT).show();
+                            });
                 })
-                .addOnFailureListener(e -> {
-                    // If we cannot clear the field, consider the whole delete failed.
-                    Toast.makeText(this, R.string.delete_failed, Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    /**
-     * Tries to delete the underlying image file in Firebase Storage.
-     * If this fails (for example, object already removed), we still treat
-     * the delete as successful because Firestore state is already correct.
-     */
-    private void deleteFromStorageAndFinish() {
-        // Nothing to delete in Storage -> just finish with success.
-        if (imageUrl == null || imageUrl.isEmpty()) {
-            finishWithSuccess();
-            return;
-        }
-
-        try {
-            StorageReference ref = FirebaseStorage.getInstance()
-                    .getReferenceFromUrl(imageUrl);
-
-            ref.delete()
-                    .addOnSuccessListener(unused -> {
-                        // Storage deleted successfully.
-                        finishWithSuccess();
-                    })
-                    .addOnFailureListener(e -> {
-                        // Storage delete failed (e.g. object missing or permission),
-                        // but Firestore posterUrl is already cleared, so we still
-                        // treat this as success from the UI perspective.
-                        finishWithSuccess();
-                    });
-
-        } catch (IllegalArgumentException e) {
-            // imageUrl was not a valid Firebase Storage URL; ignore and finish.
-            finishWithSuccess();
-        }
-    }
-
-    /**
-     * Common helper: show success toast, set result, and close the Activity.
-     */
-    private void finishWithSuccess() {
-        Toast.makeText(this, R.string.image_deleted, Toast.LENGTH_SHORT).show();
-        Intent result = new Intent().putExtra(EXTRA_IMAGE_ID, imageId);
-        setResult(RESULT_DELETED, result);
-        finish();
+                .addOnFailureListener(e ->
+                        // Initial query failed: cannot proceed with cleanup/delete.
+                        Toast.makeText(this,
+                                R.string.delete_failed,
+                                Toast.LENGTH_SHORT).show()
+                );
     }
 }
