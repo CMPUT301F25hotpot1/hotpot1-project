@@ -71,13 +71,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                android:visibility="gone"
-                android:text="Generate QR" />
+                android:text="Generate QR"
+                android:visibility="gone"/>
 
             <!-- In-app scanner that uses camera to scan an event QR -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_scan_event_qr"
-                style="@style/LotteryButton.Neutral"
+                style="@style/LotteryButton.SignUp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

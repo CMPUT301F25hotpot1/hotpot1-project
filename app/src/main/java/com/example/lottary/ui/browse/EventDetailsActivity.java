@@ -19,14 +19,19 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.lottary.R;
 import com.example.lottary.data.FirestoreEventRepository;
+import com.example.lottary.data.GlideApp;
+import com.example.lottary.ui.profile.CreateProfileActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -52,6 +57,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private ListenerRegistration reg;
     /** Current event id extracted from the intent. */
     private String eventId;
+    private String imageUrl;
 
     // views
     private ImageView ivPoster;
@@ -226,6 +232,18 @@ public class EventDetailsActivity extends AppCompatActivity {
             tvWaitlist.setText(waitingCount + " on waiting list");
         }
 
+        String posterUrl = safe(d.getString("posterUrl"));
+        if (!posterUrl.isEmpty()) {
+            // Reference to event poster in Cloud Storage
+            StorageReference storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(posterUrl);
+            // Download directly from StorageReference using Glide
+            // (See MyAppGlideModule for Loader registration)
+            GlideApp.with(this)
+                    .load(storageReference)
+                    .into(ivPoster);
+            ivPoster.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        } else ivPoster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
         // Only open events can be joined.
         btnJoin.setEnabled(isOpen);
     }
@@ -318,8 +336,12 @@ public class EventDetailsActivity extends AppCompatActivity {
                 .addOnSuccessListener(v ->
                         Toast.makeText(this, "Success! You have joined the waitlist.", Toast.LENGTH_LONG).show()
                 )
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to join: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                .addOnFailureListener(e -> {
+                    if (e.getMessage().equals("This event only allow user who has location.")) {
+                        startActivity(new Intent(this, CreateProfileActivity.class));
+                            }
+                    Toast.makeText(this, "Failed to join: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
                 );
     }
 

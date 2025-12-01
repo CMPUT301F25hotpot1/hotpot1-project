@@ -43,7 +43,7 @@ import java.util.List;
  * A {@link AppCompatActivity} subclass that let the organizer sees approximate locations of the people who joined the event
  * The code was adapted from Google LLC's Example on Display Maps and Custom Map Pins
  * @author Han Nguyen, Tianyi Zhang, Google LLC
- * @version 2.0
+ * @version 2.1
  * @see ManageEventActivity
  * @see com.example.lottary.ui.profile.CreateProfileActivity
  * @see <a href="https://developers.google.com/maps/documentation/android-sdk/map-with-marker"/>Google LLC's Example on Display Maps and Custom Map Pins</a>
@@ -52,7 +52,6 @@ import java.util.List;
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private String eventId;
-    private UiSettings mUiSettings;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,7 +78,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(@NonNull GoogleMap googleMap) {
 
         // Enable zoom
-        mUiSettings = googleMap.getUiSettings();
+        UiSettings mUiSettings = googleMap.getUiSettings();
         mUiSettings.setZoomControlsEnabled(true);
 
         // Event venue marker (not needed)
